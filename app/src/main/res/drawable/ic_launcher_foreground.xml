@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Main Square Outline -->
+    <path
+        android:pathData="M27,45 L75,45 L75,93 L27,93 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4.5"
+        android:fillAlpha="0"/>
+        
+    <!-- 8-Pointed Star / Sparkle Centered at Top-Right Corner -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:pathData="M75,25 L75,65 M55,45 L95,45 M61,31 L89,59 M61,59 L89,31"/>
+</vector>

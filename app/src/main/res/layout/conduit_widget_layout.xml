@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ListView
+            android:id="@+id/widget_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@null"
+            android:dividerHeight="8dp" />
+
+        <TextView
+            android:id="@+id/widget_empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="No notifications"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="14sp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_dock_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingBottom="6dp"
+        android:paddingTop="10dp">
+
+        <!-- Slot 1 -->
+        <FrameLayout
+            android:id="@+id/widget_slot_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/widget_slot_icon_1"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="4dp" />
+            <TextView
+                android:id="@+id/widget_slot_badge_1"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/widget_badge_bg"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- Slot 2 -->
+        <FrameLayout
+            android:id="@+id/widget_slot_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/widget_slot_icon_2"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="4dp" />
+            <TextView
+                android:id="@+id/widget_slot_badge_2"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/widget_badge_bg"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- Slot 3 -->
+        <FrameLayout
+            android:id="@+id/widget_slot_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/widget_slot_icon_3"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="4dp" />
+            <TextView
+                android:id="@+id/widget_slot_badge_3"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/widget_badge_bg"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- Slot 4 -->
+        <FrameLayout
+            android:id="@+id/widget_slot_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/widget_slot_icon_4"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="4dp" />
+            <TextView
+                android:id="@+id/widget_slot_badge_4"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/widget_badge_bg"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- Slot 5 -->
+        <FrameLayout
+            android:id="@+id/widget_slot_5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/widget_slot_icon_5"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="4dp" />
+            <TextView
+                android:id="@+id/widget_slot_badge_5"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/widget_badge_bg"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- Slot 6 -->
+        <FrameLayout
+            android:id="@+id/widget_slot_6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/widget_slot_icon_6"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="4dp" />
+            <TextView
+                android:id="@+id/widget_slot_badge_6"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/widget_badge_bg"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- Slot 7 -->
+        <FrameLayout
+            android:id="@+id/widget_slot_7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/widget_slot_icon_7"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="4dp" />
+            <TextView
+                android:id="@+id/widget_slot_badge_7"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/widget_badge_bg"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

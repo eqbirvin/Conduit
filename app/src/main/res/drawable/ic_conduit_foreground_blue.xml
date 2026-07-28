@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+
+    <!-- Foreground group translated by 48 on Y axis, just like SVG transform="translate(0,48)" -->
+    <group
+        android:pivotX="512"
+        android:pivotY="512"
+        android:scaleX="0.70"
+        android:scaleY="0.70"
+        android:translateY="48">
+        <!-- Message bubble tail -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 318,650 L 252,742 L 392,678 Z" />
+
+        <!-- Message bubble body: x=240, y=240, width=544, height=440, rx=104, ry=104 -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 344,240 h 336 a 104,104 0 0 1 104,104 v 232 a 104,104 0 0 1 -104,104 h -336 a 104,104 0 0 1 -104,-104 v -232 a 104,104 0 0 1 104,-104 z" />
+
+        <!-- Bell (negative space matching background color #2E6FE0) -->
+        <group
+            android:translateX="356"
+            android:translateY="304"
+            android:scaleX="13"
+            android:scaleY="13">
+            <path
+                android:fillColor="#2E6FE0"
+                android:pathData="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+        </group>
+
+        <!-- Unread badge outer circle (same as background: #2E6FE0) -->
+        <path
+            android:fillColor="#2E6FE0"
+            android:pathData="M 760,268 m -82,0 a 82,82 0 1,1 164,0 a 82,82 0 1,1 -164,0 z" />
+
+        <!-- Unread badge inner red circle (#E0392B) -->
+        <path
+            android:fillColor="#E0392B"
+            android:pathData="M 760,268 m -58,0 a 58,58 0 1,1 116,0 a 58,58 0 1,1 -116,0 z" />
+    </group>
+</vector>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_bg_color">#E61C1B1F</color> <!-- Dark Surface 90% opacity -->
+    <color name="widget_item_bg_color">#1AFFFFFF</color> <!-- Subtle white overlay for item card -->
+    <color name="widget_text_primary">#FFFFFF</color>
+    <color name="widget_text_secondary">#B3FFFFFF</color> <!-- 70% alpha -->
+    <color name="widget_title_color">#EADDFF</color> <!-- M3 Primary Container -->
+    <color name="widget_chip_bg_color">#33FFFFFF</color>
+    <color name="widget_chip_conduit_bg_color">#33EADDFF</color> <!-- 20% opacity primary container color -->
+    <color name="widget_chip_text_color">#EADDFF</color>
+</resources>
