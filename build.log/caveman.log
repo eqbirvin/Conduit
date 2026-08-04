@@ -239,6 +239,8 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-04T21:39] [v2.02.04] implemented 6 audit fixes: debounced persistent tray update (500ms), moved widget update outside loop, cached getrepresentativepackage in concurrenthashmap, removed sync getapplabel in notificationitem, enabled release minification/proguard, and removed query_all_packages permission.
 [2026-08-04T21:52] [v2.02.05] updated copyapktooutputs task to depend on assemblerelease and copy release apk, and added debug signingconfig to release buildtype for sideloading.
 [2026-08-04T22:13] [v2.02.06] implemented room database indices for notificationkey, isarchived+timestamp, and packagename, added migration_6_7, removed fallbacktodestructivemigration, and implemented 90-day retention cleanup.
+[2026-08-04T22:24] [v2.02.07] upgraded compose bom to 2024.09.03, kotlin to 1.9.24, agp to 8.2.2, ksp to 1.9.24-1.0.20, added lifecycle-runtime-compose, migrated room flows to collectasstatewithlifecycle, swipetodismiss to swipetodismissbox, animateitemplacement to animateitem, and rememberripple to material3.ripple.
+
 
 
 

@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import com.conduit.app.data.AppDatabase
 import com.conduit.app.data.HubNotification
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -275,8 +276,8 @@ class MainActivity : ComponentActivity() {
 
             // Observe notifications from Room
             val database = remember { AppDatabase.getDatabase(context) }
-            val notifications by database.notificationDao().getAllNotifications().collectAsState(initial = emptyList())
-            val archivedNotifications by database.notificationDao().getArchivedNotifications().collectAsState(initial = emptyList())
+            val notifications by database.notificationDao().getAllNotifications().collectAsStateWithLifecycle(initialValue = emptyList())
+            val archivedNotifications by database.notificationDao().getArchivedNotifications().collectAsStateWithLifecycle(initialValue = emptyList())
             val coroutineScope = rememberCoroutineScope()
             
             val filteredNotifications = remember(notifications, channelStates.toMap()) {
@@ -1199,8 +1200,8 @@ fun HubScreen(
                             }
                         }
                         items(pinnedNotifications, key = { "pinned_${it.id}" }) { notification ->
-                            Box(modifier = Modifier.animateItemPlacement(
-                                animationSpec = tween(durationMillis = 300)
+                            Box(modifier = Modifier.animateItem(
+                                placementSpec = tween(durationMillis = 300)
                             )) {
                                 NotificationItem(
                                     notification = notification,
@@ -1267,9 +1268,9 @@ fun HubScreen(
                             }
                         }
                         items(itemsList, key = { it.id }) { notification ->
-                            val dismissState = rememberDismissState(
-                                confirmValueChange = {
-                                    val action = if (it == DismissValue.DismissedToEnd) swipeRightAction else swipeLeftAction
+                            val dismissState = rememberSwipeToDismissBoxState(
+                                confirmValueChange = { value ->
+                                    val action = if (value == SwipeToDismissBoxValue.StartToEnd) swipeRightAction else swipeLeftAction
                                     when (action) {
                                         "ARCHIVE" -> {
                                             if (prefs.getBoolean("sync_dismissal", true)) {
@@ -1297,20 +1298,20 @@ fun HubScreen(
                             )
                             
                             LaunchedEffect(dismissState.targetValue) {
-                                if (dismissState.targetValue != DismissValue.Default) {
+                                if (dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
                                     performHapticTick(context)
                                 }
                             }
                             
-                            SwipeToDismiss(
+                            SwipeToDismissBox(
                                 state = dismissState,
-                                modifier = Modifier.animateItemPlacement(
-                                    animationSpec = tween(durationMillis = 300)
+                                modifier = Modifier.animateItem(
+                                    placementSpec = tween(durationMillis = 300)
                                 ),
-                                directions = setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart),
-                                background = {
-                                    val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
-                                    val action = if (direction == DismissDirection.StartToEnd) swipeRightAction else swipeLeftAction
+                                backgroundContent = {
+                                    val direction = dismissState.dismissDirection
+                                    if (direction == SwipeToDismissBoxValue.Settled) return@SwipeToDismissBox
+                                    val action = if (direction == SwipeToDismissBoxValue.StartToEnd) swipeRightAction else swipeLeftAction
                                     
                                     val color = when (action) {
                                         "ARCHIVE" -> MaterialTheme.colorScheme.primaryContainer
@@ -1320,7 +1321,7 @@ fun HubScreen(
                                         else -> Color.Gray
                                     }
                                     
-                                    val alignment = if (direction == DismissDirection.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
+                                    val alignment = if (direction == SwipeToDismissBoxValue.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
                                     
                                     val icon = when (action) {
                                         "ARCHIVE" -> if (unifiedView) Icons.Filled.Check else Icons.Filled.Archive
@@ -1347,7 +1348,7 @@ fun HubScreen(
                                     }
                                     
                                     val scale by animateFloatAsState(
-                                        if (dismissState.targetValue == DismissValue.Default) 0.75f else 1.25f
+                                        if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0.75f else 1.25f
                                     )
                                     
                                     Box(
@@ -1374,7 +1375,7 @@ fun HubScreen(
                                         }
                                     }
                                 },
-                                dismissContent = {
+                                content = {
                                     Column {
                                         NotificationItem(
                                             notification = notification,
@@ -1911,7 +1912,7 @@ fun NotificationItem(
                     .width(avatarBoxWidth)
                     .clickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                        indication = androidx.compose.material.ripple.rememberRipple(bounded = false, radius = 32.dp),
+                        indication = androidx.compose.material3.ripple(bounded = false, radius = 32.dp),
                         enabled = true
                     ) { onSelectToggle() },
                 contentAlignment = Alignment.Center
@@ -3423,8 +3424,8 @@ fun ArchiveScreen(
                         }
                     }
                     items(itemsList, key = { it.id }) { notification ->
-                        Box(modifier = Modifier.animateItemPlacement(
-                            animationSpec = tween(durationMillis = 300)
+                        Box(modifier = Modifier.animateItem(
+                            placementSpec = tween(durationMillis = 300)
                         )) {
                             NotificationItem(
                                 notification = notification,
