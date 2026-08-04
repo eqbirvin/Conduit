@@ -194,12 +194,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val prefs = remember { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
+            var unreadReleases by remember { mutableStateOf<List<ChangelogRelease>>(emptyList()) }
             var showWhatsNewDialog by remember { mutableStateOf(false) }
+
             LaunchedEffect(Unit) {
-                val currentVersion = "2.02.06"
-                val lastRun = prefs.getString("last_run_version", "") ?: ""
-                if (lastRun != currentVersion) {
-                    showWhatsNewDialog = true
+                val currentVersion = BuildConfig.VERSION_NAME
+                val lastRun = prefs.getString("last_run_version", null)
+                if (lastRun == null) {
+                    prefs.edit().putString("last_run_version", currentVersion).apply()
+                } else if (isVersionNewer(currentVersion, lastRun)) {
+                    val newerEntries = CHANGELOG.filter { isVersionNewer(it.versionName, lastRun) }
+                    if (newerEntries.isNotEmpty()) {
+                        unreadReleases = newerEntries
+                        showWhatsNewDialog = true
+                    } else {
+                        prefs.edit().putString("last_run_version", currentVersion).apply()
+                    }
                 }
             }
             var themePreference by remember { mutableIntStateOf(prefs.getInt("theme", 0)) }
@@ -495,82 +505,12 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     
-                    if (showWhatsNewDialog) {
-                        AlertDialog(
-                            onDismissRequest = {
-                                prefs.edit().putString("last_run_version", "2.02.06").apply()
+                    if (showWhatsNewDialog && unreadReleases.isNotEmpty()) {
+                        WhatsNewDialog(
+                            releases = unreadReleases,
+                            onDismiss = {
+                                prefs.edit().putString("last_run_version", BuildConfig.VERSION_NAME).apply()
                                 showWhatsNewDialog = false
-                            },
-                            title = {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Info,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("What's New in Conduit", fontWeight = FontWeight.Bold)
-                                }
-                            },
-                            text = {
-                                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    Text("Version 2.02.06 (Beta)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
-                                    
-                                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        Row(verticalAlignment = Alignment.Top) {
-                                            Icon(
-                                                imageVector = Icons.Default.Storage,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(20.dp).padding(top = 2.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(12.dp))
-                                            Column {
-                                                Text("Database Indices & Retention Policy", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                                                Text("Added SQL database indices for notification key, package name, and archived status. Migration v6 to v7 preserves user history, plus automatic 90-day retention cleanup.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            }
-                                        }
-
-                                        Row(verticalAlignment = Alignment.Top) {
-                                            Icon(
-                                                imageVector = Icons.Default.Work,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(20.dp).padding(top = 2.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(12.dp))
-                                            Column {
-                                                Text("Work Profile Support", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                                                Text("Conduit now dynamically scans and launches apps from your Android Work Profile. Managed apps display with briefcase badge overlays.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            }
-                                        }
-
-                                        Row(verticalAlignment = Alignment.Top) {
-                                            Icon(
-                                                imageVector = Icons.Default.Refresh,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(20.dp).padding(top = 2.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(12.dp))
-                                            Column {
-                                                Text("Dynamic System Tray Sync", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                                                Text("Rebuilt status bar notification tray checks to dynamically filter against enabled channels, automatically supporting all new networks (Facebook, Teams, Messenger, Twitter).", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        prefs.edit().putString("last_run_version", "2.02.06").apply()
-                                        showWhatsNewDialog = false
-                                    }
-                                ) {
-                                    Text("Got It")
-                                }
                             }
                         )
                     }
@@ -2344,7 +2284,7 @@ fun SettingsScreen(
             ) {
                 ListItem(
                     headlineContent = { Text("What's New") },
-                    supportingContent = { Text("View the update details and feature changelog for version 2.02.06.") },
+                    supportingContent = { Text("View update details and release history.") },
                     leadingContent = { Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
                 )
             }
@@ -3513,3 +3453,22 @@ fun changeAppIcon(context: Context, iconName: String) {
         }
     }
 }
+
+fun compareVersions(v1: String, v2: String): Int {
+    val parts1 = v1.split(".").mapNotNull { it.toIntOrNull() }
+    val parts2 = v2.split(".").mapNotNull { it.toIntOrNull() }
+    val maxLen = maxOf(parts1.size, parts2.size)
+    for (i in 0 until maxLen) {
+        val p1 = parts1.getOrElse(i) { 0 }
+        val p2 = parts2.getOrElse(i) { 0 }
+        if (p1 != p2) {
+            return p1.compareTo(p2)
+        }
+    }
+    return 0
+}
+
+fun isVersionNewer(newVersion: String, oldVersion: String): Boolean {
+    return compareVersions(newVersion, oldVersion) > 0
+}
+
