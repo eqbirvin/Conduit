@@ -195,7 +195,7 @@ class MainActivity : ComponentActivity() {
             val prefs = remember { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
             var showWhatsNewDialog by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
-                val currentVersion = "2.02.05"
+                val currentVersion = "2.02.06"
                 val lastRun = prefs.getString("last_run_version", "") ?: ""
                 if (lastRun != currentVersion) {
                     showWhatsNewDialog = true
@@ -497,7 +497,7 @@ class MainActivity : ComponentActivity() {
                     if (showWhatsNewDialog) {
                         AlertDialog(
                             onDismissRequest = {
-                                prefs.edit().putString("last_run_version", "2.02.05").apply()
+                                prefs.edit().putString("last_run_version", "2.02.06").apply()
                                 showWhatsNewDialog = false
                             },
                             title = {
@@ -514,20 +514,20 @@ class MainActivity : ComponentActivity() {
                             },
                             text = {
                                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    Text("Version 2.02.05 (Beta)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
+                                    Text("Version 2.02.06 (Beta)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
                                     
                                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Row(verticalAlignment = Alignment.Top) {
                                             Icon(
-                                                imageVector = Icons.Default.Build,
+                                                imageVector = Icons.Default.Storage,
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.primary,
                                                 modifier = Modifier.size(20.dp).padding(top = 2.dp)
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Column {
-                                                Text("Sideloadable Release Packaging", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                                                Text("Automated output packaging now builds minified release APKs signed with debug key for seamless sideloading.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                Text("Database Indices & Retention Policy", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+                                                Text("Added SQL indices for fast queries, removed destructive fallback migration with a safe Migration, and added 30-day retention cleanup.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             }
                                         }
 
@@ -564,7 +564,7 @@ class MainActivity : ComponentActivity() {
                             confirmButton = {
                                 TextButton(
                                     onClick = {
-                                        prefs.edit().putString("last_run_version", "2.02.05").apply()
+                                        prefs.edit().putString("last_run_version", "2.02.06").apply()
                                         showWhatsNewDialog = false
                                     }
                                 ) {
@@ -2343,7 +2343,7 @@ fun SettingsScreen(
             ) {
                 ListItem(
                     headlineContent = { Text("What's New") },
-                    supportingContent = { Text("View the update details and feature changelog for version 2.02.05.") },
+                    supportingContent = { Text("View the update details and feature changelog for version 2.02.06.") },
                     leadingContent = { Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
                 )
             }

@@ -151,6 +151,14 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         super.onListenerConnected()
         instance = this
         updatePersistentNotification()
+        scope.launch {
+            try {
+                val thirtyDaysAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
+                database.notificationDao().deleteOldArchivedNotifications(thirtyDaysAgo)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     override fun onListenerDisconnected() {

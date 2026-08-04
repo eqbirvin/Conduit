@@ -66,4 +66,7 @@ interface NotificationDao {
 
     @Query("UPDATE notifications SET title = :newTitle, text = :newText, timestamp = :newTimestamp, isArchived = 0 WHERE id = :id")
     suspend fun updateAndUnarchive(id: Int, newTitle: String, newText: String, newTimestamp: Long)
+
+    @Query("DELETE FROM notifications WHERE isArchived = 1 AND isPinned = 0 AND timestamp < :cutoffTimestamp")
+    suspend fun deleteOldArchivedNotifications(cutoffTimestamp: Long)
 }

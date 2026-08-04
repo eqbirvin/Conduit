@@ -1,9 +1,17 @@
 package com.conduit.app.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "notifications")
+@Entity(
+    tableName = "notifications",
+    indices = [
+        Index(value = ["notificationKey"]),
+        Index(value = ["isArchived", "timestamp"]),
+        Index(value = ["packageName"])
+    ]
+)
 data class HubNotification(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val packageName: String,
