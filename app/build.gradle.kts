@@ -12,8 +12,8 @@ android {
         applicationId = "com.conduit.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 185
-        versionName = "2.02.04"
+        versionCode = 186
+        versionName = "2.02.05"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -25,6 +25,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -83,8 +84,8 @@ dependencies {
 }
 
 tasks.register<Copy>("copyApkToOutputs") {
-    dependsOn("assembleDebug")
-    from("build/outputs/apk/debug/app-debug.apk")
+    dependsOn("assembleRelease")
+    from("build/outputs/apk/release/app-release.apk")
     into("../App.Outputs")
-    rename("app-debug.apk", "conduit.beta.v${android.defaultConfig.versionName}.apk")
+    rename("app-release.apk", "conduit.beta.v${android.defaultConfig.versionName}.apk")
 }

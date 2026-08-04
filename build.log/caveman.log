@@ -237,6 +237,8 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-07-27T22:20] [v2.02.02] initialized git repository, added android gitignore with app.outputs, appicons, and dump log exclusions, and created initial commit for github desktop.
 [2026-08-04T21:23] [v2.02.03] implemented section 3 steps 1-3 from code audit: populated actioncache in onnotificationposted, cached negative results in getnotificationactions, and hoisted action lookups into hubscreen gated on showactionchips.
 [2026-08-04T21:39] [v2.02.04] implemented 6 audit fixes: debounced persistent tray update (500ms), moved widget update outside loop, cached getrepresentativepackage in concurrenthashmap, removed sync getapplabel in notificationitem, enabled release minification/proguard, and removed query_all_packages permission.
+[2026-08-04T21:52] [v2.02.05] updated copyapktooutputs task to depend on assemblerelease and copy release apk, and added debug signingconfig to release buildtype for sideloading.
+
 
 
 
