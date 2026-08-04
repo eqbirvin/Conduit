@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 val appLabelCache = ConcurrentHashMap<String, String>()
 val appIconCache = ConcurrentHashMap<String, ImageBitmap>()
+val representativePackageCache = ConcurrentHashMap<String, String>()
 
 fun isPackageInstalled(context: Context, packageName: String): Boolean {
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
@@ -114,15 +115,20 @@ fun getInstalledApps(context: Context): List<Pair<String, String>> {
 }
 
 fun getRepresentativePackage(context: Context, packageName: String): String {
+    val cached = representativePackageCache[packageName]
+    if (cached != null) return cached
+
     val channelKey = HubNotificationListenerService.supportedApps[packageName]?.first
-    if (channelKey != null) {
+    val result = if (channelKey != null) {
         val rep = HubNotificationListenerService.supportedApps.entries
             .filter { it.value.first == channelKey }
             .map { it.key }
             .firstOrNull { isPackageInstalled(context, it) }
-        if (rep != null) {
-            return rep
-        }
+        rep ?: packageName
+    } else {
+        packageName
     }
-    return packageName
+    
+    representativePackageCache[packageName] = result
+    return result
 }

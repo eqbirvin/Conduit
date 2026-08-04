@@ -195,7 +195,7 @@ class MainActivity : ComponentActivity() {
             val prefs = remember { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
             var showWhatsNewDialog by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
-                val currentVersion = "2.02.03"
+                val currentVersion = "2.02.04"
                 val lastRun = prefs.getString("last_run_version", "") ?: ""
                 if (lastRun != currentVersion) {
                     showWhatsNewDialog = true
@@ -497,7 +497,7 @@ class MainActivity : ComponentActivity() {
                     if (showWhatsNewDialog) {
                         AlertDialog(
                             onDismissRequest = {
-                                prefs.edit().putString("last_run_version", "2.02.03").apply()
+                                prefs.edit().putString("last_run_version", "2.02.04").apply()
                                 showWhatsNewDialog = false
                             },
                             title = {
@@ -514,7 +514,7 @@ class MainActivity : ComponentActivity() {
                             },
                             text = {
                                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    Text("Version 2.02.03 (Beta)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
+                                    Text("Version 2.02.04 (Beta)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
                                     
                                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Row(verticalAlignment = Alignment.Top) {
@@ -526,8 +526,8 @@ class MainActivity : ComponentActivity() {
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Column {
-                                                Text("Smooth Scrolling Optimization", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                                                Text("Eliminated main-thread binder IPC during list composition and cached notification actions for butter-smooth scrolling.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                Text("Performance & ProGuard Optimizations", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+                                                Text("Debounced persistent tray refreshes, cached representative package lookups, async app label loading, and enabled release build minification.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             }
                                         }
 
@@ -564,7 +564,7 @@ class MainActivity : ComponentActivity() {
                             confirmButton = {
                                 TextButton(
                                     onClick = {
-                                        prefs.edit().putString("last_run_version", "2.02.03").apply()
+                                        prefs.edit().putString("last_run_version", "2.02.04").apply()
                                         showWhatsNewDialog = false
                                     }
                                 ) {
@@ -862,9 +862,9 @@ fun HubScreen(
                                             }
                                         }
                                         database.notificationDao().archiveNotification(id, System.currentTimeMillis())
-                                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
                                     }
                                 }
+                                com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
                             }
                             performHapticClick(context)
                             selectedIds = emptySet()
@@ -2012,7 +2012,7 @@ fun NotificationItem(
                     )
                 }
                 
-                var appName by remember(notification.packageName) { mutableStateOf(getAppLabel(context, notification.packageName, notification.channel)) }
+                var appName by remember(notification.packageName) { mutableStateOf(appLabelCache[notification.packageName] ?: notification.channel) }
                 
                 LaunchedEffect(notification.packageName) {
                     if (!appLabelCache.containsKey(notification.packageName)) {
@@ -2343,7 +2343,7 @@ fun SettingsScreen(
             ) {
                 ListItem(
                     headlineContent = { Text("What's New") },
-                    supportingContent = { Text("View the update details and feature changelog for version 2.02.03.") },
+                    supportingContent = { Text("View the update details and feature changelog for version 2.02.04.") },
                     leadingContent = { Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
                 )
             }

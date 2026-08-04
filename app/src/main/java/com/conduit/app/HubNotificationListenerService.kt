@@ -124,6 +124,12 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     }
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private val collapseRunnable = Runnable { animateCollapse() }
+    private val updatePersistentRunnable = Runnable { updatePersistentNotification() }
+
+    private fun scheduleUpdatePersistentNotification() {
+        handler.removeCallbacks(updatePersistentRunnable)
+        handler.postDelayed(updatePersistentRunnable, 500)
+    }
 
     private val closeSystemDialogsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -848,11 +854,12 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                                 e.printStackTrace()
                             }
                         }
+
+                        scheduleUpdatePersistentNotification()
                     }
                 }
             }
         }
-        updatePersistentNotification()
     }
 
     private fun shouldBlockNotification(context: Context, packageName: String, title: String, text: String): Boolean {
