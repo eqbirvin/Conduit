@@ -700,7 +700,15 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             val packageName = it.packageName
             val notificationKey = it.key
             
-            actionCache.remove(notificationKey) // Invalidate cache
+            val postedActions = mutableListOf<Notification.Action>()
+            it.notification.actions?.let { a -> postedActions.addAll(a) }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                try {
+                    val contextual = it.notification.extras.getParcelableArrayList<Notification.Action>("android.contextualActions")
+                    contextual?.let { c -> postedActions.addAll(c) }
+                } catch (e: Exception) {}
+            }
+            actionCache[notificationKey] = postedActions
             contentIntentCache.remove(notificationKey)
 
             
@@ -873,6 +881,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         super.onNotificationRemoved(sbn)
         sbn?.let {
+            actionCache[it.key] = emptyList()
             val prefs = getSharedPreferences("conduit_prefs", android.content.Context.MODE_PRIVATE)
             val syncDismissal = prefs.getBoolean("sync_dismissal", true)
             if (syncDismissal) {
@@ -1049,6 +1058,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        actionCache[key] = emptyList()
         return null
     }
 

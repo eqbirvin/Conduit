@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.animation.*
+import android.app.Notification
 import android.app.RemoteInput
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
@@ -194,7 +195,7 @@ class MainActivity : ComponentActivity() {
             val prefs = remember { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
             var showWhatsNewDialog by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
-                val currentVersion = "2.02.02"
+                val currentVersion = "2.02.03"
                 val lastRun = prefs.getString("last_run_version", "") ?: ""
                 if (lastRun != currentVersion) {
                     showWhatsNewDialog = true
@@ -496,7 +497,7 @@ class MainActivity : ComponentActivity() {
                     if (showWhatsNewDialog) {
                         AlertDialog(
                             onDismissRequest = {
-                                prefs.edit().putString("last_run_version", "2.02.02").apply()
+                                prefs.edit().putString("last_run_version", "2.02.03").apply()
                                 showWhatsNewDialog = false
                             },
                             title = {
@@ -513,20 +514,20 @@ class MainActivity : ComponentActivity() {
                             },
                             text = {
                                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    Text("Version 2.02.02 (Beta)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
+                                    Text("Version 2.02.03 (Beta)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.SemiBold)
                                     
                                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Row(verticalAlignment = Alignment.Top) {
                                             Icon(
-                                                imageVector = Icons.Default.Phone,
+                                                imageVector = Icons.Default.Speed,
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.primary,
                                                 modifier = Modifier.size(20.dp).padding(top = 2.dp)
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Column {
-                                                Text("Unified Phone Channels", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                                                Text("De-duplicated multiple system package entries for Phone apps in the Dock, mapping them to a single representative package name.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                Text("Smooth Scrolling Optimization", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+                                                Text("Eliminated main-thread binder IPC during list composition and cached notification actions for butter-smooth scrolling.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             }
                                         }
 
@@ -563,7 +564,7 @@ class MainActivity : ComponentActivity() {
                             confirmButton = {
                                 TextButton(
                                     onClick = {
-                                        prefs.edit().putString("last_run_version", "2.02.02").apply()
+                                        prefs.edit().putString("last_run_version", "2.02.03").apply()
                                         showWhatsNewDialog = false
                                     }
                                 ) {
@@ -778,6 +779,13 @@ fun HubScreen(
             } else {
                 notifications
             }
+        }
+    }
+
+    val actionsByKey = remember(displayNotifications, showActionChips) {
+        if (!showActionChips) emptyMap()
+        else displayNotifications.associate {
+            it.notificationKey to HubNotificationListenerService.instance?.getNotificationActions(it.notificationKey)
         }
     }
 
@@ -1214,7 +1222,8 @@ fun HubScreen(
                                         }
                                     },
                                     isCompactMode = isCompactMode,
-                                    showActionChips = showActionChips
+                                    showActionChips = showActionChips,
+                                    allActions = actionsByKey[notification.notificationKey]
                                 )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                             }
@@ -1387,7 +1396,8 @@ fun HubScreen(
                                                 }
                                             },
                                             isCompactMode = isCompactMode,
-                                            showActionChips = showActionChips
+                                            showActionChips = showActionChips,
+                                            allActions = actionsByKey[notification.notificationKey]
                                         )
                                         Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                                     }
@@ -1786,16 +1796,14 @@ fun NotificationItem(
     onSelectToggle: () -> Unit = {},
     isCompactMode: Boolean = false,
     showActionChips: Boolean = true,
-    isUnifiedView: Boolean = false
+    isUnifiedView: Boolean = false,
+    allActions: List<Notification.Action>? = null
 ) {
     val context = LocalContext.current
     var isReplying by remember { mutableStateOf(false) }
     var replyText by remember { mutableStateOf("") }
-    val replyAction = remember(notification.notificationKey) {
-        HubNotificationListenerService.instance?.getReplyAction(notification.notificationKey)
-    }
-    val allActions = remember(notification.notificationKey) {
-        HubNotificationListenerService.instance?.getNotificationActions(notification.notificationKey)
+    val replyAction = remember(allActions) {
+        allActions?.find { it.remoteInputs != null && it.remoteInputs.isNotEmpty() }
     }
 
     val generalPrefs = remember(context) { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
@@ -2335,7 +2343,7 @@ fun SettingsScreen(
             ) {
                 ListItem(
                     headlineContent = { Text("What's New") },
-                    supportingContent = { Text("View the update details and feature changelog for version 2.02.02.") },
+                    supportingContent = { Text("View the update details and feature changelog for version 2.02.03.") },
                     leadingContent = { Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
                 )
             }
