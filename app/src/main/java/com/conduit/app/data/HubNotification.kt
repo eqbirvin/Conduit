@@ -7,9 +7,9 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "notifications",
     indices = [
-        Index(value = ["notificationKey"]),
+        Index("notificationKey"),
         Index(value = ["isArchived", "timestamp"]),
-        Index(value = ["packageName"])
+        Index("packageName")
     ]
 )
 data class HubNotification(

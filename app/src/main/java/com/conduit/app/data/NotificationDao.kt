@@ -68,5 +68,9 @@ interface NotificationDao {
     suspend fun updateAndUnarchive(id: Int, newTitle: String, newText: String, newTimestamp: Long)
 
     @Query("DELETE FROM notifications WHERE isArchived = 1 AND isPinned = 0 AND timestamp < :cutoffTimestamp")
-    suspend fun deleteOldArchivedNotifications(cutoffTimestamp: Long)
+    suspend fun deleteOldArchivedNotifications(cutoffTimestamp: Long): Int
+
+    companion object {
+        const val RETENTION_DAYS = 90
+    }
 }

@@ -151,12 +151,16 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         super.onListenerConnected()
         instance = this
         updatePersistentNotification()
+
         scope.launch {
             try {
-                val thirtyDaysAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
-                database.notificationDao().deleteOldArchivedNotifications(thirtyDaysAgo)
+                val cutoffTimestamp = System.currentTimeMillis() - (com.conduit.app.data.NotificationDao.RETENTION_DAYS * 24L * 60L * 60L * 1000L)
+                val deletedCount = database.notificationDao().deleteOldArchivedNotifications(cutoffTimestamp)
+                if (deletedCount > 0) {
+                    android.util.Log.d("HubNotificationService", "Pruned $deletedCount notifications older than ${com.conduit.app.data.NotificationDao.RETENTION_DAYS} days")
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("HubNotificationService", "Failed to run notification retention cleanup", e)
             }
         }
     }

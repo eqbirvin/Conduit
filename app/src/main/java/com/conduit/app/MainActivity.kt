@@ -527,7 +527,7 @@ class MainActivity : ComponentActivity() {
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Column {
                                                 Text("Database Indices & Retention Policy", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                                                Text("Added SQL indices for fast queries, removed destructive fallback migration with a safe Migration, and added 30-day retention cleanup.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                Text("Added SQL database indices for notification key, package name, and archived status. Migration v6 to v7 preserves user history, plus automatic 90-day retention cleanup.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             }
                                         }
 
