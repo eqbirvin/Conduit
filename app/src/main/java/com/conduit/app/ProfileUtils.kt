@@ -132,3 +132,20 @@ fun getRepresentativePackage(context: Context, packageName: String): String {
     representativePackageCache[packageName] = result
     return result
 }
+
+fun isWorkProfilePackage(context: Context, packageName: String): Boolean {
+    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+    val myUserHandle = android.os.Process.myUserHandle()
+    for (user in userManager.userProfiles) {
+        if (user != myUserHandle) {
+            try {
+                if (launcherApps.isPackageEnabled(packageName, user)) {
+                    return true
+                }
+            } catch (e: Exception) {}
+        }
+    }
+    return false
+}
+

@@ -12,8 +12,8 @@ android {
         applicationId = "com.conduit.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 189
-        versionName = "2.02.08"
+        versionCode = 190
+        versionName = "2.02.09"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -241,6 +241,8 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-04T22:13] [v2.02.06] implemented room database indices for notificationkey, isarchived+timestamp, and packagename, added migration_6_7, removed fallbacktodestructivemigration, and implemented 90-day retention cleanup.
 [2026-08-04T22:24] [v2.02.07] upgraded compose bom to 2024.09.03, kotlin to 1.9.24, agp to 8.2.2, ksp to 1.9.24-1.0.20, added lifecycle-runtime-compose, migrated room flows to collectasstatewithlifecycle, swipetodismiss to swipetodismissbox, animateitemplacement to animateitem, and rememberripple to material3.ripple.
 [2026-08-04T22:41] [v2.02.08] rebuilt whats new changelog to comply with rule w5: created changelog.kt data source with releases v2.02.02 to v2.02.08, created whatsnewdialog.kt composable, used buildconfig.version_name with semantic version comparison, handled fresh installs silently, and connected settings to full changelog.
+[2026-08-05T03:00] [v2.02.09] split mainactivity.kt (~3500 lines) into modular components: conduittheme.kt, notificationactions.kt (with hoisted formatters), permissionscreen.kt, hubscreen.kt, notificationitem.kt, settingsscreen.kt, devsettingsscreen.kt, and archivescreen.kt.
+
 
 
 
