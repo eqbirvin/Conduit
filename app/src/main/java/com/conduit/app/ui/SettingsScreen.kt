@@ -1,29 +1,79 @@
+﻿@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 package com.conduit.app.ui
 
+import com.conduit.app.*
+import android.content.ComponentName
+import android.content.Intent
 import android.content.Context
+import android.os.Bundle
+import android.provider.Settings
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.core.*
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.material.icons.Icons
+import androidx.compose.animation.*
+import android.app.Notification
+import android.app.RemoteInput
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.conduit.app.*
-import com.conduit.app.data.AppDatabase
 import kotlinx.coroutines.launch
+import com.conduit.app.data.AppDatabase
+import com.conduit.app.data.HubNotification
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import android.os.Build
+import android.content.pm.PackageManager
+import androidx.compose.foundation.Image
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.os.VibrationEffect
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.activity.enableEdgeToEdge
 
-@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     themePreference: Int,
@@ -34,8 +84,6 @@ fun SettingsScreen(
     onGroupByChannelChanged: (Boolean) -> Unit,
     channelStates: Map<String, Boolean>,
     onChannelToggled: (String, Boolean) -> Unit,
-    persistentTrayEnabled: Boolean,
-    onPersistentTrayEnabledChanged: (Boolean) -> Unit,
     syncDismissal: Boolean,
     onSyncDismissalChanged: (Boolean) -> Unit,
     syncPinned: Boolean,
@@ -57,9 +105,7 @@ fun SettingsScreen(
     swipeRightAction: String,
     onSwipeRightActionChanged: (String) -> Unit,
     dockSizeIndex: Int,
-    onDockSizeIndexChanged: (Int) -> Unit,
-    enableBubbles: Boolean,
-    onEnableBubblesChanged: (Boolean) -> Unit,
+    onDockSizeChanged: (Int) -> Unit,
     enableBracket: Boolean,
     onEnableBracketChanged: (Boolean) -> Unit,
     bracketNotificationPopup: Boolean,
@@ -76,19 +122,24 @@ fun SettingsScreen(
     onSmartMarkReadChanged: (Boolean) -> Unit,
     smartMarkReadTarget: String,
     onSmartMarkReadTargetChanged: (String) -> Unit,
-    onNavigateToDevSettings: () -> Unit,
     onShowWhatsNew: () -> Unit,
+    onNavigateToDevSettings: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var showFullChangelog by remember { mutableStateOf(false) }
-
-    if (showFullChangelog) {
-        WhatsNewDialog(
-            releases = CHANGELOG,
-            onDismiss = { showFullChangelog = false }
-        )
+    val pm = context.packageManager
+    val installedChannelKeys = remember {
+        val installed = mutableSetOf<String>()
+        HubNotificationListenerService.supportedApps.forEach { (pkg, pair) ->
+            val prefKey = pair.first
+            if (isPackageInstalled(context, pkg)) {
+                installed.add(prefKey)
+            }
+        }
+        installed
     }
+    var showSupportedAppsDialog by remember { mutableStateOf(false) }
+    val options = listOf("System Default", "Light Theme", "Dark Theme", "Jacob Mode (AMOLED)")
 
     Scaffold(
         topBar = {
@@ -100,8 +151,7 @@ fun SettingsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+                    containerColor = Color.Transparent
                 )
             )
         }
@@ -117,16 +167,10 @@ fun SettingsScreen(
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .combinedClickable(
-                        onClick = {
-                            performHapticClick(context)
-                            showFullChangelog = true
-                        },
-                        onLongClick = {
-                            performHapticClick(context)
-                            onNavigateToDevSettings()
-                        }
-                    )
+                    .clickable { 
+                        performHapticClick(context)
+                        onShowWhatsNew() 
+                    }
             ) {
                 ListItem(
                     headlineContent = { Text("What's New") },
@@ -139,21 +183,22 @@ fun SettingsScreen(
 
             Text("Theme", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
             Column(Modifier.selectableGroup()) {
-                val themes = listOf("System Default" to 0, "Light" to 1, "Dark" to 2, "Jacob Mode (AMOLED Black)" to 3)
-                themes.forEach { (text, mode) ->
+                options.forEachIndexed { index, text ->
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(56.dp)
                             .selectable(
-                                selected = (themePreference == mode),
-                                onClick = { onThemeChanged(mode) }
-                            ),
+                                selected = (themePreference == index),
+                                onClick = { onThemeChanged(index) },
+                                role = androidx.compose.ui.semantics.Role.RadioButton
+                            )
+                            .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = (themePreference == mode),
-                            onClick = null
+                            selected = (themePreference == index),
+                            onClick = null 
                         )
                         Text(
                             text = text,
@@ -163,19 +208,19 @@ fun SettingsScreen(
                     }
                 }
             }
-
+            
             if (themePreference == 3) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Monochrome Mode", style = MaterialTheme.typography.bodyLarge)
-                        Text("Pure black & white theme styling", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Monochrome Accents", style = MaterialTheme.typography.bodyLarge)
+                        Text("Forces text and icons to pure white/light gray instead of device blue", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(
                         checked = jacobMonochrome,
@@ -183,172 +228,710 @@ fun SettingsScreen(
                     )
                 }
             }
-
+            
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("Launcher Icon", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
-            Column(Modifier.selectableGroup()) {
-                val icons = listOf("Manila (Default)" to "MANILA", "Legacy Blue" to "LEGACY", "Dark" to "DARK", "Blue accent" to "BLUE")
-                icons.forEach { (text, iconKey) ->
+            Text("Layout", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Show Action Chips", style = MaterialTheme.typography.bodyLarge)
+                    Text("Displays quick action chips (like Reply, Mark as Read) directly on the notification card", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = showActionChips, onCheckedChange = onShowActionChipsChanged)
+            }
+
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Smart Mark as Read Chips", style = MaterialTheme.typography.bodyLarge)
+                    Text("Automatically inserts a \"Mark Read\" action chip if an app notification doesn't natively support it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = smartMarkRead, onCheckedChange = onSmartMarkReadChanged)
+            }
+
+            if (smartMarkRead) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
+                    Text("Smart Chips Target", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(4.dp))
                     Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .selectable(
-                                selected = (activeAppIcon == iconKey),
-                                onClick = { onActiveAppIconChanged(iconKey) }
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        RadioButton(
-                            selected = (activeAppIcon == iconKey),
-                            onClick = null
-                        )
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 16.dp)
-                        )
+                        val targets = listOf("widget_only" to "Widget Only", "widget_and_app" to "Widget and App")
+                        targets.forEach { (value, label) ->
+                            val isSelected = smartMarkReadTarget == value
+                            Surface(
+                                onClick = { onSmartMarkReadTargetChanged(value) },
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                                ),
+                                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                modifier = Modifier.weight(1f).height(40.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                    Text(
+                                        text = label,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("Swipe Actions", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            Text("Swipe Gestures", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            
             SwipeActionSelector(
                 label = "Swipe Right",
                 currentValue = swipeRightAction,
-                onValueSelected = onSwipeRightActionChanged,
-                isUnifiedView = unifiedView
+                isUnifiedView = unifiedView,
+                onValueSelected = onSwipeRightActionChanged
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            
             SwipeActionSelector(
                 label = "Swipe Left",
                 currentValue = swipeLeftAction,
-                onValueSelected = onSwipeLeftActionChanged,
-                isUnifiedView = unifiedView
+                isUnifiedView = unifiedView,
+                onValueSelected = onSwipeLeftActionChanged
             )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text("System Integration", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Sync Dismissal", style = MaterialTheme.typography.bodyLarge)
-                    Text("Dismissing in Conduit clears system tray", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(
-                    checked = syncDismissal,
-                    onCheckedChange = onSyncDismissalChanged
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Persistent Notification Tray", style = MaterialTheme.typography.bodyLarge)
-                    Text("Show active unread count in system status bar", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(
-                    checked = persistentTrayEnabled,
-                    onCheckedChange = onPersistentTrayEnabledChanged
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Action Chips", style = MaterialTheme.typography.bodyLarge)
-                    Text("Show quick reply & action buttons under notifications", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(
-                    checked = showActionChips,
-                    onCheckedChange = onShowActionChipsChanged
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text("Enabled Apps & Channels", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
             
-            val appDisplayMap = mapOf(
-                "app_phone" to ("Phone (Google Dialer)" to "com.google.android.dialer"),
-                "app_whatsapp" to ("WhatsApp" to "com.whatsapp"),
-                "app_slack" to ("Slack" to "com.Slack"),
-                "app_messages" to ("Google Messages" to "com.google.android.apps.messaging"),
-                "app_gmail" to ("Gmail" to "com.google.android.gm"),
-                "app_outlook" to ("Outlook" to "com.microsoft.office.outlook"),
-                "app_instagram" to ("Instagram" to "com.instagram.android"),
-                "app_facebook" to ("Facebook" to "com.facebook.katana"),
-                "app_messenger" to ("Messenger" to "com.facebook.orca"),
-                "app_twitter" to ("Twitter / X" to "com.twitter.android"),
-                "app_teams" to ("Microsoft Teams" to "com.microsoft.teams")
-            )
+            Spacer(modifier = Modifier.height(24.dp))
 
-            appDisplayMap.forEach { (prefKey, info) ->
-                val (label, pkg) = info
-                val isChecked = channelStates[prefKey] ?: true
+            Text("Unread App Dock Settings", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Launch App on Long Press", style = MaterialTheme.typography.bodyLarge)
+                    Text("When enabled, long-pressing an app icon in the bottom unread dock will immediately open that application", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = dockLongPressLaunch, onCheckedChange = onDockLongPressLaunchChanged)
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Text("Dock Size", style = MaterialTheme.typography.bodyLarge)
+                Text("Adjust the size and spacing of app icons inside the unread dock", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 12.dp))
+                
+                val sizeOptions = listOf("Small", "Medium", "Large")
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .selectableGroup(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    sizeOptions.forEachIndexed { index, label ->
+                        val isSelected = dockSizeIndex == index
+                        OutlinedCard(
+                            onClick = { 
+                                onDockSizeChanged(index)
+                                performHapticClick(context)
+                            },
+                            colors = CardDefaults.outlinedCardColors(
+                                containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp, 
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Sync", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Sync Dismissal with System", style = MaterialTheme.typography.bodyLarge)
+                    Text("When enabled, archiving a notification in Conduit will also dismiss it from the Android system tray", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = syncDismissal, onCheckedChange = onSyncDismissalChanged)
+            }
+            
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Sync Pinned Notifications", style = MaterialTheme.typography.bodyLarge)
+                    Text("When enabled, pinned notifications in Conduit will replace original notifications and remain pinned permanently in the Android system tray until unpinned", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = syncPinned, onCheckedChange = onSyncPinnedChanged)
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Channels", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            Text(
+                text = "Channels represent external applications linked to Conduit. When enabled, notification alerts from these apps will be integrated and managed directly within your Conduit workspace feed.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            
+            val channelsToShow = remember(installedChannelKeys) {
+                HubNotificationListenerService.supportedApps.values
+                    .distinctBy { it.first }
+                    .filter { installedChannelKeys.contains(it.first) }
+            }
+            
+            channelsToShow.forEach { (prefKey, name) ->
+                val pkgName = remember(prefKey) {
+                    HubNotificationListenerService.supportedApps.entries
+                        .firstOrNull { it.value.first == prefKey && try { pm.getApplicationInfo(it.key, 0).enabled } catch(e: Exception) { false } }?.key
+                        ?: HubNotificationListenerService.supportedApps.entries.firstOrNull { it.value.first == prefKey }?.key
+                        ?: ""
+                }
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.weight(1f)
                     ) {
-                        AppIcon(packageName = pkg, size = 32.dp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(label, style = MaterialTheme.typography.bodyLarge)
+                        if (pkgName.isNotEmpty()) {
+                            AppIcon(packageName = pkgName, size = 28.dp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
+                        Text(name, style = MaterialTheme.typography.bodyLarge)
                     }
                     Switch(
-                        checked = isChecked,
+                        checked = channelStates[prefKey] ?: true,
                         onCheckedChange = { onChannelToggled(prefKey, it) }
+                    )
+                }
+            }
+            
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showSupportedAppsDialog = true }
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("View Supported Apps", style = MaterialTheme.typography.bodyLarge)
+                    Text("See all channels and package names Conduit supports", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+
+            if (showSupportedAppsDialog) {
+                AlertDialog(
+                    onDismissRequest = { showSupportedAppsDialog = false },
+                    title = { Text("Supported Apps & Channels") },
+                    text = {
+                        val groupedApps = remember {
+                            HubNotificationListenerService.supportedApps.entries
+                                .groupBy { it.value.second }
+                        }
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            groupedApps.forEach { (channelName, entries) ->
+                                item {
+                                    Column {
+                                        Text(channelName, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+                                        entries.forEach { entry ->
+                                            val pkg = entry.key
+                                            val isInstalled = try {
+                                                val appInfo = pm.getApplicationInfo(pkg, 0)
+                                                appInfo.enabled
+                                            } catch (e: Exception) {
+                                                false
+                                            }
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 2.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(pkg, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                                                if (isInstalled) {
+                                                    Text("Installed", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 8.dp))
+                                                } else {
+                                                    Text("Not Installed", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 8.dp))
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showSupportedAppsDialog = false }) {
+                            Text("Close")
+                        }
+                    }
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Ignored Notifications", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            
+            val prefs = remember { context.getSharedPreferences("conduit_prefs", android.content.Context.MODE_PRIVATE) }
+            val blockedRules = remember(prefs) {
+                prefs.getStringSet("blocked_rules", emptySet<String>()) ?: emptySet<String>()
+            }
+            var blockedRulesState by remember { mutableStateOf<Set<String>>(blockedRules) }
+            
+            if (blockedRulesState.isEmpty()) {
+                Text(
+                    text = "No blocked notifications configured. You can block specific types of notifications by selecting them in the Hub list and tapping the Block icon.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            } else {
+                OutlinedCard(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                    Column {
+                        val rulesList = blockedRulesState.toList()
+                        for (index in rulesList.indices) {
+                            val ruleStr = rulesList[index]
+                            val parts = ruleStr.split("|", limit = 3)
+                            if (parts.size >= 3) {
+                                val pkg = parts[0]
+                                val type = parts[1]
+                                val pattern = parts[2]
+                                val appLabel = remember(pkg) {
+                                    getAppLabel(context, pkg)
+                                }
+                                ListItem(
+                                    headlineContent = { Text(appLabel, fontWeight = FontWeight.SemiBold) },
+                                    supportingContent = {
+                                        Text("Ignore if $type contains: \"$pattern\"", style = MaterialTheme.typography.bodySmall)
+                                    },
+                                    trailingContent = {
+                                        IconButton(onClick = {
+                                            val updated = blockedRulesState - ruleStr
+                                            prefs.edit().putStringSet("blocked_rules", updated).apply()
+                                            blockedRulesState = updated
+                                        }) {
+                                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
+                                        }
+                                    }
+                                )
+                                if (index < rulesList.size - 1) {
+                                    Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("App Bundles", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            Text("Customize which apps appear in your FAB menus", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+            
+            var editingBundleTitle by remember { mutableStateOf<String?>(null) }
+            
+            val currentApps = when (editingBundleTitle) {
+                "AI Assistants" -> aiBundle
+                "Notes" -> notesBundle
+                "Recorder" -> recorderBundle
+                "Compose" -> composeBundle
+                else -> emptyList()
+            }
+            val onUpdate: (List<String>) -> Unit = when (editingBundleTitle) {
+                "AI Assistants" -> onAiBundleChanged
+                "Notes" -> onNotesBundleChanged
+                "Recorder" -> onRecorderBundleChanged
+                "Compose" -> onComposeBundleChanged
+                else -> { _ -> }
+            }
+
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Column {
+                    ListItem(
+                        headlineContent = { Text("Recorder") },
+                        supportingContent = { Text("${recorderBundle.size} apps configured") },
+                        leadingContent = { Icon(Icons.Default.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                        trailingContent = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                        modifier = Modifier.clickable { editingBundleTitle = "Recorder" }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                    ListItem(
+                        headlineContent = { Text("AI Assistants") },
+                        supportingContent = { Text("${aiBundle.size} apps configured") },
+                        leadingContent = { Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                        trailingContent = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                        modifier = Modifier.clickable { editingBundleTitle = "AI Assistants" }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                    ListItem(
+                        headlineContent = { Text("Notes") },
+                        supportingContent = { Text("${notesBundle.size} apps configured") },
+                        leadingContent = { Icon(Icons.Default.List, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                        trailingContent = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                        modifier = Modifier.clickable { editingBundleTitle = "Notes" }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                    ListItem(
+                        headlineContent = { Text("Compose") },
+                        supportingContent = { Text("${composeBundle.size} apps configured") },
+                        leadingContent = { Icon(Icons.Default.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                        trailingContent = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                        modifier = Modifier.clickable { editingBundleTitle = "Compose" }
+                    )
+                }
+            }
+
+            if (editingBundleTitle != null) {
+                val title = editingBundleTitle!!
+                var showAppPicker by remember { mutableStateOf(false) }
+
+                ModalBottomSheet(onDismissRequest = { editingBundleTitle = null }) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text(title, style = MaterialTheme.typography.headlineSmall)
+                            FilledTonalButton(onClick = { showAppPicker = true }) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Add App")
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        if (currentApps.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                                Text("No apps in this bundle", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        } else {
+                            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                                Column {
+                                    currentApps.forEachIndexed { index, pkg ->
+                                        val label = remember(pkg) {
+                                            getAppLabel(context, pkg)
+                                        }
+                                        ListItem(
+                                            headlineContent = { Text(text = label, fontWeight = FontWeight.Medium) },
+                                            leadingContent = { AppIcon(pkg) },
+                                            trailingContent = {
+                                                IconButton(onClick = { onUpdate(currentApps.filter { it != pkg }) }) {
+                                                    Icon(Icons.Default.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
+                                                }
+                                            }
+                                        )
+                                        if (index < currentApps.size - 1) {
+                                            Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(48.dp))
+                    }
+                    
+                    if (showAppPicker) {
+                        ModalBottomSheet(onDismissRequest = { showAppPicker = false }) {
+                            var searchQuery by remember { mutableStateOf("") }
+                            val installedApps = remember {
+                                getInstalledApps(context)
+                            }
+                            
+                            val filteredApps by remember {
+                                derivedStateOf {
+                                    if (searchQuery.isEmpty()) installedApps
+                                    else installedApps.filter { it.second.contains(searchQuery, ignoreCase = true) || it.first.contains(searchQuery, ignoreCase = true) }
+                                }
+                            }
+                            
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text("Select App", style = MaterialTheme.typography.titleLarge)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                OutlinedTextField(
+                                    value = searchQuery,
+                                    onValueChange = { searchQuery = it },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = { Text("Search apps...") },
+                                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                                    trailingIcon = {
+                                        if (searchQuery.isNotEmpty()) {
+                                            IconButton(onClick = { searchQuery = "" }) {
+                                                Icon(Icons.Default.Close, contentDescription = "Clear")
+                                            }
+                                        }
+                                    },
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                LazyColumn(modifier = Modifier.heightIn(max = 500.dp)) {
+                                    items(filteredApps) { pair ->
+                                        val pkg = pair.first
+                                        val label = pair.second
+                                        val isAdded = currentApps.contains(pkg)
+                                        
+                                        ListItem(
+                                            headlineContent = { Text(text = label, color = if (isAdded) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface) },
+                                            leadingContent = { AppIcon(pkg) },
+                                            trailingContent = {
+                                                if (isAdded) {
+                                                    Icon(Icons.Default.Check, contentDescription = "Added", tint = MaterialTheme.colorScheme.primary)
+                                                }
+                                            },
+                                            modifier = Modifier.clickable(enabled = !isAdded) {
+                                                onUpdate(currentApps + pkg)
+                                                showAppPicker = false
+                                            }
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(32.dp))
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("App Launcher Icon", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            Text("Select the app launcher icon for Conduit. Changes might take a moment to reflect on your home screen launcher.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 12.dp))
+            
+            val iconOptions = listOf(
+                Triple("LEGACY", "Legacy", MaterialTheme.colorScheme.primary),
+                Triple("MANILA", "Manila", Color(0xFFD9A53C)),
+                Triple("DARK", "Dark", Color(0xFF15171C)),
+                Triple("BLUE", "Blue", Color(0xFF2E6FE0))
+            )
+            
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectableGroup(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                iconOptions.forEach { (id, label, color) ->
+                    val isSelected = activeAppIcon.uppercase(java.util.Locale.ROOT) == id
+                    OutlinedCard(
+                        onClick = { 
+                            onActiveAppIconChanged(id)
+                            performHapticClick(context)
+                        },
+                        colors = CardDefaults.outlinedCardColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp, 
+                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .background(color, shape = androidx.compose.foundation.shape.CircleShape)
+                                    .border(1.5.dp, MaterialTheme.colorScheme.outline, shape = androidx.compose.foundation.shape.CircleShape)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Bracket (Floating Overlay) [BETA]", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 4.dp))
+            Text("Note: This feature is currently in beta testing.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(bottom = 12.dp))
+            
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Enable Bracket", style = MaterialTheme.typography.bodyLarge)
+                    Text("Shows a persistent floating handle on the edge of your screen. Long-press to quickly launch Conduit from anywhere.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = enableBracket, onCheckedChange = onEnableBracketChanged)
+            }
+
+            if (enableBracket) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Group by Channel (Hangar)", style = MaterialTheme.typography.bodyLarge)
+                        Text("When enabled, notifications inside the Hangar (the swipe-in panel on the Bracket) will be grouped by their channel type rather than listed individually.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = groupByChannel, onCheckedChange = onGroupByChannelChanged)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Animate Icon on Notification", style = MaterialTheme.typography.bodyLarge)
+                        Text("Briefly show the incoming notification's app icon next to the bracket. Tap the icon or bracket to open the notification.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = bracketNotificationPopup, onCheckedChange = onBracketNotificationPopupChanged)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Bracket Hanger", style = MaterialTheme.typography.bodyLarge)
+                        Text("Swipe inward on the bracket to pull open a quick view of pending notifications.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = bracketHangerEnabled, onCheckedChange = onBracketHangerEnabledChanged)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                    Text("Bracket Vertical Position", style = MaterialTheme.typography.bodyLarge)
+                    Text("Adjust the vertical placement of the bracket along the right edge.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    androidx.compose.material3.Slider(
+                        value = bracketVerticalPosition,
+                        onValueChange = onBracketVerticalPositionChanged,
+                        steps = 9,
+                        valueRange = 0f..1f,
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("Data Management", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            Text("Advanced Security & OTPs", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            
+            val adbCommandText = "adb shell appops set --user 0 com.conduit.app RECEIVE_SENSITIVE_NOTIFICATIONS allow"
+            
+            OutlinedCard(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Read Sensitive Notifications",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Android 15+ redacts verification codes (OTPs), bank alerts, and other sensitive notifications by default. To allow Conduit to read and log these messages, connect your device to a PC with ADB enabled and run the command below.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = adbCommandText,
+                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
+                                modifier = Modifier.weight(1f),
+                                maxLines = 3
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(
+                                onClick = {
+                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                    val clip = android.content.ClipData.newPlainText("Conduit ADB Command", adbCommandText)
+                                    clipboard.setPrimaryClip(clip)
+                                    
+                                    performHapticClick(context)
+                                    android.widget.Toast.makeText(context, "Command copied to clipboard!", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Filled.ContentCopy,
+                                    contentDescription = "Copy command",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Testing & Developer Settings", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            val devScope = rememberCoroutineScope()
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        kotlinx.coroutines.GlobalScope.launch {
-                            val db = AppDatabase.getDatabase(context)
-                            db.notificationDao().deleteAll()
-                        }
-                        performHapticClick(context)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                val job = devScope.launch {
+                                    kotlinx.coroutines.delay(4000)
+                                    performHapticClick(context)
+                                    onNavigateToDevSettings()
+                                }
+                                try {
+                                    awaitRelease()
+                                } finally {
+                                    job.cancel()
+                                }
+                            },
+                            onTap = {
+                                performHapticClick(context)
+                                android.widget.Toast.makeText(context, "Long press for 4 seconds to enter Developer Settings", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
             ) {
                 ListItem(
-                    headlineContent = { Text("Clear All Database Data") },
-                    supportingContent = { Text("Delete all notifications from local storage") },
-                    leadingContent = { Icon(Icons.Filled.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error) }
+                    headlineContent = { Text("Testing & Developer Settings") },
+                    supportingContent = { Text("Advanced tools and options for debugging and previewing beta features.") },
+                    leadingContent = { Icon(Icons.Default.Build, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                    trailingContent = { Icon(Icons.Default.Lock, contentDescription = "Locked") }
                 )
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -357,8 +940,8 @@ fun SettingsScreen(
 fun SwipeActionSelector(
     label: String,
     currentValue: String,
-    onValueSelected: (String) -> Unit,
-    isUnifiedView: Boolean
+    isUnifiedView: Boolean,
+    onValueSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val displayNames = mapOf(
@@ -403,3 +986,4 @@ fun SwipeActionSelector(
         }
     }
 }
+
