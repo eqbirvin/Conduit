@@ -663,7 +663,7 @@ fun HubScreen(
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+        Column(modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize()) {
             if (views.isNotEmpty()) {
                 @OptIn(ExperimentalLayoutApi::class)
                 FlowRow(
@@ -756,7 +756,10 @@ fun HubScreen(
                 }
                 
                 CompositionLocalProvider(LocalViewConfiguration provides customViewConfig) {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)
+                    ) {
                     // Pinned section
                     if (pinnedNotifications.isNotEmpty()) {
                         stickyHeader {
