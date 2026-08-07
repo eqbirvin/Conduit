@@ -108,3 +108,4 @@ private fun getChangelogIcon(iconName: String): ImageVector {
         else -> Icons.Default.Info
     }
 }
+

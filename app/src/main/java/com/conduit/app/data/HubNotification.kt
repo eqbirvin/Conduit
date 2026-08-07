@@ -25,3 +25,4 @@ data class HubNotification(
     val isSnoozed: Boolean = false,
     val isPinned: Boolean = false
 )
+

@@ -1,4 +1,4 @@
-﻿@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 package com.conduit.app.ui
 
 import com.conduit.app.*
@@ -36,6 +36,7 @@ import androidx.compose.animation.*
 import android.app.Notification
 import android.app.RemoteInput
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -73,71 +74,46 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.activity.enableEdgeToEdge
 
+interface SettingsScreenCallbacks {
+    fun onThemeChanged(theme: Int)
+    fun onJacobMonochromeChanged(enabled: Boolean)
+    fun onGroupByChannelChanged(enabled: Boolean)
+    fun onChannelToggled(prefKey: String, isEnabled: Boolean)
+    fun onSyncDismissalChanged(enabled: Boolean)
+    fun onSyncPinnedChanged(enabled: Boolean)
+    fun onShowActionChipsChanged(enabled: Boolean)
+    fun onAiBundleChanged(bundle: List<String>)
+    fun onNotesBundleChanged(bundle: List<String>)
+    fun onRecorderBundleChanged(bundle: List<String>)
+    fun onComposeBundleChanged(bundle: List<String>)
+    fun onDockLongPressLaunchChanged(enabled: Boolean)
+    fun onSwipeLeftActionChanged(action: String)
+    fun onSwipeRightActionChanged(action: String)
+    fun onDockSizeChanged(size: Int)
+    fun onEnableBracketChanged(enabled: Boolean)
+    fun onBracketNotificationPopupChanged(enabled: Boolean)
+    fun onBracketHangerEnabledChanged(enabled: Boolean)
+    fun onBracketVerticalPositionChanged(position: Float)
+    fun onUnifiedViewChanged(enabled: Boolean)
+    fun onActiveAppIconChanged(icon: String)
+    fun onSmartMarkReadChanged(enabled: Boolean)
+    fun onSmartMarkReadTargetChanged(target: String)
+    fun onRetentionDaysChanged(days: Int)
+    fun onEnableAppBundlesChanged(enabled: Boolean)
+    fun onShowWhatsNew()
+    fun onNavigateToDevSettings()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    themePreference: Int,
-    onThemeChanged: (Int) -> Unit,
-    jacobMonochrome: Boolean,
-    onJacobMonochromeChanged: (Boolean) -> Unit,
-    groupByChannel: Boolean,
-    onGroupByChannelChanged: (Boolean) -> Unit,
-    channelStates: Map<String, Boolean>,
-    onChannelToggled: (String, Boolean) -> Unit,
-    syncDismissal: Boolean,
-    onSyncDismissalChanged: (Boolean) -> Unit,
-    syncPinned: Boolean,
-    onSyncPinnedChanged: (Boolean) -> Unit,
-    showActionChips: Boolean,
-    onShowActionChipsChanged: (Boolean) -> Unit,
-    aiBundle: List<String>,
-    onAiBundleChanged: (List<String>) -> Unit,
-    notesBundle: List<String>,
-    onNotesBundleChanged: (List<String>) -> Unit,
-    recorderBundle: List<String>,
-    onRecorderBundleChanged: (List<String>) -> Unit,
-    composeBundle: List<String>,
-    onComposeBundleChanged: (List<String>) -> Unit,
-    dockLongPressLaunch: Boolean,
-    onDockLongPressLaunchChanged: (Boolean) -> Unit,
-    swipeLeftAction: String,
-    onSwipeLeftActionChanged: (String) -> Unit,
-    swipeRightAction: String,
-    onSwipeRightActionChanged: (String) -> Unit,
-    dockSizeIndex: Int,
-    onDockSizeChanged: (Int) -> Unit,
-    enableBracket: Boolean,
-    onEnableBracketChanged: (Boolean) -> Unit,
-    bracketNotificationPopup: Boolean,
-    onBracketNotificationPopupChanged: (Boolean) -> Unit,
-    bracketHangerEnabled: Boolean,
-    onBracketHangerEnabledChanged: (Boolean) -> Unit,
-    bracketVerticalPosition: Float,
-    onBracketVerticalPositionChanged: (Float) -> Unit,
-    unifiedView: Boolean,
-    onUnifiedViewChanged: (Boolean) -> Unit,
-    activeAppIcon: String,
-    onActiveAppIconChanged: (String) -> Unit,
-    smartMarkRead: Boolean,
-    onSmartMarkReadChanged: (Boolean) -> Unit,
-    smartMarkReadTarget: String,
-    onSmartMarkReadTargetChanged: (String) -> Unit,
-    onShowWhatsNew: () -> Unit,
-    onNavigateToDevSettings: () -> Unit,
+    settings: com.conduit.app.data.ConduitSettings,
+    callbacks: SettingsScreenCallbacks,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val installedChannelKeys = remember {
-        val installed = mutableSetOf<String>()
-        HubNotificationListenerService.supportedApps.forEach { (pkg, pair) ->
-            val prefKey = pair.first
-            if (isPackageInstalled(context, pkg)) {
-                installed.add(prefKey)
-            }
-        }
-        installed
-    }
+    val channelsToShow = remember { getInstalledChannels(context) }
     var showSupportedAppsDialog by remember { mutableStateOf(false) }
     val options = listOf("System Default", "Light Theme", "Dark Theme", "Jacob Mode (AMOLED)")
 
@@ -169,7 +145,7 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .clickable { 
                         performHapticClick(context)
-                        onShowWhatsNew() 
+                        callbacks.onShowWhatsNew() 
                     }
             ) {
                 ListItem(
@@ -189,15 +165,15 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .height(56.dp)
                             .selectable(
-                                selected = (themePreference == index),
-                                onClick = { onThemeChanged(index) },
+                                selected = (settings.themePreference == index),
+                                onClick = { callbacks.onThemeChanged(index) },
                                 role = androidx.compose.ui.semantics.Role.RadioButton
                             )
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = (themePreference == index),
+                            selected = (settings.themePreference == index),
                             onClick = null 
                         )
                         Text(
@@ -209,7 +185,7 @@ fun SettingsScreen(
                 }
             }
             
-            if (themePreference == 3) {
+            if (settings.themePreference == 3) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier
@@ -223,8 +199,8 @@ fun SettingsScreen(
                         Text("Forces text and icons to pure white/light gray instead of device blue", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(
-                        checked = jacobMonochrome,
-                        onCheckedChange = onJacobMonochromeChanged
+                        checked = settings.jacobMonochrome,
+                        onCheckedChange = callbacks::onJacobMonochromeChanged
                     )
                 }
             }
@@ -238,7 +214,7 @@ fun SettingsScreen(
                     Text("Show Action Chips", style = MaterialTheme.typography.bodyLarge)
                     Text("Displays quick action chips (like Reply, Mark as Read) directly on the notification card", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = showActionChips, onCheckedChange = onShowActionChipsChanged)
+                Switch(checked = settings.showActionChips, onCheckedChange = callbacks::onShowActionChipsChanged)
             }
 
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -246,10 +222,10 @@ fun SettingsScreen(
                     Text("Smart Mark as Read Chips", style = MaterialTheme.typography.bodyLarge)
                     Text("Automatically inserts a \"Mark Read\" action chip if an app notification doesn't natively support it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = smartMarkRead, onCheckedChange = onSmartMarkReadChanged)
+                Switch(checked = settings.smartMarkRead, onCheckedChange = callbacks::onSmartMarkReadChanged)
             }
 
-            if (smartMarkRead) {
+            if (settings.smartMarkRead) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
                     Text("Smart Chips Target", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
@@ -260,9 +236,9 @@ fun SettingsScreen(
                     ) {
                         val targets = listOf("widget_only" to "Widget Only", "widget_and_app" to "Widget and App")
                         targets.forEach { (value, label) ->
-                            val isSelected = smartMarkReadTarget == value
+                            val isSelected = settings.smartMarkReadTarget == value
                             Surface(
-                                onClick = { onSmartMarkReadTargetChanged(value) },
+                                onClick = { callbacks.onSmartMarkReadTargetChanged(value) },
                                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
                                 border = androidx.compose.foundation.BorderStroke(
                                     1.dp,
@@ -291,16 +267,16 @@ fun SettingsScreen(
             
             SwipeActionSelector(
                 label = "Swipe Right",
-                currentValue = swipeRightAction,
-                isUnifiedView = unifiedView,
-                onValueSelected = onSwipeRightActionChanged
+                currentValue = settings.swipeRightAction,
+                isUnifiedView = settings.unifiedView,
+                onValueSelected = callbacks::onSwipeRightActionChanged
             )
             
             SwipeActionSelector(
                 label = "Swipe Left",
-                currentValue = swipeLeftAction,
-                isUnifiedView = unifiedView,
-                onValueSelected = onSwipeLeftActionChanged
+                currentValue = settings.swipeLeftAction,
+                isUnifiedView = settings.unifiedView,
+                onValueSelected = callbacks::onSwipeLeftActionChanged
             )
             
             Spacer(modifier = Modifier.height(24.dp))
@@ -312,7 +288,7 @@ fun SettingsScreen(
                     Text("Launch App on Long Press", style = MaterialTheme.typography.bodyLarge)
                     Text("When enabled, long-pressing an app icon in the bottom unread dock will immediately open that application", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = dockLongPressLaunch, onCheckedChange = onDockLongPressLaunchChanged)
+                Switch(checked = settings.dockLongPressLaunch, onCheckedChange = callbacks::onDockLongPressLaunchChanged)
             }
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -329,10 +305,10 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     sizeOptions.forEachIndexed { index, label ->
-                        val isSelected = dockSizeIndex == index
+                        val isSelected = settings.dockSizeIndex == index
                         OutlinedCard(
                             onClick = { 
-                                onDockSizeChanged(index)
+                                callbacks.onDockSizeChanged(index)
                                 performHapticClick(context)
                             },
                             colors = CardDefaults.outlinedCardColors(
@@ -372,7 +348,7 @@ fun SettingsScreen(
                     Text("Sync Dismissal with System", style = MaterialTheme.typography.bodyLarge)
                     Text("When enabled, archiving a notification in Conduit will also dismiss it from the Android system tray", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = syncDismissal, onCheckedChange = onSyncDismissalChanged)
+                Switch(checked = settings.syncDismissal, onCheckedChange = callbacks::onSyncDismissalChanged)
             }
             
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -380,9 +356,57 @@ fun SettingsScreen(
                     Text("Sync Pinned Notifications", style = MaterialTheme.typography.bodyLarge)
                     Text("When enabled, pinned notifications in Conduit will replace original notifications and remain pinned permanently in the Android system tray until unpinned", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = syncPinned, onCheckedChange = onSyncPinnedChanged)
+                Switch(checked = settings.syncPinned, onCheckedChange = callbacks::onSyncPinnedChanged)
             }
             
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Notification Retention", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            Text("Automatically clean up unpinned archived notifications after the selected retention period.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 12.dp))
+            
+            val retentionOptions = listOf(30 to "30 Days", 60 to "60 Days", 90 to "90 Days", 120 to "120 Days", 365 to "365 Days")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectableGroup(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                retentionOptions.forEach { (days, label) ->
+                    val isSelected = settings.retentionDays == days
+                    OutlinedCard(
+                        onClick = { 
+                            callbacks.onRetentionDaysChanged(days)
+                            performHapticClick(context)
+                        },
+                        colors = CardDefaults.outlinedCardColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp, 
+                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 11.sp,
+                                maxLines = 1,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             Text("Channels", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
@@ -392,13 +416,7 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
-            
-            val channelsToShow = remember(installedChannelKeys) {
-                HubNotificationListenerService.supportedApps.values
-                    .distinctBy { it.first }
-                    .filter { installedChannelKeys.contains(it.first) }
-            }
-            
+            // Use pre-computed channelsToShow
             channelsToShow.forEach { (prefKey, name) ->
                 val pkgName = remember(prefKey) {
                     HubNotificationListenerService.supportedApps.entries
@@ -418,8 +436,8 @@ fun SettingsScreen(
                         Text(name, style = MaterialTheme.typography.bodyLarge)
                     }
                     Switch(
-                        checked = channelStates[prefKey] ?: true,
-                        onCheckedChange = { onChannelToggled(prefKey, it) }
+                        checked = settings.channelStates[prefKey] ?: true,
+                        onCheckedChange = { callbacks.onChannelToggled(prefKey, it) }
                     )
                 }
             }
@@ -541,7 +559,7 @@ fun SettingsScreen(
                                     }
                                 )
                                 if (index < rulesList.size - 1) {
-                                    Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
                                 }
                             }
                         }
@@ -552,22 +570,40 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text("App Bundles", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
-            Text("Customize which apps appear in your FAB menus", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Enable App Bundles FAB", style = MaterialTheme.typography.bodyLarge)
+                    Text("Show the floating action button for quick app launching", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(
+                    checked = settings.enableAppBundles,
+                    onCheckedChange = { callbacks.onEnableAppBundlesChanged(it) }
+                )
+            }
+            
+            AnimatedVisibility(visible = settings.enableAppBundles) {
+                Column {
+                    Text("Customize which apps appear in your FAB menus", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
             
             var editingBundleTitle by remember { mutableStateOf<String?>(null) }
             
             val currentApps = when (editingBundleTitle) {
-                "AI Assistants" -> aiBundle
-                "Notes" -> notesBundle
-                "Recorder" -> recorderBundle
-                "Compose" -> composeBundle
+                "AI Assistants" -> settings.aiBundle
+                "Notes" -> settings.notesBundle
+                "Recorder" -> settings.recorderBundle
+                "Compose" -> settings.composeBundle
                 else -> emptyList()
             }
             val onUpdate: (List<String>) -> Unit = when (editingBundleTitle) {
-                "AI Assistants" -> onAiBundleChanged
-                "Notes" -> onNotesBundleChanged
-                "Recorder" -> onRecorderBundleChanged
-                "Compose" -> onComposeBundleChanged
+                "AI Assistants" -> callbacks::onAiBundleChanged
+                "Notes" -> callbacks::onNotesBundleChanged
+                "Recorder" -> callbacks::onRecorderBundleChanged
+                "Compose" -> callbacks::onComposeBundleChanged
                 else -> { _ -> }
             }
 
@@ -578,33 +614,33 @@ fun SettingsScreen(
                 Column {
                     ListItem(
                         headlineContent = { Text("Recorder") },
-                        supportingContent = { Text("${recorderBundle.size} apps configured") },
+                        supportingContent = { Text("${settings.recorderBundle.size} apps configured") },
                         leadingContent = { Icon(Icons.Default.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                        trailingContent = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                        trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) },
                         modifier = Modifier.clickable { editingBundleTitle = "Recorder" }
                     )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
                     ListItem(
                         headlineContent = { Text("AI Assistants") },
-                        supportingContent = { Text("${aiBundle.size} apps configured") },
+                        supportingContent = { Text("${settings.aiBundle.size} apps configured") },
                         leadingContent = { Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                        trailingContent = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                        trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) },
                         modifier = Modifier.clickable { editingBundleTitle = "AI Assistants" }
                     )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
                     ListItem(
                         headlineContent = { Text("Notes") },
-                        supportingContent = { Text("${notesBundle.size} apps configured") },
-                        leadingContent = { Icon(Icons.Default.List, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                        trailingContent = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                        supportingContent = { Text("${settings.notesBundle.size} apps configured") },
+                        leadingContent = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                        trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) },
                         modifier = Modifier.clickable { editingBundleTitle = "Notes" }
                     )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
                     ListItem(
                         headlineContent = { Text("Compose") },
-                        supportingContent = { Text("${composeBundle.size} apps configured") },
+                        supportingContent = { Text("${settings.composeBundle.size} apps configured") },
                         leadingContent = { Icon(Icons.Default.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                        trailingContent = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                        trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) },
                         modifier = Modifier.clickable { editingBundleTitle = "Compose" }
                     )
                 }
@@ -648,7 +684,7 @@ fun SettingsScreen(
                                             }
                                         )
                                         if (index < currentApps.size - 1) {
-                                            Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
                                         }
                                     }
                                 }
@@ -720,6 +756,8 @@ fun SettingsScreen(
                     }
                 }
             }
+            }
+            }
             
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -740,10 +778,10 @@ fun SettingsScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 iconOptions.forEach { (id, label, color) ->
-                    val isSelected = activeAppIcon.uppercase(java.util.Locale.ROOT) == id
+                    val isSelected = settings.activeAppIcon.uppercase(java.util.Locale.ROOT) == id
                     OutlinedCard(
                         onClick = { 
-                            onActiveAppIconChanged(id)
+                            callbacks.onActiveAppIconChanged(id)
                             performHapticClick(context)
                         },
                         colors = CardDefaults.outlinedCardColors(
@@ -791,17 +829,17 @@ fun SettingsScreen(
                     Text("Enable Bracket", style = MaterialTheme.typography.bodyLarge)
                     Text("Shows a persistent floating handle on the edge of your screen. Long-press to quickly launch Conduit from anywhere.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = enableBracket, onCheckedChange = onEnableBracketChanged)
+                Switch(checked = settings.enableBracket, onCheckedChange = callbacks::onEnableBracketChanged)
             }
 
-            if (enableBracket) {
+            if (settings.enableBracket) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Group by Channel (Hangar)", style = MaterialTheme.typography.bodyLarge)
                         Text("When enabled, notifications inside the Hangar (the swipe-in panel on the Bracket) will be grouped by their channel type rather than listed individually.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Switch(checked = groupByChannel, onCheckedChange = onGroupByChannelChanged)
+                    Switch(checked = settings.groupByChannel, onCheckedChange = callbacks::onGroupByChannelChanged)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -810,7 +848,7 @@ fun SettingsScreen(
                         Text("Animate Icon on Notification", style = MaterialTheme.typography.bodyLarge)
                         Text("Briefly show the incoming notification's app icon next to the bracket. Tap the icon or bracket to open the notification.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Switch(checked = bracketNotificationPopup, onCheckedChange = onBracketNotificationPopupChanged)
+                    Switch(checked = settings.bracketNotificationPopup, onCheckedChange = callbacks::onBracketNotificationPopupChanged)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -819,7 +857,7 @@ fun SettingsScreen(
                         Text("Bracket Hanger", style = MaterialTheme.typography.bodyLarge)
                         Text("Swipe inward on the bracket to pull open a quick view of pending notifications.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Switch(checked = bracketHangerEnabled, onCheckedChange = onBracketHangerEnabledChanged)
+                    Switch(checked = settings.bracketHangerEnabled, onCheckedChange = callbacks::onBracketHangerEnabledChanged)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -827,8 +865,8 @@ fun SettingsScreen(
                     Text("Bracket Vertical Position", style = MaterialTheme.typography.bodyLarge)
                     Text("Adjust the vertical placement of the bracket along the right edge.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     androidx.compose.material3.Slider(
-                        value = bracketVerticalPosition,
-                        onValueChange = onBracketVerticalPositionChanged,
+                        value = settings.bracketVerticalPosition,
+                        onValueChange = callbacks::onBracketVerticalPositionChanged,
                         steps = 9,
                         valueRange = 0f..1f,
                         modifier = Modifier.padding(top = 8.dp)
@@ -910,7 +948,7 @@ fun SettingsScreen(
                                 val job = devScope.launch {
                                     kotlinx.coroutines.delay(4000)
                                     performHapticClick(context)
-                                    onNavigateToDevSettings()
+                                    callbacks.onNavigateToDevSettings()
                                 }
                                 try {
                                     awaitRelease()
@@ -986,4 +1024,3 @@ fun SwipeActionSelector(
         }
     }
 }
-

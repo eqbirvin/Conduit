@@ -1,4 +1,4 @@
-﻿package com.conduit.app
+package com.conduit.app
 
 import com.conduit.app.ui.*
 import android.content.ComponentName
@@ -72,47 +72,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.activity.enableEdgeToEdge
 
-fun sendReply(context: Context, notification: HubNotification, text: String, action: android.app.Notification.Action) {
-    val remoteInput = action.remoteInputs?.firstOrNull() ?: return
-    val results = Bundle().apply {
-        putString(remoteInput.resultKey, text)
-    }
-    val fillInIntent = Intent().apply {
-        addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-    }
-    RemoteInput.addResultsToIntent(action.remoteInputs, fillInIntent, results)
-    
-    try {
-        action.actionIntent.send(context, 0, fillInIntent)
-        performHapticClick(context)
-        // Auto-archive
-        kotlinx.coroutines.GlobalScope.launch {
-            val database = AppDatabase.getDatabase(context)
-            database.notificationDao().archiveNotification(notification.id, System.currentTimeMillis())
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun triggerNotificationAction(context: Context, notification: HubNotification, action: android.app.Notification.Action) {
-    try {
-        action.actionIntent.send()
-        performHapticClick(context)
-        
-        val title = action.title?.toString()?.lowercase() ?: ""
-        val autoArchiveKeywords = listOf("read", "archive", "delete", "dismiss", "seen", "done", "clear")
-        if (autoArchiveKeywords.any { title.contains(it) }) {
-            kotlinx.coroutines.GlobalScope.launch {
-                val database = AppDatabase.getDatabase(context)
-                database.notificationDao().archiveNotification(notification.id, System.currentTimeMillis())
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
 fun postPinnedNotification(context: Context, id: Int, title: String, text: String, pkg: String) {
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
     val channelId = "conduit_pinned"
@@ -145,3 +104,5 @@ fun postPinnedNotification(context: Context, id: Int, title: String, text: Strin
     
     notificationManager.notify(id, builder.build())
 }
+
+

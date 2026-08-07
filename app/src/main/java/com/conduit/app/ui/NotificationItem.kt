@@ -1,4 +1,4 @@
-﻿@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 package com.conduit.app.ui
 
 import com.conduit.app.*
@@ -36,6 +36,7 @@ import androidx.compose.animation.*
 import android.app.Notification
 import android.app.RemoteInput
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -86,7 +87,9 @@ fun NotificationItem(
     isCompactMode: Boolean = false,
     showActionChips: Boolean = true,
     isUnifiedView: Boolean = false,
-    allActions: List<Notification.Action>? = null
+    allActions: List<Notification.Action>? = null,
+    onTriggerAction: (Notification.Action) -> Unit = {},
+    onReply: (String, Notification.Action) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
     var isReplying by remember { mutableStateOf(false) }
@@ -157,7 +160,7 @@ fun NotificationItem(
                                 }
                             }
                         } catch (e: Exception) {
-                            e.printStackTrace()
+                            android.util.Log.e("Conduit", "Exception caught", e)
                         }
                     }
 
@@ -172,7 +175,7 @@ fun NotificationItem(
                                 }
                             }
                         } catch (e: Exception) {
-                            e.printStackTrace()
+                            android.util.Log.e("Conduit", "Exception caught", e)
                         }
                     }
                 }
@@ -380,7 +383,7 @@ fun NotificationItem(
                                     if (isReply) {
                                         isReplying = true
                                     } else {
-                                        triggerNotificationAction(context, notification, action)
+                                        onTriggerAction(action)
                                     }
                                 },
                                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
@@ -455,7 +458,7 @@ fun NotificationItem(
                             Button(
                                 onClick = {
                                     if (replyAction != null) {
-                                        sendReply(context, notification, replyText, replyAction)
+                                        onReply(replyText, replyAction)
                                     }
                                     isReplying = false
                                     replyText = ""
@@ -473,19 +476,20 @@ fun NotificationItem(
     }
 }
 
+private val dateFormatHeader = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
+private val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+private val dateTimeFormat = SimpleDateFormat("M/d \u00b7 h:mm a", Locale.getDefault())
+
 fun formatDateHeader(timestamp: Long): String {
-    val formatter = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
-    return formatter.format(Date(timestamp)).uppercase()
+    return dateFormatHeader.format(Date(timestamp)).uppercase()
 }
 
 fun formatTimestamp(timestamp: Long): String {
-    val formatter = SimpleDateFormat("h:mm a", Locale.getDefault())
-    return formatter.format(Date(timestamp))
+    return timeFormat.format(Date(timestamp))
 }
 
 fun formatTimestampWithDate(timestamp: Long): String {
-    val formatter = SimpleDateFormat("M/d Â· h:mm a", Locale.getDefault())
-    return formatter.format(Date(timestamp))
+    return dateTimeFormat.format(Date(timestamp))
 }
 
 @Composable
@@ -493,17 +497,20 @@ fun AppIcon(packageName: String, size: androidx.compose.ui.unit.Dp = 50.dp) {
     val context = LocalContext.current
     var iconBitmap by remember(packageName) { mutableStateOf(appIconCache[packageName]) }
 
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val sizePx = remember(size, density) { with(density) { size.roundToPx() } }
+
     LaunchedEffect(packageName) {
         if (iconBitmap == null) {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 try {
                     val drawable = getAppIcon(context, packageName)
                     if (drawable != null) {
-                        val bmp = drawable.toBitmap().asImageBitmap()
-                        appIconCache[packageName] = bmp
+                        val bmp = drawable.toBitmap(sizePx, sizePx).asImageBitmap()
+                        appIconCache.put(packageName, bmp)
                         iconBitmap = bmp
                     }
-                } catch (e: Exception) {
+                } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
                     // Ignore missing icon
                 }
             }
@@ -530,3 +537,6 @@ fun AppIcon(packageName: String, size: androidx.compose.ui.unit.Dp = 50.dp) {
         }
     }
 }
+
+
+

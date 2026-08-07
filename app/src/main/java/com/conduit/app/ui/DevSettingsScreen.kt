@@ -1,4 +1,4 @@
-﻿@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 package com.conduit.app.ui
 
 import com.conduit.app.*
@@ -36,6 +36,7 @@ import androidx.compose.animation.*
 import android.app.Notification
 import android.app.RemoteInput
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -73,13 +74,16 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.activity.enableEdgeToEdge
 
+interface DevSettingsScreenCallbacks {
+    fun onPersistentTrayEnabledChanged(enabled: Boolean)
+    fun onEnableBubblesChanged(enabled: Boolean)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DevSettingsScreen(
-    persistentTrayEnabled: Boolean,
-    onPersistentTrayEnabledChanged: (Boolean) -> Unit,
-    enableBubbles: Boolean,
-    onEnableBubblesChanged: (Boolean) -> Unit,
+    settings: com.conduit.app.data.ConduitSettings,
+    callbacks: DevSettingsScreenCallbacks,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -113,7 +117,7 @@ fun DevSettingsScreen(
                     Text("Persistent Notification Tray", style = MaterialTheme.typography.bodyLarge)
                     Text("Keep a running summary in the system status bar at all times.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = persistentTrayEnabled, onCheckedChange = onPersistentTrayEnabledChanged)
+                Switch(checked = settings.persistentTrayEnabled, onCheckedChange = callbacks::onPersistentTrayEnabledChanged)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -131,13 +135,13 @@ fun DevSettingsScreen(
                             Text("Bubble Mode", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
                             Text("When enabled, Conduit will post Android Bubbles for new incoming messages.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Switch(checked = enableBubbles, onCheckedChange = onEnableBubblesChanged)
+                        Switch(checked = settings.enableBubbles, onCheckedChange = callbacks::onEnableBubblesChanged)
                     }
 
-                    AnimatedVisibility(visible = enableBubbles) {
+                    AnimatedVisibility(visible = settings.enableBubbles) {
                         Column {
                             Spacer(modifier = Modifier.height(16.dp))
-                            Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             Text(
@@ -156,10 +160,10 @@ fun DevSettingsScreen(
                             Text("First-Time Setup Instructions:", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
                             Spacer(modifier = Modifier.height(4.dp))
                             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text("â€¢ Step 1: Tap \"Open Bubble Settings\" below and verify Bubbles are allowed (set to \"All conversations\" or \"Selected\").", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("â€¢ Step 2: Tap \"Send Test Bubble\" to trigger a dynamic conversation notification thread.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("â€¢ Step 3: Swipe down your system notification tray and tap the small conversation bubble expander icon in the bottom-right corner of the Conduit notification card.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("â€¢ Step 4: Once active, the floating overlay floats on your screen and will automatically reappear for any future messages!", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("• Step 1: Tap \"Open Bubble Settings\" below and verify Bubbles are allowed (set to \"All conversations\" or \"Selected\").", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("• Step 2: Tap \"Send Test Bubble\" to trigger a dynamic conversation notification thread.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("• Step 3: Swipe down your system notification tray and tap the small conversation bubble expander icon in the bottom-right corner of the Conduit notification card.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("• Step 4: Once active, the floating overlay floats on your screen and will automatically reappear for any future messages!", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             
                             Spacer(modifier = Modifier.height(16.dp))
@@ -271,3 +275,9 @@ fun DevSettingsScreen(
         }
     }
 }
+
+
+
+
+
+

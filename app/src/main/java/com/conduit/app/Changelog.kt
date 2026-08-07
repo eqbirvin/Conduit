@@ -14,6 +14,72 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.05.00",
+        date = "2026-08-07",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Custom Views",
+                description = "Create and manage custom views to filter your notification feed to specific sets of apps, accessible right from the top bar.",
+                iconName = "FilterList"
+            )
+        )
+    ),
+    ChangelogRelease(
+        versionName = "2.04.02",
+        date = "2026-08-06",
+        highlights = listOf(
+            ChangelogItem(
+                title = "App Bundles Toggle",
+                description = "Added a setting to completely hide the floating action button (App Bundles) if you prefer a cleaner interface.",
+                iconName = "Settings"
+            )
+        )
+    ),
+    ChangelogRelease(
+        versionName = "2.04.00",
+        date = "2026-08-06",
+        highlights = listOf(
+            ChangelogItem(
+                title = "UI Refinements",
+                description = "Moved Search and Settings to the top bar, and upgraded the app dock to stretch fully across the screen.",
+                iconName = "Dashboard"
+            )
+        )
+    ),
+    ChangelogRelease(
+        versionName = "2.03.00",
+        date = "2026-08-06",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Configurable Retention Period",
+                description = "Choose your preferred notification auto-retention period (30, 60, 90, 120, or 365 days) directly from Settings.",
+                iconName = "Settings"
+            )
+        )
+    ),
+    ChangelogRelease(
+        versionName = "2.02.13",
+        date = "2026-08-05",
+        highlights = listOf(
+            ChangelogItem(
+                title = "App Performance & Stability",
+                description = "Improved list rendering, bounded memory usage for app icons, and fortified error handling across all features.",
+                iconName = "Speed"
+            )
+        )
+    ),
+    ChangelogRelease(
+        versionName = "2.02.12",
+        date = "2026-08-05",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Under-the-Hood Refinements",
+                description = "Refactored the core data layer to improve widget syncing and optimized the 'mark selected as read' action for a faster and more stable experience.",
+                iconName = "Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.02.08",
         date = "2026-08-04",
         highlights = listOf(
@@ -73,3 +139,4 @@ val CHANGELOG: List<ChangelogRelease> = listOf(
         )
     )
 )
+

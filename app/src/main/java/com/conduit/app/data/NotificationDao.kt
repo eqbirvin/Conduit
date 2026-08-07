@@ -74,3 +74,4 @@ interface NotificationDao {
         const val RETENTION_DAYS = 90
     }
 }
+

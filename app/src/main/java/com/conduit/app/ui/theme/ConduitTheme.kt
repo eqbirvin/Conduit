@@ -1,4 +1,4 @@
-﻿package com.conduit.app.ui.theme
+package com.conduit.app.ui.theme
 
 import android.content.ComponentName
 import android.content.Intent
@@ -34,6 +34,7 @@ import androidx.compose.animation.*
 import android.app.Notification
 import android.app.RemoteInput
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -127,4 +128,7 @@ fun ConduitTheme(themePreference: Int, jacobMonochrome: Boolean = false, content
         content = content
     )
 }
+
+
+
 

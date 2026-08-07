@@ -1,6 +1,7 @@
 package com.conduit.app.widget
 
-import android.app.Activity
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
 import android.os.Bundle
 import android.content.Intent
 import com.conduit.app.HubNotificationListenerService
@@ -10,7 +11,7 @@ import kotlinx.coroutines.launch
 import com.conduit.app.data.AppDatabase
 import com.conduit.app.widget.ConduitWidgetProvider
 
-class ConduitWidgetClickActivity : Activity() {
+class ConduitWidgetClickActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -26,12 +27,13 @@ class ConduitWidgetClickActivity : Activity() {
                 val prefs = getSharedPreferences("conduit_prefs", MODE_PRIVATE)
                 val syncDismissal = prefs.getBoolean("sync_dismissal", true)
 
-                CoroutineScope(Dispatchers.IO).launch {
+                lifecycleScope.launch(Dispatchers.IO) {
                     db.notificationDao().archiveNotificationByKey(key, System.currentTimeMillis())
                     if (syncDismissal) {
                         service?.cancel(key)
                     }
                     ConduitWidgetProvider.updateAllWidgets(this@ConduitWidgetClickActivity)
+                    launch(Dispatchers.Main) { finish() }
                 }
             } else if (actionIndex != -1) {
                 // Launch native action
@@ -44,17 +46,21 @@ class ConduitWidgetClickActivity : Activity() {
                             options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
                         }
                         actionIntent.send(this, 0, null, null, null, null, options.toBundle())
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    } catch (e: android.app.PendingIntent.CanceledException) {
+                        android.util.Log.e("Conduit", "PendingIntent canceled", e)
+                    } catch (e: SecurityException) {
+                        android.util.Log.e("Conduit", "Security exception", e)
                     }
                 }
+                finish()
             } else {
                 // Launch deep link
                 launchNotificationDeepLink(key, pkg)
+                finish()
             }
+        } else {
+            finish()
         }
-        
-        finish() // Close immediately
     }
 
     private fun launchNotificationDeepLink(notificationKey: String, packageName: String) {
@@ -91,8 +97,10 @@ class ConduitWidgetClickActivity : Activity() {
                         launched = true
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (e: android.app.PendingIntent.CanceledException) {
+                android.util.Log.e("Conduit", "PendingIntent canceled", e)
+            } catch (e: SecurityException) {
+                android.util.Log.e("Conduit", "Security exception", e)
             }
         }
 
@@ -103,9 +111,14 @@ class ConduitWidgetClickActivity : Activity() {
                     launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(launchIntent)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (e: android.content.ActivityNotFoundException) {
+                android.util.Log.e("Conduit", "Activity not found", e)
+            } catch (e: SecurityException) {
+                android.util.Log.e("Conduit", "Security exception", e)
             }
         }
     }
 }
+
+
+

@@ -80,7 +80,7 @@ class ConduitWidgetFactory(
                 } else {
                     views.setImageViewBitmap(R.id.widget_item_icon, getBitmapFromDrawable(iconDrawable))
                 }
-            } catch (e: Exception) {
+            } catch (e: IllegalArgumentException) {
                 views.setImageViewResource(R.id.widget_item_icon, R.mipmap.ic_launcher)
             }
         } else {
@@ -181,3 +181,4 @@ class ConduitWidgetFactory(
     override fun getItemId(position: Int): Long = if (position < notifications.size) notifications[position].id.toLong() else position.toLong()
     override fun hasStableIds(): Boolean = true
 }
+

@@ -150,14 +150,16 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     override fun onListenerConnected() {
         super.onListenerConnected()
         instance = this
-        updatePersistentNotification()
+        scheduleUpdatePersistentNotification()
 
         scope.launch {
             try {
-                val cutoffTimestamp = System.currentTimeMillis() - (com.conduit.app.data.NotificationDao.RETENTION_DAYS * 24L * 60L * 60L * 1000L)
+                val prefs = getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
+                val retentionDays = prefs.getInt("retention_days", 90)
+                val cutoffTimestamp = System.currentTimeMillis() - (retentionDays * 24L * 60L * 60L * 1000L)
                 val deletedCount = database.notificationDao().deleteOldArchivedNotifications(cutoffTimestamp)
                 if (deletedCount > 0) {
-                    android.util.Log.d("HubNotificationService", "Pruned $deletedCount notifications older than ${com.conduit.app.data.NotificationDao.RETENTION_DAYS} days")
+                    android.util.Log.d("HubNotificationService", "Pruned $deletedCount notifications older than $retentionDays days")
                 }
             } catch (e: Exception) {
                 android.util.Log.e("HubNotificationService", "Failed to run notification retention cleanup", e)
@@ -183,7 +185,11 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             } else {
                 registerReceiver(closeSystemDialogsReceiver, filter)
             }
-        } catch (e: Exception) { e.printStackTrace() }
+        } catch (e: IllegalArgumentException) {
+            android.util.Log.e("Conduit", "Invalid receiver", e)
+        } catch (e: SecurityException) {
+            android.util.Log.e("Conduit", "Security exception", e)
+        }
         
         updateBracketState()
     }
@@ -200,7 +206,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         prefs.unregisterOnSharedPreferenceChangeListener(this)
         try {
             unregisterReceiver(closeSystemDialogsReceiver)
-        } catch (e: Exception) { e.printStackTrace() }
+        } catch (e: IllegalArgumentException) {
+            android.util.Log.e("Conduit", "Receiver not registered", e)
+        }
         removeBracketView()
     }
 
@@ -227,7 +235,11 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         
         try {
             windowManager?.updateViewLayout(view, params)
-        } catch (e: Exception) { e.printStackTrace() }
+        } catch (e: IllegalArgumentException) {
+            android.util.Log.e("Conduit", "View not attached", e)
+        } catch (e: android.view.WindowManager.BadTokenException) {
+            android.util.Log.e("Conduit", "Bad window token", e)
+        }
     }
 
     private fun updateBracketState() {
@@ -434,7 +446,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                     )
                     view.systemGestureExclusionRects = listOf(rect)
                 }
-            } catch (e: Exception) { e.printStackTrace() }
+            } catch (e: IllegalArgumentException) {
+                android.util.Log.e("Conduit", "Invalid gesture rect", e)
+            }
         }
 
         val longPressRunnable = Runnable {
@@ -522,7 +536,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                                         startActivity(launchIntent)
                                     }
                                 }
-                            } catch (e: Exception) {
+                            } catch (e: android.app.PendingIntent.CanceledException) {
                                 val pkg = if (pendingIntentList[hoverIndex] is HangerItem.BundleItem) (pendingIntentList[hoverIndex] as HangerItem.BundleItem).packageName else (pendingIntentList[hoverIndex] as HangerItem.NotificationItem).packageName
                                 val launchIntent = packageManager.getLaunchIntentForPackage(pkg)
                                 if (launchIntent != null) {
@@ -547,7 +561,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                         if (pendingIntent != null) {
                             try {
                                 pendingIntent.send(this@HubNotificationListenerService, 0, null, null, null, null, getBasBundle())
-                            } catch (e: Exception) {
+                            } catch (e: android.app.PendingIntent.CanceledException) {
                                 activePackageName?.let { pkg ->
                                     val launchIntent = packageManager.getLaunchIntentForPackage(pkg)
                                     if (launchIntent != null) {
@@ -571,7 +585,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             if (pendingIntent != null) {
                 try {
                     pendingIntent.send(this@HubNotificationListenerService, 0, null, null, null, null, getBasBundle())
-                } catch (e: Exception) {
+                } catch (e: android.app.PendingIntent.CanceledException) {
                     activePackageName?.let { pkg ->
                         val launchIntent = packageManager.getLaunchIntentForPackage(pkg)
                         if (launchIntent != null) {
@@ -588,7 +602,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             windowManager?.addView(view, params)
             bracketView = view
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("Conduit", "Exception caught", e)
         }
     }
 
@@ -613,7 +627,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             } else {
                 imageView.setImageResource(R.mipmap.ic_launcher)
             }
-        } catch (e: Exception) {
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
             imageView.setImageResource(R.mipmap.ic_launcher)
         }
 
@@ -621,7 +635,11 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             try {
                 windowManager?.addView(iconView, popupWindowParams)
                 popupWindowAdded = true
-            } catch (e: Exception) { e.printStackTrace() }
+            } catch (e: android.view.WindowManager.BadTokenException) {
+                android.util.Log.e("Conduit", "Bad window token", e)
+            } catch (e: SecurityException) {
+                android.util.Log.e("Conduit", "Security exception", e)
+            }
         }
 
         iconView.visibility = View.VISIBLE
@@ -651,7 +669,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             .withEndAction {
                 iconView.visibility = View.GONE
                 if (popupWindowAdded) {
-                    try { windowManager?.removeView(iconView) } catch (e: Exception) {}
+                    try { windowManager?.removeView(iconView) } catch (e: IllegalArgumentException) {}
                     popupWindowAdded = false
                 }
                 setBracketExpanded(false)
@@ -669,7 +687,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             iconView.alpha = 0f
             iconView.translationX = 0f
             if (popupWindowAdded) {
-                try { windowManager?.removeView(iconView) } catch (e: Exception) {}
+                try { windowManager?.removeView(iconView) } catch (e: IllegalArgumentException) {}
                 popupWindowAdded = false
             }
         }
@@ -682,20 +700,20 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         hangerRootView?.let { view ->
             try {
                 windowManager?.removeView(view)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (e: IllegalArgumentException) {
+                android.util.Log.e("Conduit", "View not attached", e)
             }
             hangerRootView = null
         }
         bracketView?.let { view ->
             try {
                 windowManager?.removeView(view)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (e: IllegalArgumentException) {
+                android.util.Log.e("Conduit", "View not attached", e)
             }
             bracketView = null
             if (popupWindowAdded) {
-                popupIconView?.let { try { windowManager?.removeView(it) } catch (e: Exception) {} }
+                popupIconView?.let { try { windowManager?.removeView(it) } catch (e: IllegalArgumentException) {} }
                 popupWindowAdded = false
             }
             popupIconView = null
@@ -724,7 +742,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 try {
                     val contextual = it.notification.extras.getParcelableArrayList<Notification.Action>("android.contextualActions")
                     contextual?.let { c -> postedActions.addAll(c) }
-                } catch (e: Exception) {}
+                } catch (e: ClassCastException) {} catch (e: android.os.BadParcelableException) {}
             }
             actionCache[notificationKey] = postedActions
             contentIntentCache.remove(notificationKey)
@@ -751,7 +769,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 var isSelfReply = false
                 var replyText = ""
 
-                if (channel != "Snapchat" && messagesArray != null) {
+                if (channel != "Snapchat" && messagesArray != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     try {
                         val msgs = Notification.MessagingStyle.Message.getMessagesFromBundleArray(messagesArray)
                         if (msgs.isNotEmpty()) {
@@ -766,8 +784,10 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                                 replyText = lastMsg.text?.toString() ?: ""
                             }
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    } catch (e: ClassCastException) {
+                        android.util.Log.e("Conduit", "Class cast exception", e)
+                    } catch (e: IllegalArgumentException) {
+                        android.util.Log.e("Conduit", "Illegal argument exception", e)
                     }
                 }
 
@@ -863,7 +883,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                             try {
                                 cancelNotification(notificationKey)
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                android.util.Log.e("Conduit", "Exception caught", e)
                             }
                         }
 
@@ -910,13 +930,13 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 }
             }
         }
-        updatePersistentNotification()
+        scheduleUpdatePersistentNotification()
     }
     fun cancel(key: String) {
         try {
             cancelNotification(key)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("Conduit", "Exception caught", e)
         }
     }
 
@@ -971,7 +991,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 appIcon = IconCompat.createWithBitmap(bitmap)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("Conduit", "Exception caught", e)
         }
         val finalIcon = appIcon ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
 
@@ -1018,7 +1038,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             notificationManager.notify(shortcutId.hashCode(), notificationBuilder.build())
             notificationManager.notify(9999, summaryNotification)
         } catch (e: SecurityException) {
-            e.printStackTrace()
+            android.util.Log.e("Conduit", "Exception caught", e)
         }
     }
 
@@ -1035,7 +1055,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             try {
                 snoozeNotification(key, durationMs)
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("Conduit", "Exception caught", e)
             }
         }
     }
@@ -1075,7 +1095,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("Conduit", "Exception caught", e)
         }
         actionCache[key] = emptyList()
         return null
@@ -1127,7 +1147,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             hangerRootView?.visibility = View.VISIBLE
             windowManager?.addView(hangerRootView, hangerParams)
             hangerRootView?.requestFocus()
-        } catch (e: Exception) { e.printStackTrace() }
+        } catch (e: Exception) { android.util.Log.e("Conduit", "Exception caught", e) }
         
         populateHangerNotifications()
     }
@@ -1140,7 +1160,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         try {
             hangerRootView?.visibility = View.GONE
             windowManager?.removeView(hangerRootView)
-        } catch (e: Exception) { e.printStackTrace() }
+        } catch (e: Exception) { android.util.Log.e("Conduit", "Exception caught", e) }
         
         hangerLinearLayout?.removeAllViews()
         pendingIntentList.clear()
@@ -1550,3 +1570,4 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         nm.notify(2001, builder.build())
     }
 }
+

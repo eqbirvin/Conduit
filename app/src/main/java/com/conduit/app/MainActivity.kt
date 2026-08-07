@@ -78,7 +78,7 @@ import com.conduit.app.ui.*
 import com.conduit.app.ui.theme.ConduitTheme
 import com.conduit.app.ui.HubScreen
 
-enum class Screen { HOME, SETTINGS, ARCHIVE, DEV_SETTINGS }
+enum class Screen { HOME, SETTINGS, ARCHIVE, DEV_SETTINGS, MANAGE_VIEWS }
 
 fun performHapticTick(context: Context) {
     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -177,6 +177,18 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+            val hubViewModel: HubViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                factory = HubViewModel.Factory(
+                    application = context.applicationContext as android.app.Application,
+                    repository = com.conduit.app.data.NotificationRepository(context, AppDatabase.getDatabase(context)),
+                    viewsRepository = com.conduit.app.data.ViewsRepository(context)
+                )
+            )
+            val settingsViewModel: com.conduit.app.SettingsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                factory = com.conduit.app.SettingsViewModel.Factory(prefs)
+            )
+            val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
+            
             var themePreference by remember { mutableIntStateOf(prefs.getInt("theme", 0)) }
             var jacobMonochrome by remember { mutableStateOf(prefs.getBoolean("jacob_monochrome", false)) }
             var groupByChannel by remember { mutableStateOf(prefs.getBoolean("group_by_channel", false)) }
@@ -295,177 +307,70 @@ class MainActivity : ComponentActivity() {
                     } else {
                         when (currentScreen) {
                             Screen.HOME -> HubScreen(
-                                channelStates = channelStates.toMap(),
-                                notifications = filteredNotifications,
-                                archivedNotifications = filteredArchivedNotifications,
-                                fabConfigs = fabConfigs,
-                                onSaveFabConfigs = { saveFabConfigs(it) },
-                                aiBundle = aiBundle,
-                                notesBundle = notesBundle,
-                                recorderBundle = recorderBundle,
-                                composeBundle = composeBundle,
-                                unifiedView = unifiedView,
-                                onUnifiedViewChanged = {
-                                    unifiedView = it
-                                    prefs.edit().putBoolean("unified_view", it).apply()
-                                },
-                                onNavigateToSettings = { currentScreen = Screen.SETTINGS },
+                                viewModel = hubViewModel,
                                 onNavigateToArchive = { currentScreen = Screen.ARCHIVE },
-                                onArchiveNotification = { id, timestamp ->
-                                    kotlinx.coroutines.GlobalScope.launch {
-                                        database.notificationDao().archiveNotification(id, timestamp)
-                                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
-                                    }
-                                },
-                                onSnoozeNotification = { id, timestamp ->
-                                    kotlinx.coroutines.GlobalScope.launch {
-                                        database.notificationDao().snoozeNotification(id, timestamp)
-                                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
-                                    }
-                                },
-                                onPinNotification = { notification ->
-                                    kotlinx.coroutines.GlobalScope.launch {
-                                        val isCurrentlyPinned = notification.isPinned
-                                        database.notificationDao().togglePin(notification.id)
-                                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
-                                        if (prefs.getBoolean("sync_pinned", false)) {
-                                            if (!isCurrentlyPinned) {
-                                                HubNotificationListenerService.instance?.cancelNotification(notification.notificationKey)
-                                                postPinnedNotification(context, notification.id, notification.title ?: "", notification.text ?: "", notification.packageName)
-                                            } else {
-                                                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-                                                notificationManager.cancel(notification.id)
-                                            }
-                                        }
-                                    }
-                                },
-                                showActionChips = showActionChips,
-                                dockSizeIndex = dockSizeIndex
+                                onNavigateToSettings = { currentScreen = Screen.SETTINGS },
+                                onNavigateToManageViews = { currentScreen = Screen.MANAGE_VIEWS },
+                                onUnifiedViewChanged = { settingsViewModel.updateUnifiedView(it) }
                             )
                             Screen.ARCHIVE -> ArchiveScreen(
                                 archivedNotifications = filteredArchivedNotifications,
-                                showActionChips = showActionChips,
+                                showActionChips = settings.showActionChips,
                                 onNavigateBack = { currentScreen = Screen.HOME }
                             )
                             Screen.SETTINGS -> SettingsScreen(
-                                themePreference = themePreference,
-                                onThemeChanged = { newTheme ->
-                                    themePreference = newTheme
-                                    prefs.edit().putInt("theme", newTheme).apply()
-                                },
-                                jacobMonochrome = jacobMonochrome,
-                                onJacobMonochromeChanged = { 
-                                    jacobMonochrome = it
-                                    prefs.edit().putBoolean("jacob_monochrome", it).apply()
-                                },
-                                groupByChannel = groupByChannel,
-                                onGroupByChannelChanged = {
-                                    groupByChannel = it
-                                    prefs.edit().putBoolean("group_by_channel", it).apply()
-                                },
-                                channelStates = channelStates,
-                                onChannelToggled = { prefKey, isEnabled ->
-                                    channelStates[prefKey] = isEnabled
-                                    prefs.edit().putBoolean(prefKey, isEnabled).apply()
-                                },
-                                syncDismissal = syncDismissal,
-                                onSyncDismissalChanged = { syncDismissal = it; prefs.edit().putBoolean("sync_dismissal", it).apply() },
-                                syncPinned = syncPinned,
-                                onSyncPinnedChanged = { syncPinned = it; prefs.edit().putBoolean("sync_pinned", it).apply() },
-                                showActionChips = showActionChips,
-                                onShowActionChipsChanged = { showActionChips = it; prefs.edit().putBoolean("show_action_chips", it).apply() },
-                                aiBundle = aiBundle,
-                                onAiBundleChanged = { saveBundle("ai_bundle", it) },
-                                notesBundle = notesBundle,
-                                onNotesBundleChanged = { saveBundle("notes_bundle", it) },
-                                recorderBundle = recorderBundle,
-                                onRecorderBundleChanged = { saveBundle("recorder_bundle", it) },
-                                composeBundle = composeBundle,
-                                onComposeBundleChanged = { saveBundle("compose_bundle", it) },
-                                dockLongPressLaunch = dockLongPressLaunch,
-                                onDockLongPressLaunchChanged = { 
-                                    dockLongPressLaunch = it
-                                    prefs.edit().putBoolean("dock_long_press_launch", it).apply()
-                                },
-                                swipeLeftAction = swipeLeftAction,
-                                onSwipeLeftActionChanged = {
-                                    swipeLeftAction = it
-                                    prefs.edit().putString("swipe_left_action", it).apply()
-                                },
-                                swipeRightAction = swipeRightAction,
-                                onSwipeRightActionChanged = {
-                                    swipeRightAction = it
-                                    prefs.edit().putString("swipe_right_action", it).apply()
-                                },
-                                dockSizeIndex = dockSizeIndex,
-                                onDockSizeChanged = { newSize ->
-                                    dockSizeIndex = newSize
-                                    prefs.edit().putInt("dock_size", newSize).apply()
-                                },
-                                enableBracket = enableBracket,
-                                onEnableBracketChanged = {
-                                    enableBracket = it
-                                    prefs.edit().putBoolean("enable_bracket", it).apply()
-                                    if (it && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(this@MainActivity)) {
-                                        val intent = android.content.Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName"))
-                                        startActivity(intent)
+                                settings = settings,
+                                callbacks = object : com.conduit.app.ui.SettingsScreenCallbacks {
+                                    override fun onThemeChanged(theme: Int) { settingsViewModel.updateTheme(theme) }
+                                    override fun onJacobMonochromeChanged(enabled: Boolean) { settingsViewModel.updateJacobMonochrome(enabled) }
+                                    override fun onGroupByChannelChanged(enabled: Boolean) { settingsViewModel.updateGroupByChannel(enabled) }
+                                    override fun onChannelToggled(prefKey: String, isEnabled: Boolean) { settingsViewModel.updateChannelState(prefKey, isEnabled) }
+                                    override fun onSyncDismissalChanged(enabled: Boolean) { settingsViewModel.updateSyncDismissal(enabled) }
+                                    override fun onSyncPinnedChanged(enabled: Boolean) { settingsViewModel.updateSyncPinned(enabled) }
+                                    override fun onShowActionChipsChanged(enabled: Boolean) { settingsViewModel.updateShowActionChips(enabled) }
+                                    override fun onAiBundleChanged(bundle: List<String>) { settingsViewModel.updateAiBundle(bundle) }
+                                    override fun onNotesBundleChanged(bundle: List<String>) { settingsViewModel.updateNotesBundle(bundle) }
+                                    override fun onRecorderBundleChanged(bundle: List<String>) { settingsViewModel.updateRecorderBundle(bundle) }
+                                    override fun onComposeBundleChanged(bundle: List<String>) { settingsViewModel.updateComposeBundle(bundle) }
+                                    override fun onDockLongPressLaunchChanged(enabled: Boolean) { settingsViewModel.updateDockLongPressLaunch(enabled) }
+                                    override fun onSwipeLeftActionChanged(action: String) { settingsViewModel.updateSwipeLeftAction(action) }
+                                    override fun onSwipeRightActionChanged(action: String) { settingsViewModel.updateSwipeRightAction(action) }
+                                    override fun onDockSizeChanged(size: Int) { settingsViewModel.updateDockSize(size) }
+                                    override fun onEnableBracketChanged(enabled: Boolean) {
+                                        settingsViewModel.updateEnableBracket(enabled)
+                                        if (enabled && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(this@MainActivity)) {
+                                            val intent = android.content.Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName"))
+                                            startActivity(intent)
+                                        }
                                     }
+                                    override fun onBracketNotificationPopupChanged(enabled: Boolean) { settingsViewModel.updateBracketNotificationPopup(enabled) }
+                                    override fun onBracketHangerEnabledChanged(enabled: Boolean) { settingsViewModel.updateBracketHangerEnabled(enabled) }
+                                    override fun onBracketVerticalPositionChanged(position: Float) { settingsViewModel.updateBracketVerticalPosition(position) }
+                                    override fun onUnifiedViewChanged(enabled: Boolean) { settingsViewModel.updateUnifiedView(enabled) }
+                                    override fun onActiveAppIconChanged(icon: String) { 
+                                        settingsViewModel.updateActiveAppIcon(icon)
+                                        changeAppIcon(context, icon)
+                                    }
+                                    override fun onSmartMarkReadChanged(enabled: Boolean) { settingsViewModel.updateSmartMarkRead(enabled) }
+                                    override fun onSmartMarkReadTargetChanged(target: String) { settingsViewModel.updateSmartMarkReadTarget(target) }
+                                    override fun onRetentionDaysChanged(days: Int) { settingsViewModel.updateRetentionDays(days) }
+                                    override fun onEnableAppBundlesChanged(enabled: Boolean) { settingsViewModel.updateEnableAppBundles(enabled) }
+                                    override fun onShowWhatsNew() { showWhatsNewDialog = true }
+                                    override fun onNavigateToDevSettings() { currentScreen = Screen.DEV_SETTINGS }
                                 },
-                                bracketNotificationPopup = bracketNotificationPopup,
-                                onBracketNotificationPopupChanged = {
-                                    bracketNotificationPopup = it
-                                    prefs.edit().putBoolean("bracket_notification_popup", it).apply()
-                                },
-                                bracketHangerEnabled = bracketHangerEnabled,
-                                onBracketHangerEnabledChanged = {
-                                    bracketHangerEnabled = it
-                                    prefs.edit().putBoolean("bracket_hanger_enabled", it).apply()
-                                },
-                                bracketVerticalPosition = bracketVerticalPosition,
-                                onBracketVerticalPositionChanged = {
-                                    bracketVerticalPosition = it
-                                    prefs.edit().putFloat("bracket_vertical_position", it).apply()
-                                },
-                                unifiedView = unifiedView,
-                                onUnifiedViewChanged = {
-                                    unifiedView = it
-                                    prefs.edit().putBoolean("unified_view", it).apply()
-                                },
-                                activeAppIcon = activeAppIcon,
-                                onActiveAppIconChanged = { newIcon ->
-                                    activeAppIcon = newIcon
-                                    prefs.edit().putString("active_app_icon", newIcon).apply()
-                                    changeAppIcon(context, newIcon)
-                                },
-                                smartMarkRead = smartMarkRead,
-                                onSmartMarkReadChanged = {
-                                    smartMarkRead = it
-                                    prefs.edit().putBoolean("smart_mark_read", it).apply()
-                                    com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
-                                },
-                                smartMarkReadTarget = smartMarkReadTarget,
-                                onSmartMarkReadTargetChanged = {
-                                    smartMarkReadTarget = it
-                                    prefs.edit().putString("smart_mark_read_target", it).apply()
-                                    com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
-                                },
-                                onShowWhatsNew = { showWhatsNewDialog = true },
-                                onNavigateToDevSettings = { currentScreen = Screen.DEV_SETTINGS },
                                 onNavigateBack = { currentScreen = Screen.HOME }
                             )
-                            Screen.DEV_SETTINGS -> DevSettingsScreen(
-                                persistentTrayEnabled = persistentTrayEnabled,
-                                onPersistentTrayEnabledChanged = {
-                                    persistentTrayEnabled = it
-                                    prefs.edit().putBoolean("persistent_tray_enabled", it).apply()
-                                    HubNotificationListenerService.instance?.updatePersistentNotification()
-                                },
-                                enableBubbles = enableBubbles,
-                                onEnableBubblesChanged = {
-                                    enableBubbles = it
-                                    prefs.edit().putBoolean("enable_bubbles", it).apply()
+                            Screen.DEV_SETTINGS -> com.conduit.app.ui.DevSettingsScreen(
+                                settings = settings,
+                                callbacks = object : com.conduit.app.ui.DevSettingsScreenCallbacks {
+                                    override fun onPersistentTrayEnabledChanged(enabled: Boolean) { settingsViewModel.updatePersistentTrayEnabled(enabled) }
+                                    override fun onEnableBubblesChanged(enabled: Boolean) { settingsViewModel.updateEnableBubbles(enabled) }
                                 },
                                 onNavigateBack = { currentScreen = Screen.SETTINGS }
+                            )
+                            Screen.MANAGE_VIEWS -> com.conduit.app.ui.ManageViewsScreen(
+                                hubViewModel = hubViewModel,
+                                onNavigateBack = { currentScreen = Screen.HOME }
                             )
                         }
                     }

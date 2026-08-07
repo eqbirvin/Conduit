@@ -33,17 +33,18 @@ class ConduitWidgetProvider : AppWidgetProvider() {
             val componentName = ComponentName(context, ConduitWidgetProvider::class.java)
             val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
             if (appWidgetIds.isNotEmpty()) {
-                for (appWidgetId in appWidgetIds) {
-                    updateAppWidget(context, appWidgetManager, appWidgetId)
+                val intent = Intent(context, ConduitWidgetProvider::class.java).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
                 }
+                context.sendBroadcast(intent)
                 appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list_view)
             }
         }
 
-        fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-            CoroutineScope(Dispatchers.IO).launch {
-                val db = AppDatabase.getDatabase(context)
-                val activeNotifs = db.notificationDao().getActiveNotificationsWidgetSync()
+        suspend fun updateAppWidgetSync(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+            val db = AppDatabase.getDatabase(context)
+            val activeNotifs = db.notificationDao().getActiveNotificationsWidgetSync()
                 
                 // Group active notifications by package
                 val grouped = activeNotifs.groupBy { it.packageName }
@@ -105,7 +106,7 @@ class ConduitWidgetProvider : AppWidgetProvider() {
                         try {
                             val iconBitmap = getBitmapFromDrawable(iconDrawable)
                             views.setImageViewBitmap(iconId, iconBitmap)
-                        } catch (e: Exception) {
+                        } catch (e: IllegalArgumentException) {
                             views.setImageViewResource(iconId, R.mipmap.ic_launcher)
                         }
                     } else {
@@ -163,8 +164,7 @@ class ConduitWidgetProvider : AppWidgetProvider() {
                 )
                 views.setPendingIntentTemplate(R.id.widget_list_view, clickPendingIntentTemplate)
                 
-                appWidgetManager.updateAppWidget(appWidgetId, views)
-            }
+            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
         
         private fun getBitmapFromDrawable(drawable: Drawable): Bitmap {
@@ -184,8 +184,15 @@ class ConduitWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        for (appWidgetId in appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId)
+        val pendingResult = goAsync()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                for (appWidgetId in appWidgetIds) {
+                    updateAppWidgetSync(context, appWidgetManager, appWidgetId)
+                }
+            } finally {
+                pendingResult.finish()
+            }
         }
     }
 
@@ -197,21 +204,29 @@ class ConduitWidgetProvider : AppWidgetProvider() {
                 val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
                 val pkg = intent.getStringExtra(EXTRA_PKG)
                 if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    val prefs = context.getSharedPreferences("conduit_widget_prefs", Context.MODE_PRIVATE)
-                    val currentFilter = prefs.getString("widget_filter_$appWidgetId", null)
-                    
-                    val newFilter = if (currentFilter == pkg) {
-                        null // Toggle off if clicked again
-                    } else {
-                        pkg
+                    val pendingResult = goAsync()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val prefs = context.getSharedPreferences("conduit_widget_prefs", Context.MODE_PRIVATE)
+                            val currentFilter = prefs.getString("widget_filter_$appWidgetId", null)
+                            
+                            val newFilter = if (currentFilter == pkg) {
+                                null // Toggle off if clicked again
+                            } else {
+                                pkg
+                            }
+                            prefs.edit().putString("widget_filter_$appWidgetId", newFilter).apply()
+                            
+                            val appWidgetManager = AppWidgetManager.getInstance(context)
+                            updateAppWidgetSync(context, appWidgetManager, appWidgetId)
+                            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_list_view)
+                        } finally {
+                            pendingResult.finish()
+                        }
                     }
-                    prefs.edit().putString("widget_filter_$appWidgetId", newFilter).apply()
-                    
-                    val appWidgetManager = AppWidgetManager.getInstance(context)
-                    updateAppWidget(context, appWidgetManager, appWidgetId)
-                    appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_list_view)
                 }
             }
         }
     }
 }
+

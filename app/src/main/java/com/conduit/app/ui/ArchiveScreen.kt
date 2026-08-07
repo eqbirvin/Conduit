@@ -1,4 +1,4 @@
-﻿@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 package com.conduit.app.ui
 
 import com.conduit.app.*
@@ -36,6 +36,7 @@ import androidx.compose.animation.*
 import android.app.Notification
 import android.app.RemoteInput
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -149,7 +150,7 @@ fun ArchiveScreen(
                                 isArchivedView = true,
                                 showActionChips = showActionChips
                             )
-                            Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                         }
                     }
                 }
@@ -157,3 +158,6 @@ fun ArchiveScreen(
         }
     }
 }
+
+
+
