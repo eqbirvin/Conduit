@@ -451,13 +451,13 @@ fun HubScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Surface(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.wrapContentWidth(),
                             shape = androidx.compose.foundation.shape.CircleShape,
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shadowElevation = 8.dp
                         ) {
                             LazyRow(
-                                modifier = Modifier.padding(vertical = 1.dp).fillMaxWidth(),
+                                modifier = Modifier.padding(vertical = 1.dp).wrapContentWidth(),
                                 contentPadding = PaddingValues(horizontal = dockPaddingHorizontal, vertical = dockPaddingVertical), 
                                 horizontalArrangement = Arrangement.spacedBy(dockSpacing, Alignment.CenterHorizontally),
                                 verticalAlignment = Alignment.CenterVertically

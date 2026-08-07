@@ -269,3 +269,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-07T00:32] [v2.07.00] reworked manage views screen: added drag and drop reordering, moved set default and delete actions to the edit view sheet, and tightened app list spacing.
 [2026-08-07T00:37] [v2.07.01] converted manage views edit sheet to a popup dialog and added a border wrapper to the app checklist to indicate scrollability.
 [2026-08-07T00:48] [v2.08.00] added filter dock feature to custom views, allowing users to optionally limit the bottom app dock to only show the view's included apps when active.
+[2026-08-07T00:54] [v2.08.01] ui tweak: updated dock modifier to dynamically wrap its content width rather than being fixed to the full screen width.
