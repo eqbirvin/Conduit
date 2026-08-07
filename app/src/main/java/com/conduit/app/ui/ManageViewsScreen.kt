@@ -176,12 +176,12 @@ fun ManageViewsScreen(
                 initialView = editingView,
                 initialIsDefault = editingView != null && editingView?.id == defaultViewId,
                 availableChannels = channels,
-                onSave = { name, selectedPackages, isDefault ->
+                onSave = { name, selectedPackages, isDefault, filterDock ->
                     val viewId = if (editingView != null) {
-                        viewsRepository.updateView(editingView!!.id, name, selectedPackages)
+                        viewsRepository.updateView(editingView!!.id, name, selectedPackages, filterDock)
                         editingView!!.id
                     } else {
-                        viewsRepository.addView(name, selectedPackages)
+                        viewsRepository.addView(name, selectedPackages, filterDock)
                     }
                     if (isDefault) {
                         viewsRepository.setDefaultView(viewId)
@@ -235,12 +235,13 @@ private fun EditViewContent(
     initialView: CustomView?,
     initialIsDefault: Boolean,
     availableChannels: List<Pair<String, String>>,
-    onSave: (String, List<String>, Boolean) -> Unit,
+    onSave: (String, List<String>, Boolean, Boolean) -> Unit,
     onDelete: () -> Unit,
     onCancel: () -> Unit
 ) {
     var name by remember { mutableStateOf(initialView?.name ?: "") }
     var isDefault by remember { mutableStateOf(initialIsDefault) }
+    var filterDock by remember { mutableStateOf(initialView?.filterDock ?: false) }
     val initialPackages = remember { initialView?.packageNames ?: emptyList() }
     
     // We map the prefKey to its representative package name to store in the view
@@ -341,6 +342,19 @@ private fun EditViewContent(
             Switch(checked = isDefault, onCheckedChange = { isDefault = it })
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Filter App Dock", style = MaterialTheme.typography.bodyLarge)
+                Text("Only show included apps in the dock when active", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Switch(checked = filterDock, onCheckedChange = { filterDock = it })
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(
@@ -363,7 +377,7 @@ private fun EditViewContent(
             Button(
                 onClick = {
                     val packagesToSave = selectedKeys.mapNotNull { channelPackages[it] }
-                    onSave(name.trim(), packagesToSave, isDefault)
+                    onSave(name.trim(), packagesToSave, isDefault, filterDock)
                 },
                 enabled = name.isNotBlank()
             ) {

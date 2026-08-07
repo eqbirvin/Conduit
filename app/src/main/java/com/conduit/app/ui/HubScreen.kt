@@ -120,6 +120,8 @@ fun HubScreen(
     
     val views by viewModel.viewsRepository.views.collectAsStateWithLifecycle()
     val activeViewId by viewModel.activeViewId.collectAsStateWithLifecycle()
+    val activeView = remember(views, activeViewId) { views.find { it.id == activeViewId } }
+    val activeViewDockFilter = activeView?.filterDock == true
     LaunchedEffect(notifications, unifiedView) {
         if (!unifiedView && selectedDockPackage != null) {
             val hasActive = notifications.any { getRepresentativePackage(context, it.packageName) == selectedDockPackage }
@@ -387,12 +389,17 @@ fun HubScreen(
                             .distinct()
                     }
                 }
-                if (notifications.isNotEmpty() || (unifiedView && enabledApps.isNotEmpty())) {
+                if (notifications.isNotEmpty() || (unifiedView && enabledApps.isNotEmpty()) || (activeViewDockFilter && activeView != null && activeView.packageNames.isNotEmpty())) {
                     val grouped = remember(notifications) {
                         notifications.groupBy { getRepresentativePackage(context, it.packageName) }
                     }
-                    val dockPackagesList = remember(grouped, enabledApps, unifiedView) {
-                        if (unifiedView) {
+                    val dockPackagesList = remember(grouped, enabledApps, unifiedView, activeView, activeViewDockFilter) {
+                        if (activeViewDockFilter && activeView != null) {
+                            val viewApps = activeView.packageNames.filter { enabledApps.contains(it) }
+                            val unread = viewApps.filter { grouped.containsKey(it) }
+                            val read = viewApps.filter { !grouped.containsKey(it) }
+                            (unread + read).distinct()
+                        } else if (unifiedView) {
                             val unread = enabledApps.filter { grouped.containsKey(it) }
                             val read = enabledApps.filter { !grouped.containsKey(it) }
                             val otherUnread = grouped.keys.filter { !enabledApps.contains(it) }
@@ -459,7 +466,7 @@ fun HubScreen(
                                     val pkg = dockPackagesList[index]
                                     val groupNotifs = grouped[pkg] ?: emptyList()
                                     
-                                    if (unifiedView && index > 0) {
+                                    if ((unifiedView || activeViewDockFilter) && index > 0) {
                                         val prevPkg = dockPackagesList[index - 1]
                                         val isPrevUnread = grouped.containsKey(prevPkg)
                                         val isCurrentRead = !grouped.containsKey(pkg)

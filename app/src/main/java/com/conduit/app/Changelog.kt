@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.08.00",
+        date = "2026-08-07",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Custom View App Dock Filtering",
+                description = "You can now configure custom views to exclusively display their included apps in the bottom dock when active.",
+                iconName = "Tune"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.07.00",
         date = "2026-08-07",
         highlights = listOf(

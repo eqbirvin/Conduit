@@ -15,7 +15,8 @@ data class CustomView(
     val id: String,
     val name: String,
     val packageNames: List<String>,
-    val sortOrder: Int
+    val sortOrder: Int,
+    val filterDock: Boolean = false
 )
 
 class ViewsRepository(context: Context) {
@@ -63,26 +64,29 @@ class ViewsRepository(context: Context) {
         }
     }
 
-    fun addView(name: String, packageNames: List<String>): String {
+    fun addView(name: String, packageNames: List<String>, filterDock: Boolean = false): String {
         val currentViews = _views.value.toMutableList()
-        val newOrder = if (currentViews.isEmpty()) 0 else currentViews.maxOf { it.sortOrder } + 1
         val newId = UUID.randomUUID().toString()
         val newView = CustomView(
             id = newId,
             name = name,
             packageNames = packageNames,
-            sortOrder = newOrder
+            sortOrder = currentViews.size,
+            filterDock = filterDock
         )
         currentViews.add(newView)
         saveViews(currentViews)
         return newId
     }
 
-    fun updateView(id: String, name: String, packageNames: List<String>) {
-        val currentViews = _views.value.map {
-            if (it.id == id) it.copy(name = name, packageNames = packageNames) else it
+    fun updateView(id: String, name: String, packageNames: List<String>, filterDock: Boolean = false) {
+        val currentViews = _views.value.toMutableList()
+        val index = currentViews.indexOfFirst { it.id == id }
+        if (index != -1) {
+            val existing = currentViews[index]
+            currentViews[index] = existing.copy(name = name, packageNames = packageNames, filterDock = filterDock)
+            saveViews(currentViews)
         }
-        saveViews(currentViews)
     }
 
     fun deleteView(id: String) {
