@@ -1,4 +1,4 @@
-﻿[2026-05-09T21:10] [v1.0] init proj. tgt: legacy hub reimplementation. Kotlin/Compose. RoomDB. NotifListenerService.
+[2026-05-09T21:10] [v1.0] init proj. tgt: legacy hub reimplementation. Kotlin/Compose. RoomDB. NotifListenerService.
 [2026-05-09T21:55] [v1.1] UI tweaks. name -> Conduit. MD3 design applied. gen & add custom app icon.
 [2026-05-09T22:00] [v1.2] add EMAIL chan support. use PackageManager to fetch orig app icons dyn. filter sys/bg notifs. setup gradle copyApkToOutputs.
 [2026-05-09T22:15] [v1.2] setup docs versioning & caveman log rules. add timestamps.
@@ -254,9 +254,14 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-04T22:27] [v2.02.10] refactored mainactivity to use a dedicated settingsviewmodel, isolating state updates from the ui, modifying zero behavior.
 [2026-08-05T15:32] [v2.02.12] refactored conduitwidgetprovider to use goasync, migrated mark selected as read logic to viewmodel, fixed synchronous getapplabel calls in compose, implemented changelog rule w5 dialog, implemented updatepersistentnotification debouncing, fixed getmessagesfrombundlearray api 30 constraint, replaced printstacktrace with log.e.
 [2026-08-05T09:43] [v2.02.13] fixed search null-match bug, optimized appiconcache to lrucache with downscaling, hoisted formatters, optimized unarchived set lookups in hubscreen, and replaced empty catches with log.e.
+[2026-08-04T21:56] [v2.02.09] split mainactivity.kt into separate files for each ui component (hubscreen, notificationitem, settingsscreen, devsettingsscreen, archivescreen, permissionscreen, and notificationactions) exactly verbatim to improve code structure.
+[2026-08-04T22:27] [v2.02.10] refactored mainactivity to use a dedicated settingsviewmodel, isolating state updates from the ui, modifying zero behavior.
+[2026-08-05T15:32] [v2.02.12] refactored conduitwidgetprovider to use goasync, migrated mark selected as read logic to viewmodel, fixed synchronous getapplabel calls in compose, implemented changelog rule w5 dialog, implemented updatepersistentnotification debouncing, fixed getmessagesfrombundlearray api 30 constraint, replaced printstacktrace with log.e.
+[2026-08-05T09:43] [v2.02.13] fixed search null-match bug, optimized appiconcache to lrucache with downscaling, hoisted formatters, optimized unarchived set lookups in hubscreen, and replaced empty catches with log.e.
 [2026-08-05T16:38] [v2.02.13] fixed search null-match bug, replaced unbound appiconcache with lrucache, hoisted simpledateformats, optimized date header badge, and narrowed exception catches across codebase.
-
-[2026-08-06T10:46] [v2.03.00] added configurable notification retention period setting (30, 60, 90, 120, or 365 days, default 90).[2026-08-06T17:28] [v2.04.00] moved search and settings buttons to topbar; expanded app dock to full width which bumped fab above dock.
+[2026-08-06T10:46] [v2.03.00] added configurable notification retention period setting (30, 60, 90, 120, or 365 days, default 90).
+[2026-08-06T17:28] [v2.04.00] moved search and settings buttons to topbar; expanded app dock to full width which bumped fab above dock.
 [2026-08-06T18:14] [v2.04.01] fixed settings icon tint and added navigation bar insets to app dock.
 [2026-08-06T21:03] [v2.04.02] added app bundles toggle to conduit settings.
 [2026-08-07T04:09] [v2.05.00] added custom views feature allowing users to create app-specific filters for the notification feed and dock.
+[2026-08-06T23:59] [v2.06.00] ui tweaks: right-aligned date unread chip, top-aligned notification icon with padding, subtle m3 action chips, reduced read chip height.

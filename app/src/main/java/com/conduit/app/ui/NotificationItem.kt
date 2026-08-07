@@ -192,7 +192,7 @@ fun NotificationItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             val avatarSize = if (isCompactMode) 36.dp else 50.dp
             val avatarBoxWidth = if (isCompactMode) 44.dp else 60.dp
@@ -201,6 +201,7 @@ fun NotificationItem(
             Box(
                 modifier = Modifier
                     .width(avatarBoxWidth)
+                    .padding(top = if (isCompactMode) 4.dp else 8.dp)
                     .clickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = androidx.compose.material3.ripple(bounded = false, radius = 32.dp),
@@ -273,7 +274,7 @@ fun NotificationItem(
                                     if (isUnifiedView) "READ" else "ARCHIVED",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
@@ -387,14 +388,13 @@ fun NotificationItem(
                                     }
                                 },
                                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                                border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
-                                color = Color.Transparent
+                                color = MaterialTheme.colorScheme.secondaryContainer
                             ) {
                                 Text(
                                     text = title, 
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                 )
                             }

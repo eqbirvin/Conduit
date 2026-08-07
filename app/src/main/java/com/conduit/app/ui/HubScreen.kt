@@ -817,7 +817,11 @@ fun HubScreen(
                                     .background(MaterialTheme.colorScheme.background)
                                     .padding(horizontal = 16.dp, vertical = 8.dp)
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     Text(
                                         text = dateHeader,
                                         style = MaterialTheme.typography.labelMedium,
@@ -825,7 +829,6 @@ fun HubScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                     if (unifiedView) {
-                                        Spacer(modifier = Modifier.width(8.dp))
                                         val pendingCount = itemsList.count { notifications.contains(it) }
                                         val chipText = if (pendingCount > 0) "${itemsList.size} | UNREAD $pendingCount" else "${itemsList.size}"
                                         Surface(
