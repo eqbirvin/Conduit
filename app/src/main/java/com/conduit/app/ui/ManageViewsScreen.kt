@@ -1,9 +1,11 @@
 package com.conduit.app.ui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Star
@@ -159,11 +161,18 @@ fun ManageViewsScreen(
     }
 
     if (showEditSheet) {
-        ModalBottomSheet(
+        androidx.compose.ui.window.Dialog(
             onDismissRequest = { showEditSheet = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            EditViewContent(
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .wrapContentHeight(),
+                shape = MaterialTheme.shapes.extraLarge,
+                color = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
+            ) {
+                EditViewContent(
                 initialView = editingView,
                 initialIsDefault = editingView != null && editingView?.id == defaultViewId,
                 availableChannels = channels,
@@ -187,6 +196,7 @@ fun ManageViewsScreen(
                 },
                 onCancel = { showEditSheet = false }
             )
+            }
         }
     }
 
@@ -256,7 +266,7 @@ private fun EditViewContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .padding(bottom = 24.dp)
+            .padding(top = 24.dp, bottom = 24.dp)
     ) {
         Text(
             text = if (initialView != null) "Edit View" else "New View",
@@ -290,6 +300,12 @@ private fun EditViewContent(
                 .fillMaxWidth()
                 .weight(1f, fill = false)
                 .heightIn(max = 300.dp)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = RoundedCornerShape(8.dp)
+                ),
+            contentPadding = PaddingValues(8.dp)
         ) {
             itemsIndexed(availableChannels) { _, (prefKey, appName) ->
                 val isSelected = selectedKeys.contains(prefKey)

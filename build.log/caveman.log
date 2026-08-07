@@ -267,3 +267,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-06T23:59] [v2.06.00] ui tweaks: right-aligned date unread chip, top-aligned notification icon with padding, subtle m3 action chips, reduced read chip height.
 [2026-08-07T00:16] [v2.06.01] ui tweaks: added sentence capitalization to reply textfield and words capitalization to custom views name textfield.
 [2026-08-07T00:32] [v2.07.00] reworked manage views screen: added drag and drop reordering, moved set default and delete actions to the edit view sheet, and tightened app list spacing.
+[2026-08-07T00:37] [v2.07.01] converted manage views edit sheet to a popup dialog and added a border wrapper to the app checklist to indicate scrollability.
