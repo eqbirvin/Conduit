@@ -440,6 +440,9 @@ fun NotificationItem(
                             placeholder = { Text("Type a reply...") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Sentences
+                            ),
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent

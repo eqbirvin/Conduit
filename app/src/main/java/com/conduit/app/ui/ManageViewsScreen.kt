@@ -270,7 +270,10 @@ private fun EditViewContent(
             label = { Text("View Name") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            isError = name.isBlank()
+            isError = name.isBlank(),
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Words
+            )
         )
         
         Text(
