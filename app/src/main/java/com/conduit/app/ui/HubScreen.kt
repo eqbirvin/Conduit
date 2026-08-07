@@ -811,6 +811,7 @@ fun HubScreen(
                                     },
                                     isCompactMode = isCompactMode,
                                     showActionChips = showActionChips,
+                                    minimizeIcons = settings.minimizeIcons,
                                     allActions = actionsByKey[notification.notificationKey]
                                 )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
@@ -988,6 +989,7 @@ fun HubScreen(
                                             },
                                             isCompactMode = isCompactMode,
                                             showActionChips = showActionChips,
+                                            minimizeIcons = settings.minimizeIcons,
                                             allActions = actionsByKey[notification.notificationKey]
                                         )
                                         Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)

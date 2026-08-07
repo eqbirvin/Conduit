@@ -100,6 +100,7 @@ interface SettingsScreenCallbacks {
     fun onSmartMarkReadTargetChanged(target: String)
     fun onRetentionDaysChanged(days: Int)
     fun onEnableAppBundlesChanged(enabled: Boolean)
+    fun onMinimizeIconsChanged(enabled: Boolean)
     fun onShowWhatsNew()
     fun onNavigateToDevSettings()
 }
@@ -209,6 +210,14 @@ fun SettingsScreen(
 
             Text("Layout", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
             
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Minimize Notification Icons", style = MaterialTheme.typography.bodyLarge)
+                    Text("Shrinks app icons and aligns them with the notification title to maximize space for text and action chips", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = settings.minimizeIcons, onCheckedChange = callbacks::onMinimizeIconsChanged)
+            }
+
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Show Action Chips", style = MaterialTheme.typography.bodyLarge)

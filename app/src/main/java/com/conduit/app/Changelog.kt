@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.08.03",
+        date = "2026-08-07",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Compact Notifications",
+                description = "Added a 'Minimize Notification Icons' setting to shrink app icons and maximize space for text and action chips.",
+                iconName = "Compress"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.08.00",
         date = "2026-08-07",
         highlights = listOf(

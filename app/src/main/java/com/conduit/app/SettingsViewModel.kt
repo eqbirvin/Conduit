@@ -41,6 +41,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateChannelState(prefKey: String, isEnabled: Boolean) = viewModelScope.launch { repository.updateChannelState(prefKey, isEnabled) }
     fun updateRetentionDays(days: Int) = viewModelScope.launch { repository.updateRetentionDays(days) }
     fun updateEnableAppBundles(enabled: Boolean) = viewModelScope.launch { repository.updateEnableAppBundles(enabled) }
+    fun updateMinimizeIcons(enabled: Boolean) = viewModelScope.launch { repository.updateMinimizeIcons(enabled) }
 
     class Factory(private val prefs: SharedPreferences) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

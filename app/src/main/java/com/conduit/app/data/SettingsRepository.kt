@@ -63,7 +63,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             composeBundle = getBundle("compose_bundle", "com.google.android.apps.messaging,com.google.android.gm"),
             channelStates = channelStates,
             retentionDays = prefs.getInt("retention_days", 90),
-            enableAppBundles = prefs.getBoolean("enable_app_bundles", false)
+            enableAppBundles = prefs.getBoolean("enable_app_bundles", false),
+            minimizeIcons = prefs.getBoolean("minimize_icons", false)
         )
     }
 
@@ -210,6 +211,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateEnableAppBundles(enabled: Boolean) {
         prefs.edit().putBoolean("enable_app_bundles", enabled).apply()
         _settings.update { it.copy(enableAppBundles = enabled) }
+    }
+
+    fun updateMinimizeIcons(enabled: Boolean) {
+        prefs.edit().putBoolean("minimize_icons", enabled).apply()
+        _settings.update { it.copy(minimizeIcons = enabled) }
     }
 }
 

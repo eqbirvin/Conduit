@@ -86,6 +86,7 @@ fun NotificationItem(
     onSelectToggle: () -> Unit = {},
     isCompactMode: Boolean = false,
     showActionChips: Boolean = true,
+    minimizeIcons: Boolean = false,
     isUnifiedView: Boolean = false,
     allActions: List<Notification.Action>? = null,
     onTriggerAction: (Notification.Action) -> Unit = {},
@@ -188,20 +189,47 @@ fun NotificationItem(
                 }
             )
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            val avatarSize = if (isCompactMode) 36.dp else 50.dp
-            val avatarBoxWidth = if (isCompactMode) 44.dp else 60.dp
+        var appName by remember(notification.packageName) { mutableStateOf(appLabelCache[notification.packageName] ?: notification.channel) }
+        
+        LaunchedEffect(notification.packageName) {
+            if (!appLabelCache.containsKey(notification.packageName)) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    val label = getAppLabel(context, notification.packageName, notification.channel)
+                    appName = label
+                }
+            }
+        }
+        
+        val replyPrimaryColor = MaterialTheme.colorScheme.primary
+        val annotatedText = remember(notification.text, replyPrimaryColor) {
+            val fullText = notification.text ?: ""
+            buildAnnotatedString {
+                val lines = fullText.split("\n")
+                lines.forEachIndexed { index, line ->
+                    if (index > 0) append("\n")
+                    if (line.startsWith("\u21aa You:")) {
+                        val youPrefix = "\u21aa You:"
+                        val messagePart = line.substring(youPrefix.length)
+                        withStyle(style = SpanStyle(color = replyPrimaryColor, fontWeight = FontWeight.Bold)) {
+                            append(youPrefix)
+                        }
+                        withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
+                            append(messagePart)
+                        }
+                    } else {
+                        append(line)
+                    }
+                }
+            }
+        }
 
-            // Selection / Icon area
+        val AvatarBlock = @Composable {
+            val avatarSize = if (isCompactMode) 36.dp else if (minimizeIcons) 24.dp else 50.dp
+            val avatarBoxWidth = if (isCompactMode) 44.dp else if (minimizeIcons) 24.dp else 60.dp
             Box(
                 modifier = Modifier
                     .width(avatarBoxWidth)
-                    .padding(top = if (isCompactMode) 4.dp else 8.dp)
+                    .padding(top = if (minimizeIcons && !isCompactMode) 0.dp else if (isCompactMode) 4.dp else 8.dp)
                     .clickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = androidx.compose.material3.ripple(bounded = false, radius = 32.dp),
@@ -232,7 +260,6 @@ fun NotificationItem(
                     ) {
                         AppIcon(notification.packageName, size = avatarSize)
                     } else {
-                        // Avatar
                         Box(
                             modifier = Modifier
                                 .size(avatarSize)
@@ -240,19 +267,15 @@ fun NotificationItem(
                             contentAlignment = Alignment.Center
                         ) {
                             val initial = notification.title?.firstOrNull()?.uppercase() ?: "M"
-                            Text(initial, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium, fontSize = if (isCompactMode) 14.sp else 20.sp)
+                            Text(initial, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium, fontSize = if (isCompactMode) 14.sp else if (minimizeIcons) 12.sp else 20.sp)
                         }
                     }
                 }
             }
-            
-            Spacer(modifier = Modifier.width(8.dp))
-            
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = if (isCompactMode) 4.dp else 8.dp)
-            ) {
+        }
+
+        val HeaderTitleBlock = @Composable {
+            Column {
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                         if (notification.isPinned) {
@@ -305,17 +328,6 @@ fun NotificationItem(
                     )
                 }
                 
-                var appName by remember(notification.packageName) { mutableStateOf(appLabelCache[notification.packageName] ?: notification.channel) }
-                
-                LaunchedEffect(notification.packageName) {
-                    if (!appLabelCache.containsKey(notification.packageName)) {
-                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                            val label = getAppLabel(context, notification.packageName, notification.channel)
-                            appName = label
-                        }
-                    }
-                }
-                
                 Text(
                     text = appName,
                     fontSize = 12.sp,
@@ -324,38 +336,12 @@ fun NotificationItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                
-                Spacer(modifier = Modifier.height(2.dp))
+            }
+        }
 
-                val replyPrimaryColor = MaterialTheme.colorScheme.primary
-                val annotatedText = remember(notification.text, replyPrimaryColor) {
-                    val fullText = notification.text ?: ""
-                    buildAnnotatedString {
-                        val lines = fullText.split("\n")
-                        lines.forEachIndexed { index, line ->
-                            if (index > 0) {
-                                append("\n")
-                            }
-                            if (line.startsWith("\u21aa You:")) {
-                                val youPrefix = "\u21aa You:"
-                                val messagePart = line.substring(youPrefix.length)
-                                withStyle(style = SpanStyle(
-                                    color = replyPrimaryColor,
-                                    fontWeight = FontWeight.Bold
-                                )) {
-                                    append(youPrefix)
-                                }
-                                withStyle(style = SpanStyle(
-                                    fontStyle = FontStyle.Italic
-                                )) {
-                                    append(messagePart)
-                                }
-                            } else {
-                                append(line)
-                            }
-                        }
-                    }
-                }
+        val BodyAndChipsBlock = @Composable {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
                     text = annotatedText,
@@ -473,6 +459,40 @@ fun NotificationItem(
                             }
                         }
                     }
+                }
+            }
+        }
+
+        if (minimizeIcons && !isCompactMode) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(vertical = 8.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AvatarBlock()
+                    Spacer(modifier = Modifier.width(8.dp))
+                    HeaderTitleBlock()
+                }
+                BodyAndChipsBlock()
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                AvatarBlock()
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = if (isCompactMode) 4.dp else 8.dp)
+                ) {
+                    HeaderTitleBlock()
+                    BodyAndChipsBlock()
                 }
             }
         }

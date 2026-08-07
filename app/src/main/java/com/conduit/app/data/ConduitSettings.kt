@@ -30,6 +30,7 @@ data class ConduitSettings(
     val composeBundle: List<String> = listOf("com.google.android.apps.messaging", "com.google.android.gm"),
     val channelStates: Map<String, Boolean> = emptyMap(),
     val retentionDays: Int = 90,
-    val enableAppBundles: Boolean = false
+    val enableAppBundles: Boolean = false,
+    val minimizeIcons: Boolean = false
 )
 
