@@ -63,17 +63,19 @@ class ViewsRepository(context: Context) {
         }
     }
 
-    fun addView(name: String, packageNames: List<String>) {
+    fun addView(name: String, packageNames: List<String>): String {
         val currentViews = _views.value.toMutableList()
         val newOrder = if (currentViews.isEmpty()) 0 else currentViews.maxOf { it.sortOrder } + 1
+        val newId = UUID.randomUUID().toString()
         val newView = CustomView(
-            id = UUID.randomUUID().toString(),
+            id = newId,
             name = name,
             packageNames = packageNames,
             sortOrder = newOrder
         )
         currentViews.add(newView)
         saveViews(currentViews)
+        return newId
     }
 
     fun updateView(id: String, name: String, packageNames: List<String>) {

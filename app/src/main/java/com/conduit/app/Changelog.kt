@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.07.00",
+        date = "2026-08-07",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Manage Views Enhancements",
+                description = "Added drag-and-drop reordering to custom views, and moved default view toggling and deletion to the Edit View screen for a cleaner experience.",
+                iconName = "Settings"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.06.00",
         date = "2026-08-06",
         highlights = listOf(

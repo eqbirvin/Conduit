@@ -13,8 +13,8 @@ android {
         applicationId = "com.conduit.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 199
-        versionName = "2.06.01"
+        versionCode = 200
+        versionName = "2.07.00"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -75,6 +75,9 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+    
+    // Drag and Drop reordering
+    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     
     // Room components
     val room_version = "2.6.1"

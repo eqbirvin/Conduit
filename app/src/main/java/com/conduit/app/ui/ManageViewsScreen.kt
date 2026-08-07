@@ -2,6 +2,7 @@ package com.conduit.app.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -20,6 +21,10 @@ import com.conduit.app.data.CustomView
 import com.conduit.app.getInstalledChannels
 import com.conduit.app.performHapticClick
 import com.conduit.app.HubNotificationListenerService
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorder
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,75 +98,58 @@ fun ManageViewsScreen(
                 }
             }
         } else {
+            val state = rememberReorderableLazyListState(onMove = { from, to ->
+                viewsRepository.reorderViews(from.index, to.index)
+            })
+            
             LazyColumn(
+                state = state.listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .reorderable(state),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                itemsIndexed(views) { index, view ->
-                    val isDefault = defaultViewId == view.id
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                items(views, key = { it.id }) { view ->
+                    ReorderableItem(state, key = view.id) { isDragging ->
+                        val elevation = if (isDragging) 8.dp else 0.dp
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (isDragging) 0.8f else 0.5f)),
+                            elevation = CardDefaults.cardElevation(defaultElevation = elevation)
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(view.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
-                                Text("${view.packageNames.size} apps included", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-
-                            IconButton(
-                                onClick = {
-                                    performHapticClick(context)
-                                    if (isDefault) {
-                                        viewsRepository.setDefaultView(null)
-                                    } else {
-                                        viewsRepository.setDefaultView(view.id)
-                                    }
-                                }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    if (isDefault) Icons.Filled.Star else Icons.Outlined.Star,
-                                    contentDescription = "Set Default",
-                                    tint = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    Icons.Filled.DragHandle,
+                                    contentDescription = "Drag to reorder",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .padding(end = 12.dp)
+                                        .detectReorder(state)
                                 )
-                            }
-                            
-                            Column {
-                                IconButton(
-                                    onClick = { viewsRepository.reorderViews(index, index - 1) },
-                                    enabled = index > 0,
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Move Up")
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(view.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
+                                    Text("${view.packageNames.size} apps included", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                                IconButton(
-                                    onClick = { viewsRepository.reorderViews(index, index + 1) },
-                                    enabled = index < views.lastIndex,
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Move Down")
+
+                                IconButton(onClick = {
+                                    editingView = view
+                                    showEditSheet = true
+                                }) {
+                                    Icon(Icons.Filled.Edit, contentDescription = "Edit View")
                                 }
-                            }
 
-                            IconButton(onClick = {
-                                editingView = view
-                                showEditSheet = true
-                            }) {
-                                Icon(Icons.Filled.Edit, contentDescription = "Edit View")
-                            }
-
-                            IconButton(onClick = {
-                                showDeleteConfirmDialog = view
-                            }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Delete View", tint = MaterialTheme.colorScheme.error)
+                                IconButton(onClick = {
+                                    showDeleteConfirmDialog = view
+                                }) {
+                                    Icon(Icons.Filled.Delete, contentDescription = "Delete View", tint = MaterialTheme.colorScheme.error)
+                                }
                             }
                         }
                     }
@@ -177,13 +165,24 @@ fun ManageViewsScreen(
         ) {
             EditViewContent(
                 initialView = editingView,
+                initialIsDefault = editingView != null && editingView?.id == defaultViewId,
                 availableChannels = channels,
-                onSave = { name, selectedPackages ->
-                    if (editingView != null) {
+                onSave = { name, selectedPackages, isDefault ->
+                    val viewId = if (editingView != null) {
                         viewsRepository.updateView(editingView!!.id, name, selectedPackages)
+                        editingView!!.id
                     } else {
                         viewsRepository.addView(name, selectedPackages)
                     }
+                    if (isDefault) {
+                        viewsRepository.setDefaultView(viewId)
+                    } else if (defaultViewId == viewId) {
+                        viewsRepository.setDefaultView(null)
+                    }
+                    showEditSheet = false
+                },
+                onDelete = {
+                    showDeleteConfirmDialog = editingView
                     showEditSheet = false
                 },
                 onCancel = { showEditSheet = false }
@@ -224,12 +223,14 @@ fun ManageViewsScreen(
 @Composable
 private fun EditViewContent(
     initialView: CustomView?,
+    initialIsDefault: Boolean,
     availableChannels: List<Pair<String, String>>,
-    onSave: (String, List<String>) -> Unit,
+    onSave: (String, List<String>, Boolean) -> Unit,
+    onDelete: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val pm = LocalContext.current.packageManager
     var name by remember { mutableStateOf(initialView?.name ?: "") }
+    var isDefault by remember { mutableStateOf(initialIsDefault) }
     val initialPackages = remember { initialView?.packageNames ?: emptyList() }
     
     // We map the prefKey to its representative package name to store in the view
@@ -295,7 +296,7 @@ private fun EditViewContent(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 0.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(
@@ -314,12 +315,31 @@ private fun EditViewContent(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Set as Default View", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            Switch(checked = isDefault, onCheckedChange = { isDefault = it })
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            if (initialView != null) {
+                TextButton(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete View")
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
             TextButton(onClick = onCancel) {
                 Text("Cancel")
             }
@@ -327,7 +347,7 @@ private fun EditViewContent(
             Button(
                 onClick = {
                     val packagesToSave = selectedKeys.mapNotNull { channelPackages[it] }
-                    onSave(name.trim(), packagesToSave)
+                    onSave(name.trim(), packagesToSave, isDefault)
                 },
                 enabled = name.isNotBlank()
             ) {
