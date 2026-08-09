@@ -547,7 +547,7 @@ fun NotificationItem(
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 
                 // Line 2: Small App Icon + App Name
                 Row(verticalAlignment = Alignment.CenterVertically) {

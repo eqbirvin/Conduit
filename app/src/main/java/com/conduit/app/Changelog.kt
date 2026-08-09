@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.08.05",
+        date = "2026-08-09",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Minimized Layout Spacing",
+                description = "Reduced the spacing between the notification title and the app name in minimized mode for a tighter, cleaner look.",
+                iconName = "Tune"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.08.04",
         date = "2026-08-09",
         highlights = listOf(
