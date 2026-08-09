@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.08.08",
+        date = "2026-08-09",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Retired Compact Mode",
+                description = "Removed the layout squashing 'compact mode' functionality to standardize a single, clean notification layout. (The toggle button remains visually for a future feature).",
+                iconName = "Compress"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.08.07",
         date = "2026-08-09",
         highlights = listOf(

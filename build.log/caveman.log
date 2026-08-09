@@ -276,3 +276,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-09T16:58] [v2.08.05] reduced spacing between title and app name in minimized icons layout.
 [2026-08-09T17:03] [v2.08.06] completely removed spacer between title and app name in minimized layout.
 [2026-08-09T17:15] [v2.08.07] shrunk default avatar sizes to 40dp (32dp for compact mode) to match native android and free up space.
+[2026-08-09T21:17] [v2.08.08] removed compact mode layout logic completely, leaving toggle button visually active for future use.

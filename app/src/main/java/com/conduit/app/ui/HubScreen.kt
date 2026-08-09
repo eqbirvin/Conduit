@@ -809,7 +809,7 @@ fun HubScreen(
                                             selectedIds - notification.id
                                         }
                                     },
-                                    isCompactMode = isCompactMode,
+
                                     showActionChips = showActionChips,
                                     minimizeIcons = settings.minimizeIcons,
                                     allActions = actionsByKey[notification.notificationKey]
@@ -987,7 +987,7 @@ fun HubScreen(
                                                     selectedIds - notification.id
                                                 }
                                             },
-                                            isCompactMode = isCompactMode,
+
                                             showActionChips = showActionChips,
                                             minimizeIcons = settings.minimizeIcons,
                                             allActions = actionsByKey[notification.notificationKey]

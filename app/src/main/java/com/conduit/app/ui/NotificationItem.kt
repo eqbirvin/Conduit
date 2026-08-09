@@ -84,7 +84,7 @@ fun NotificationItem(
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
     onSelectToggle: () -> Unit = {},
-    isCompactMode: Boolean = false,
+
     showActionChips: Boolean = true,
     minimizeIcons: Boolean = false,
     isUnifiedView: Boolean = false,
@@ -110,7 +110,7 @@ fun NotificationItem(
         } ?: false
     }
 
-    val showConduitMarkRead = showActionChips && !isCompactMode && !isArchivedView && !notification.isArchived &&
+    val showConduitMarkRead = showActionChips && !isArchivedView && !notification.isArchived &&
             smartMarkRead && smartMarkReadTarget == "widget_and_app" && !hasNativeMarkRead
 
     val hasChips = (allActions != null && allActions.isNotEmpty()) || showConduitMarkRead
@@ -224,12 +224,12 @@ fun NotificationItem(
         }
 
         val AvatarBlock = @Composable {
-            val avatarSize = if (isCompactMode) 32.dp else 40.dp
-            val avatarBoxWidth = if (isCompactMode) 40.dp else 48.dp
+            val avatarSize = 40.dp
+            val avatarBoxWidth = 48.dp
             Box(
                 modifier = Modifier
                     .width(avatarBoxWidth)
-                    .padding(top = if (minimizeIcons && !isCompactMode) 0.dp else if (isCompactMode) 4.dp else 8.dp)
+                    .padding(top = if (minimizeIcons) 0.dp else 8.dp)
                     .clickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = androidx.compose.material3.ripple(bounded = false, radius = 32.dp),
@@ -267,7 +267,7 @@ fun NotificationItem(
                             contentAlignment = Alignment.Center
                         ) {
                             val initial = notification.title?.firstOrNull()?.uppercase() ?: "M"
-                            Text(initial, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium, fontSize = if (isCompactMode) 14.sp else 16.sp)
+                            Text(initial, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium, fontSize = 16.sp)
                         }
                     }
                 }
@@ -348,11 +348,11 @@ fun NotificationItem(
                     fontSize = 14.sp,
                     lineHeight = 18.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = if (isCompactMode) 2 else 6,
+                    maxLines = 6,
                     overflow = TextOverflow.Ellipsis
                 )
                 
-                if (showActionChips && !isCompactMode && !isArchivedView && !notification.isArchived && hasChips && !isReplying) {
+                if (showActionChips && !isArchivedView && !notification.isArchived && hasChips && !isReplying) {
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -463,7 +463,7 @@ fun NotificationItem(
             }
         }
 
-        if (minimizeIcons && !isCompactMode) {
+        if (minimizeIcons) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -613,7 +613,7 @@ fun NotificationItem(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(vertical = if (isCompactMode) 4.dp else 8.dp)
+                        .padding(vertical = 8.dp)
                 ) {
                     HeaderTitleBlock()
                     BodyAndChipsBlock()
