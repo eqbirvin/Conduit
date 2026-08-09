@@ -23,6 +23,14 @@ Conduit mirrors active system notifications into a central hub. It extracts nati
 6. Floating Dock and Widget: Access quick app filters from a customizable floating dock and a home screen widget.
 
 
+## Recent Updates (v2.08)
+
+- **UI Polish**: Shrunk default avatar sizes to match native Android layout, freeing up horizontal space for notifications.
+- **Minimized Notification Icons**: Added a new setting to display tiny icons inline with the app name, maximizing text width for notification content.
+- **Custom View Filtering**: The floating app dock can now be filtered to only display apps included in your active Custom View.
+- **Dock Refinements**: The floating dock now dynamically wraps its content width and floats cleanly over scrolling content.
+
+
 ## Building the Project
 
 Requirements:
