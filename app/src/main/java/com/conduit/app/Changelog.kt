@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.08.04",
+        date = "2026-08-09",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Minimized Icons Refined",
+                description = "Refined the Minimized Notification Icons layout to align the title to the far left edge of the notification for a cleaner look.",
+                iconName = "Tune"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.08.03",
         date = "2026-08-07",
         highlights = listOf(

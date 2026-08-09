@@ -470,11 +470,137 @@ fun NotificationItem(
                     .padding(horizontal = 16.dp)
                     .padding(vertical = 8.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    AvatarBlock()
-                    Spacer(modifier = Modifier.width(8.dp))
-                    HeaderTitleBlock()
+                // Line 1: Title and time (with optional checkmark)
+                Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .clickable(
+                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                    indication = androidx.compose.material3.ripple(bounded = false, radius = 32.dp),
+                                    enabled = true
+                                ) { onSelectToggle() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.CheckCircle,
+                                contentDescription = "Selected",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                    
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                                if (notification.isPinned) {
+                                    Icon(
+                                        Icons.Filled.PushPin,
+                                        contentDescription = "Pinned",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                                if (notification.isArchived && !isArchivedView) {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+                                        modifier = Modifier.padding(end = 6.dp)
+                                    ) {
+                                        Text(
+                                            if (isUnifiedView) "READ" else "ARCHIVED",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = notification.title ?: "Unknown",
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 16.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            Text(
+                                text = if (notification.isPinned) formatTimestampWithDate(notification.timestamp) else formatTimestamp(notification.timestamp),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        
+                        if (isArchivedView && notification.archivedTimestamp != null) {
+                            val label = if (notification.isSnoozed) "Snoozed: " else "Read: "
+                            val color = if (notification.isSnoozed) Color(0xFFFF9800) else MaterialTheme.colorScheme.onSurfaceVariant
+                            Text(
+                                text = label + formatTimestamp(notification.archivedTimestamp),
+                                fontSize = 11.sp,
+                                color = color
+                            )
+                        }
+                    }
                 }
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // Line 2: Small App Icon + App Name
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val avatarSize = 16.dp
+                    Box(
+                        modifier = Modifier
+                            .size(avatarSize)
+                            .clickable(
+                                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                indication = androidx.compose.material3.ripple(bounded = false, radius = 24.dp),
+                                enabled = true
+                            ) { onSelectToggle() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val channelUpper = notification.channel.uppercase(java.util.Locale.ROOT)
+                        if (channelUpper == "SMS" || channelUpper == "GOOGLE MESSAGES" ||
+                            channelUpper == "EMAIL" || channelUpper == "GMAIL" || channelUpper == "SPARK" || channelUpper == "OUTLOOK" ||
+                            channelUpper == "SNAPCHAT" ||
+                            channelUpper == "LINKEDIN" ||
+                            channelUpper == "INSTAGRAM" ||
+                            channelUpper == "PHONE" || channelUpper == "SYSTEM PHONE" || channelUpper == "PHONE (GOOGLE DIALER)" || channelUpper == "TRUECALLER" ||
+                            channelUpper == "TELEGRAM" || channelUpper == "TELEGRAM X" ||
+                            channelUpper == "REDDIT" ||
+                            channelUpper == "STEAM" ||
+                            channelUpper == "FACEBOOK" || channelUpper == "MESSENGER" ||
+                            channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS"
+                        ) {
+                            AppIcon(notification.packageName, size = avatarSize)
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(avatarSize)
+                                    .background(MaterialTheme.colorScheme.primaryContainer, shape = androidx.compose.foundation.shape.CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                val initial = notification.title?.firstOrNull()?.uppercase() ?: "M"
+                                Text(initial, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium, fontSize = 10.sp)
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.width(6.dp))
+                    
+                    Text(
+                        text = appName,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
                 BodyAndChipsBlock()
             }
         } else {
