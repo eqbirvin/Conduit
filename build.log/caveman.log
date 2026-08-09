@@ -274,3 +274,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-07T19:48] [v2.08.03] added minimize notification icons setting to layout preferences, restructures notificationitem layout for smaller icons on toggle.
 [2026-08-09T16:52] [v2.08.04] refined minimize notification icons layout to push title left and put avatar on same line as app name.
 [2026-08-09T16:58] [v2.08.05] reduced spacing between title and app name in minimized icons layout.
+[2026-08-09T17:03] [v2.08.06] completely removed spacer between title and app name in minimized layout.

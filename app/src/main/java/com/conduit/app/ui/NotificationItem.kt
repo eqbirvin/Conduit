@@ -547,8 +547,6 @@ fun NotificationItem(
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(2.dp))
-                
                 // Line 2: Small App Icon + App Name
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val avatarSize = 16.dp
