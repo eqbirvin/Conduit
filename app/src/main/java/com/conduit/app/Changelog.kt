@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.08.07",
+        date = "2026-08-09",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Polished Default Avatar Sizes",
+                description = "Shrunk the default notification app icons slightly to match the native Android system size, freeing up a bit more horizontal space for the notification title and content.",
+                iconName = "Tune"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.08.06",
         date = "2026-08-09",
         highlights = listOf(

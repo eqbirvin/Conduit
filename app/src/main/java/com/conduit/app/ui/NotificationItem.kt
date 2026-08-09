@@ -224,8 +224,8 @@ fun NotificationItem(
         }
 
         val AvatarBlock = @Composable {
-            val avatarSize = if (isCompactMode) 36.dp else if (minimizeIcons) 24.dp else 50.dp
-            val avatarBoxWidth = if (isCompactMode) 44.dp else if (minimizeIcons) 24.dp else 60.dp
+            val avatarSize = if (isCompactMode) 32.dp else 40.dp
+            val avatarBoxWidth = if (isCompactMode) 40.dp else 48.dp
             Box(
                 modifier = Modifier
                     .width(avatarBoxWidth)
@@ -267,7 +267,7 @@ fun NotificationItem(
                             contentAlignment = Alignment.Center
                         ) {
                             val initial = notification.title?.firstOrNull()?.uppercase() ?: "M"
-                            Text(initial, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium, fontSize = if (isCompactMode) 14.sp else if (minimizeIcons) 12.sp else 20.sp)
+                            Text(initial, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium, fontSize = if (isCompactMode) 14.sp else 16.sp)
                         }
                     }
                 }
