@@ -114,7 +114,8 @@ fun HubScreen(
     var showCustomizeFab by remember { mutableStateOf<FabAction?>(null) }
     
     var isFabExpanded by remember { mutableStateOf(prefs.getBoolean("fab_expanded", true)) }
-    var isCompactMode by remember { mutableStateOf(prefs.getBoolean("compact_mode", false)) }
+    val masterExpandedState = settings.masterExpandedState
+    val individualToggles = remember { androidx.compose.runtime.mutableStateMapOf<Int, Boolean>() }
     
     var selectedDockPackage by remember { mutableStateOf<String?>(null) }
     
@@ -329,14 +330,15 @@ fun HubScreen(
                     },
                     actions = {
                         IconButton(onClick = {
-                            isCompactMode = !isCompactMode
-                            prefs.edit().putBoolean("compact_mode", isCompactMode).apply()
+                            val newState = !masterExpandedState
+                            settingsViewModel.updateMasterExpandedState(newState)
+                            individualToggles.clear()
                             performHapticClick(context)
                         }) {
                             Icon(
-                                imageVector = if (isCompactMode) Icons.Filled.Expand else Icons.Filled.Compress,
-                                contentDescription = "Toggle Compact Mode",
-                                tint = if (isCompactMode) MaterialTheme.colorScheme.secondary else LocalContentColor.current
+                                imageVector = if (masterExpandedState) Icons.Filled.Expand else Icons.Filled.Compress,
+                                contentDescription = "Toggle Master Expand",
+                                tint = if (masterExpandedState) MaterialTheme.colorScheme.secondary else LocalContentColor.current
                             )
                         }
 
@@ -812,7 +814,13 @@ fun HubScreen(
 
                                     showActionChips = showActionChips,
                                     minimizeIcons = settings.minimizeIcons,
-                                    allActions = actionsByKey[notification.notificationKey]
+                                    allActions = actionsByKey[notification.notificationKey],
+                                    isExpanded = individualToggles[notification.id] ?: masterExpandedState,
+                                    onExpandToggle = {
+                                        val currentState = individualToggles[notification.id] ?: masterExpandedState
+                                        individualToggles[notification.id] = !currentState
+                                        performHapticTick(context)
+                                    }
                                 )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                             }
@@ -990,7 +998,13 @@ fun HubScreen(
 
                                             showActionChips = showActionChips,
                                             minimizeIcons = settings.minimizeIcons,
-                                            allActions = actionsByKey[notification.notificationKey]
+                                            allActions = actionsByKey[notification.notificationKey],
+                                            isExpanded = individualToggles[notification.id] ?: masterExpandedState,
+                                            onExpandToggle = {
+                                                val currentState = individualToggles[notification.id] ?: masterExpandedState
+                                                individualToggles[notification.id] = !currentState
+                                                performHapticTick(context)
+                                            }
                                         )
                                         Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                                     }

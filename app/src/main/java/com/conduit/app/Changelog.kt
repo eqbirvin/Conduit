@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.09.00",
+        date = "2026-08-09",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Notification Expand/Collapse",
+                description = "You can now expand and collapse individual notifications using the new toggle button next to the timestamp. We've also transformed the top bar button into a master 'Expand/Collapse All' toggle!",
+                iconName = "Compress"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.08.08",
         date = "2026-08-09",
         highlights = listOf(

@@ -85,6 +85,9 @@ fun NotificationItem(
     isSelectionMode: Boolean = false,
     onSelectToggle: () -> Unit = {},
 
+    isExpanded: Boolean = true,
+    onExpandToggle: () -> Unit = {},
+
     showActionChips: Boolean = true,
     minimizeIcons: Boolean = false,
     isUnifiedView: Boolean = false,
@@ -123,6 +126,7 @@ fun NotificationItem(
                 else if (notification.isArchived) MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).copy(alpha = 0.7f)
                 else MaterialTheme.colorScheme.surface
             )
+            .animateContentSize()
             .combinedClickable(
                 onClick = {
                     if (isSelectionMode) {
@@ -311,11 +315,26 @@ fun NotificationItem(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    Text(
-                        text = if (notification.isPinned) formatTimestampWithDate(notification.timestamp) else formatTimestamp(notification.timestamp),
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = if (notification.isPinned) formatTimestampWithDate(notification.timestamp) else formatTimestamp(notification.timestamp),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            onClick = onExpandToggle,
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Icon(
+                                imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                modifier = Modifier.size(16.dp).padding(2.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
                 }
                 
                 if (isArchivedView && notification.archivedTimestamp != null) {
@@ -328,14 +347,16 @@ fun NotificationItem(
                     )
                 }
                 
-                Text(
-                    text = appName,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (isExpanded) {
+                    Text(
+                        text = appName,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
 
@@ -343,16 +364,35 @@ fun NotificationItem(
             Column(modifier = Modifier.fillMaxWidth()) {
                 Spacer(modifier = Modifier.height(2.dp))
 
-                Text(
-                    text = annotatedText,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 6,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (isExpanded) {
+                    Text(
+                        text = annotatedText,
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 6,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                } else {
+                    val collapsedText = androidx.compose.ui.text.buildAnnotatedString {
+                        withStyle(style = androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)) {
+                            append(appName)
+                        }
+                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))) {
+                            append("  |  ")
+                        }
+                        append(annotatedText)
+                    }
+                    Text(
+                        text = collapsedText,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 
-                if (showActionChips && !isArchivedView && !notification.isArchived && hasChips && !isReplying) {
+                if (isExpanded && showActionChips && !isArchivedView && !notification.isArchived && hasChips && !isReplying) {
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -418,7 +458,7 @@ fun NotificationItem(
                     }
                 }
 
-                if (isReplying) {
+                if (isExpanded && isReplying) {
                     Column(modifier = Modifier.padding(top = 8.dp)) {
                         TextField(
                             value = replyText,
@@ -528,11 +568,26 @@ fun NotificationItem(
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-                            Text(
-                                text = if (notification.isPinned) formatTimestampWithDate(notification.timestamp) else formatTimestamp(notification.timestamp),
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (notification.isPinned) formatTimestampWithDate(notification.timestamp) else formatTimestamp(notification.timestamp),
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    onClick = onExpandToggle,
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer
+                                ) {
+                                    Icon(
+                                        imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                        modifier = Modifier.size(16.dp).padding(2.dp),
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
                         }
                         
                         if (isArchivedView && notification.archivedTimestamp != null) {
@@ -589,17 +644,38 @@ fun NotificationItem(
                     
                     Spacer(modifier = Modifier.width(6.dp))
                     
-                    Text(
-                        text = appName,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    if (isExpanded) {
+                        Text(
+                            text = appName,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    } else {
+                        val collapsedText = androidx.compose.ui.text.buildAnnotatedString {
+                            withStyle(style = androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)) {
+                                append(appName)
+                            }
+                            withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))) {
+                                append("  |  ")
+                            }
+                            append(annotatedText)
+                        }
+                        Text(
+                            text = collapsedText,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
-
-                BodyAndChipsBlock()
+                
+                if (isExpanded) {
+                    BodyAndChipsBlock()
+                }
             }
         } else {
             Row(

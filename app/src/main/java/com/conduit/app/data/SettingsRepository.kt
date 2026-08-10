@@ -64,7 +64,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             channelStates = channelStates,
             retentionDays = prefs.getInt("retention_days", 90),
             enableAppBundles = prefs.getBoolean("enable_app_bundles", false),
-            minimizeIcons = prefs.getBoolean("minimize_icons", false)
+            minimizeIcons = prefs.getBoolean("minimize_icons", false),
+            masterExpandedState = prefs.getBoolean("master_expanded_state", true)
         )
     }
 
@@ -86,6 +87,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updatePersistentTrayEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("persistent_tray_enabled", enabled).apply()
         _settings.update { it.copy(persistentTrayEnabled = enabled) }
+    }
+
+    fun updateMasterExpandedState(enabled: Boolean) {
+        prefs.edit().putBoolean("master_expanded_state", enabled).apply()
+        _settings.update { it.copy(masterExpandedState = enabled) }
     }
 
     fun updateSyncDismissal(enabled: Boolean) {

@@ -17,6 +17,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateJacobMonochrome(enabled: Boolean) = viewModelScope.launch { repository.updateJacobMonochrome(enabled) }
     fun updateGroupByChannel(enabled: Boolean) = viewModelScope.launch { repository.updateGroupByChannel(enabled) }
     fun updatePersistentTrayEnabled(enabled: Boolean) = viewModelScope.launch { repository.updatePersistentTrayEnabled(enabled) }
+    fun updateMasterExpandedState(enabled: Boolean) = viewModelScope.launch { repository.updateMasterExpandedState(enabled) }
     fun updateSyncDismissal(enabled: Boolean) = viewModelScope.launch { repository.updateSyncDismissal(enabled) }
     fun updateShowActionChips(enabled: Boolean) = viewModelScope.launch { repository.updateShowActionChips(enabled) }
     fun updateSyncPinned(enabled: Boolean) = viewModelScope.launch { repository.updateSyncPinned(enabled) }
