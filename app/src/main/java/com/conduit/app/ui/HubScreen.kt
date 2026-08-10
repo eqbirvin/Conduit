@@ -336,7 +336,7 @@ fun HubScreen(
                             performHapticClick(context)
                         }) {
                             Icon(
-                                imageVector = if (masterExpandedState) Icons.Filled.Expand else Icons.Filled.Compress,
+                                imageVector = if (masterExpandedState) Icons.Filled.Compress else Icons.Filled.Expand,
                                 contentDescription = "Toggle Master Expand",
                                 tint = if (masterExpandedState) MaterialTheme.colorScheme.secondary else LocalContentColor.current
                             )
@@ -820,7 +820,9 @@ fun HubScreen(
                                         val currentState = individualToggles[notification.id] ?: masterExpandedState
                                         individualToggles[notification.id] = !currentState
                                         performHapticTick(context)
-                                    }
+                                    },
+                                    onTriggerAction = { action -> viewModel.triggerAction(notification, action) },
+                                    onReply = { text, action -> viewModel.sendReply(notification, text, action) }
                                 )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                             }
@@ -1004,7 +1006,9 @@ fun HubScreen(
                                                 val currentState = individualToggles[notification.id] ?: masterExpandedState
                                                 individualToggles[notification.id] = !currentState
                                                 performHapticTick(context)
-                                            }
+                                            },
+                                            onTriggerAction = { action -> viewModel.triggerAction(notification, action) },
+                                            onReply = { text, action -> viewModel.sendReply(notification, text, action) }
                                         )
                                         Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                                     }

@@ -321,16 +321,20 @@ fun NotificationItem(
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Surface(
-                            onClick = onExpandToggle,
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Box(
+                            modifier = Modifier
+                                .clickable(
+                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = onExpandToggle
+                                )
+                                .background(MaterialTheme.colorScheme.secondaryContainer, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
                         ) {
                             Icon(
                                 imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
                                 contentDescription = if (isExpanded) "Collapse" else "Expand",
-                                modifier = Modifier.size(16.dp).padding(2.dp),
+                                modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
@@ -574,16 +578,20 @@ fun NotificationItem(
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Surface(
-                                    onClick = onExpandToggle,
-                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.secondaryContainer
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clickable(
+                                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                            indication = null,
+                                            onClick = onExpandToggle
+                                        )
+                                        .background(MaterialTheme.colorScheme.secondaryContainer, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
                                 ) {
                                     Icon(
                                         imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
                                         contentDescription = if (isExpanded) "Collapse" else "Expand",
-                                        modifier = Modifier.size(16.dp).padding(2.dp),
+                                        modifier = Modifier.size(16.dp),
                                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }

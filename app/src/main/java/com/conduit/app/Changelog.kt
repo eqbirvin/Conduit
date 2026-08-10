@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.09.01",
+        date = "2026-08-09",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Action Chips Fix",
+                description = "Fixed a bug introduced in an earlier version where tapping notification action chips and inline replies would do nothing.",
+                iconName = "Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.09.00",
         date = "2026-08-09",
         highlights = listOf(
