@@ -11,6 +11,7 @@ import com.conduit.app.R
 import com.conduit.app.getAppIcon
 import com.conduit.app.data.AppDatabase
 import com.conduit.app.data.HubNotification
+import kotlinx.coroutines.flow.first
 
 class ConduitWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
@@ -35,14 +36,46 @@ class ConduitWidgetFactory(
     }
 
     override fun onDataSetChanged() {
-        val prefs = context.getSharedPreferences("conduit_widget_prefs", Context.MODE_PRIVATE)
-        val selectedFilter = prefs.getString("widget_filter_$appWidgetId", null)
-
+        val isCustomView = intent.getBooleanExtra(com.conduit.app.widget.CustomViewWidgetProvider.EXTRA_IS_CUSTOM_VIEW, false)
         val activeNotifs = database.notificationDao().getActiveNotificationsWidgetSync()
-        notifications = if (!selectedFilter.isNullOrEmpty()) {
-            activeNotifs.filter { it.packageName == selectedFilter }
+        
+        if (isCustomView) {
+            val prefs = context.getSharedPreferences("conduit_custom_widget_prefs", Context.MODE_PRIVATE)
+            val customViewId = prefs.getString("custom_view_id_$appWidgetId", null)
+            if (customViewId == null) {
+                notifications = emptyList()
+                return
+            }
+            
+            val viewsRepository = com.conduit.app.data.ViewsRepository(context)
+            var allowedPackages: List<String> = emptyList()
+            kotlinx.coroutines.runBlocking {
+                val views = viewsRepository.views.first()
+                val customView = views.find { it.id == customViewId }
+                if (customView != null) {
+                    allowedPackages = customView.packageNames
+                }
+            }
+            
+            val filteredNotifs = activeNotifs.filter { allowedPackages.contains(it.packageName) }
+            
+            val filterPrefs = context.getSharedPreferences("conduit_widget_prefs", Context.MODE_PRIVATE)
+            val selectedFilter = filterPrefs.getString("custom_widget_filter_$appWidgetId", null)
+            
+            notifications = if (!selectedFilter.isNullOrEmpty()) {
+                filteredNotifs.filter { it.packageName == selectedFilter }
+            } else {
+                filteredNotifs
+            }
         } else {
-            activeNotifs
+            val prefs = context.getSharedPreferences("conduit_widget_prefs", Context.MODE_PRIVATE)
+            val selectedFilter = prefs.getString("widget_filter_$appWidgetId", null)
+
+            notifications = if (!selectedFilter.isNullOrEmpty()) {
+                activeNotifs.filter { it.packageName == selectedFilter }
+            } else {
+                activeNotifs
+            }
         }
     }
 

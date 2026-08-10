@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.10.00",
+        date = "2026-08-09",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Custom View Widget",
+                description = "Added a new widget type that displays notifications filtered by a specific Custom View, complete with a dock of your apps from that view.",
+                iconName = "Widgets"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.09.01",
         date = "2026-08-09",
         highlights = listOf(

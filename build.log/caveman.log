@@ -279,3 +279,5 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-09T21:17] [v2.08.08] removed compact mode layout logic completely, leaving toggle button visually active for future use.
 [2026-08-09T18:56] [v2.09.00] added individual notification expand/collapse carrots, wired top bar button as master toggle, and added condensed layout logic for both minimize modes.
 [2026-08-09T21:54] [v2.09.01] fixed action chips not triggering by properly passing ontriggeraction and onreply down to notificationitem from hubscreen.
+[ 2 0 2 6 - 0 8 - 0 9 T 2 2 : 2 2 ]   [ v 2 . 1 0 . 0 0 ]   a d d e d   c u s t o m   v i e w   w i d g e t .   t i e d   d i r e c t l y   t o   c u s t o m   v i e w   f i l t e r s   t o   l i m i t   a p p s   i n   d o c k   a n d   n o t i f i c a t i o n s   s h o w n .   a d d e d   c o n f i g u r a t i o n   a c t i v i t y   u p o n   w i d g e t   p l a c e m e n t .  
+ 

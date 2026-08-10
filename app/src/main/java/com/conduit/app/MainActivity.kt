@@ -143,9 +143,12 @@ fun getFabIcon(name: String): androidx.compose.ui.graphics.vector.ImageVector {
 // Caches are now imported from ProfileUtils.kt
 
 class MainActivity : ComponentActivity() {
+    private var intentState by androidx.compose.runtime.mutableStateOf<Intent?>(null)
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        intentState = intent
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -156,6 +159,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         enableEdgeToEdge()
+        intentState = intent
         setContent {
             val context = LocalContext.current
             val prefs = remember { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
@@ -188,6 +192,14 @@ class MainActivity : ComponentActivity() {
                 factory = com.conduit.app.SettingsViewModel.Factory(prefs)
             )
             val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
+            
+            val latestIntent = intentState
+            LaunchedEffect(latestIntent) {
+                val targetViewId = latestIntent?.getStringExtra("EXTRA_TARGET_VIEW_ID")
+                if (targetViewId != null) {
+                    hubViewModel.setActiveViewId(targetViewId)
+                }
+            }
             
             var themePreference by remember { mutableIntStateOf(prefs.getInt("theme", 0)) }
             var jacobMonochrome by remember { mutableStateOf(prefs.getBoolean("jacob_monochrome", false)) }

@@ -131,6 +131,23 @@
                 android:resource="@xml/conduit_widget_info" />
         </receiver>
 
+        <receiver android:name=".widget.CustomViewWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/custom_view_widget_info" />
+        </receiver>
+
+        <activity android:name=".widget.CustomViewWidgetConfigureActivity"
+            android:theme="@style/Theme.Conduit"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".widget.ConduitWidgetClickActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:exported="false"
