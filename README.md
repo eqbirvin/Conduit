@@ -287,6 +287,4 @@ Refer to caveman.log to trace historical changes and version updates across rele
 - **v2.08.08** (2026-08-09T21:17): Removed compact mode layout logic completely, leaving toggle button visually active for future use.
 - **v2.09.00** (2026-08-09T18:56): Added individual notification expand/collapse carrots, wired top bar button as master toggle, and added condensed layout logic for both minimize modes.
 - **v2.09.01** (2026-08-09T21:54): Fixed action chips not triggering by properly passing ontriggeraction and onreply down to notificationitem from hubscreen.
-  -  
-  -  
 
