@@ -44,7 +44,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -758,6 +760,7 @@ fun HubScreen(
                 }
                 
                 CompositionLocalProvider(LocalViewConfiguration provides customViewConfig) {
+                    val screenWidthPx = with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)
@@ -908,8 +911,16 @@ fun HubScreen(
                             }
                         }
                         items(itemsList, key = { it.id }) { notification ->
+                            class StateHolder(var state: SwipeToDismissBoxState? = null)
+                            val stateHolder = remember { StateHolder() }
                             val dismissState = rememberSwipeToDismissBoxState(
                                 confirmValueChange = { value ->
+                                    val currentState = stateHolder.state
+                                    if (currentState != null && value != SwipeToDismissBoxValue.Settled) {
+                                        if (kotlin.math.abs(currentState.requireOffset()) < screenWidthPx * 0.7f) {
+                                            return@rememberSwipeToDismissBoxState false
+                                        }
+                                    }
                                     val action = if (value == SwipeToDismissBoxValue.StartToEnd) swipeRightAction else swipeLeftAction
                                     when (action) {
                                         "ARCHIVE" -> {
@@ -936,6 +947,7 @@ fun HubScreen(
                                 },
                                 positionalThreshold = { distance -> distance * 0.7f }
                             )
+                            stateHolder.state = dismissState
                             
                             LaunchedEffect(dismissState.targetValue) {
                                 if (dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
