@@ -223,15 +223,7 @@ fun HubScreen(
                         }) {
                             Icon(Icons.Filled.PushPin, contentDescription = "Pin/Unpin selected")
                         }
-                        IconButton(onClick = {
-                            val allAvailable = notifications + archivedNotifications
-                            val selectedNotifs = allAvailable.filter { it.id in selectedIds }
-                            if (selectedNotifs.isNotEmpty()) {
-                                notificationToBlock = selectedNotifs.first()
-                            }
-                        }) {
-                            Icon(Icons.Filled.Block, contentDescription = "Block similar notifications")
-                        }
+
                         IconButton(onClick = {
                             val idsToProcess = selectedIds.toList()
                             val service = HubNotificationListenerService.instance
