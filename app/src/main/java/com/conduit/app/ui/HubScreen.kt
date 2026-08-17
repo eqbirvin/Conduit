@@ -852,17 +852,47 @@ fun HubScreen(
                                     if (unifiedView) {
                                         val pendingCount = itemsList.count { notifications.contains(it) }
                                         val chipText = if (pendingCount > 0) "${itemsList.size} | UNREAD $pendingCount" else "${itemsList.size}"
-                                        Surface(
-                                            shape = MaterialTheme.shapes.small,
-                                            color = MaterialTheme.colorScheme.secondaryContainer
+                                        
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(1.dp)
                                         ) {
-                                            Text(
-                                                text = chipText,
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                                            )
+                                            Surface(
+                                                shape = if (pendingCount > 0) androidx.compose.foundation.shape.RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp) else MaterialTheme.shapes.small,
+                                                color = MaterialTheme.colorScheme.secondaryContainer
+                                            ) {
+                                                Text(
+                                                    text = chipText,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                )
+                                            }
+                                            
+                                            if (pendingCount > 0) {
+                                                val rightShape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
+                                                Surface(
+                                                    shape = rightShape,
+                                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                                    modifier = Modifier
+                                                        .clip(rightShape)
+                                                        .clickable {
+                                                            performHapticClick(context)
+                                                            val now = System.currentTimeMillis()
+                                                            itemsList.forEach { 
+                                                                if (notifications.contains(it)) onArchiveNotification(it.id, now) 
+                                                            }
+                                                        }
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.DoneAll,
+                                                        contentDescription = "Mark all as read",
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp).size(14.dp),
+                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }

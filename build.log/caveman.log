@@ -240,3 +240,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-09T18:56] [v2.09.00] added individual notification expand/collapse carrots, wired top bar button as master toggle, and added condensed layout logic for both minimize modes.
 [2026-08-09T21:54] [v2.09.01] fixed action chips not triggering by properly passing ontriggeraction and onreply down to notificationitem from hubscreen.
 [2026-08-17T11:44] [v2.10.00] implemented customviewwidgetprovider and customviewwidgetconfigureactivity to add a new widget type for custom views, updating mainactivity to handle extra_target_view_id.
+[2026-08-17T12:57] [v2.10.01] added a split button to the date header to mark all notifications for that day as read instantly.

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.10.01",
+        date = "2026-08-17",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Mark All As Read",
+                description = "Added a split button to the date header, allowing you to instantly mark all notifications for a specific date as read with a single tap.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.10.00",
         date = "2026-08-09",
         highlights = listOf(
