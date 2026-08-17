@@ -854,20 +854,24 @@ fun HubScreen(
                                         val chipText = if (pendingCount > 0) "${itemsList.size} | UNREAD $pendingCount" else "${itemsList.size}"
                                         
                                         Row(
+                                            modifier = Modifier.height(androidx.compose.foundation.layout.IntrinsicSize.Min),
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(1.dp)
                                         ) {
                                             Surface(
+                                                modifier = Modifier.fillMaxHeight(),
                                                 shape = if (pendingCount > 0) androidx.compose.foundation.shape.RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp) else MaterialTheme.shapes.small,
                                                 color = MaterialTheme.colorScheme.secondaryContainer
                                             ) {
-                                                Text(
-                                                    text = chipText,
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                                )
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Text(
+                                                        text = chipText,
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    )
+                                                }
                                             }
                                             
                                             if (pendingCount > 0) {
@@ -876,6 +880,7 @@ fun HubScreen(
                                                     shape = rightShape,
                                                     color = MaterialTheme.colorScheme.secondaryContainer,
                                                     modifier = Modifier
+                                                        .fillMaxHeight()
                                                         .clip(rightShape)
                                                         .clickable {
                                                             performHapticClick(context)
@@ -885,12 +890,14 @@ fun HubScreen(
                                                             }
                                                         }
                                                 ) {
-                                                    Icon(
-                                                        imageVector = Icons.Filled.DoneAll,
-                                                        contentDescription = "Mark all as read",
-                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp).size(14.dp),
-                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                                    )
+                                                    Box(contentAlignment = Alignment.Center) {
+                                                        Icon(
+                                                            imageVector = Icons.Filled.DoneAll,
+                                                            contentDescription = "Mark all as read",
+                                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp).size(14.dp),
+                                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
