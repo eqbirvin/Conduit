@@ -43,6 +43,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateRetentionDays(days: Int) = viewModelScope.launch { repository.updateRetentionDays(days) }
     fun updateEnableAppBundles(enabled: Boolean) = viewModelScope.launch { repository.updateEnableAppBundles(enabled) }
     fun updateMinimizeIcons(enabled: Boolean) = viewModelScope.launch { repository.updateMinimizeIcons(enabled) }
+    fun updateAutoCollapseRead(enabled: Boolean) = viewModelScope.launch { repository.updateAutoCollapseRead(enabled) }
 
     class Factory(private val prefs: SharedPreferences) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

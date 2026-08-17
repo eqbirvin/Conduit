@@ -367,7 +367,12 @@ class MainActivity : ComponentActivity() {
                                     override fun onSmartMarkReadTargetChanged(target: String) { settingsViewModel.updateSmartMarkReadTarget(target) }
                                     override fun onRetentionDaysChanged(days: Int) { settingsViewModel.updateRetentionDays(days) }
                                     override fun onEnableAppBundlesChanged(enabled: Boolean) { settingsViewModel.updateEnableAppBundles(enabled) }
-                                    override fun onMinimizeIconsChanged(enabled: Boolean) { settingsViewModel.updateMinimizeIcons(enabled) }
+                                    override fun onMinimizeIconsChanged(enabled: Boolean) {
+                                        settingsViewModel.updateMinimizeIcons(enabled)
+                                    }
+                                    override fun onAutoCollapseReadChanged(enabled: Boolean) {
+                                        settingsViewModel.updateAutoCollapseRead(enabled)
+                                    }
                                     override fun onShowWhatsNew() { showWhatsNewDialog = true }
                                     override fun onNavigateToDevSettings() { currentScreen = Screen.DEV_SETTINGS }
                                 },

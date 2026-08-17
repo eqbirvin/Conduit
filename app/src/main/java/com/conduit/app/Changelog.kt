@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.11.01",
+        date = "2026-08-17",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Auto-Collapse Read Notifications",
+                description = "Added a setting to automatically collapse read notifications to save space in your feed. This will override the master expand state.",
+                iconName = "Compress"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.11.00",
         date = "2026-08-17",
         highlights = listOf(

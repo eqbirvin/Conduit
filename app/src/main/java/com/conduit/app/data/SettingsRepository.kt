@@ -65,7 +65,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             retentionDays = prefs.getInt("retention_days", 90),
             enableAppBundles = prefs.getBoolean("enable_app_bundles", false),
             minimizeIcons = prefs.getBoolean("minimize_icons", false),
-            masterExpandedState = prefs.getBoolean("master_expanded_state", true)
+            masterExpandedState = prefs.getBoolean("master_expanded_state", true),
+            autoCollapseRead = prefs.getBoolean("auto_collapse_read", false)
         )
     }
 
@@ -222,6 +223,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateMinimizeIcons(enabled: Boolean) {
         prefs.edit().putBoolean("minimize_icons", enabled).apply()
         _settings.update { it.copy(minimizeIcons = enabled) }
+    }
+
+    fun updateAutoCollapseRead(enabled: Boolean) {
+        prefs.edit().putBoolean("auto_collapse_read", enabled).apply()
+        _settings.update { it.copy(autoCollapseRead = enabled) }
     }
 }
 

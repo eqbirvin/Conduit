@@ -815,9 +815,11 @@ fun HubScreen(
                                     showActionChips = showActionChips,
                                     minimizeIcons = settings.minimizeIcons,
                                     allActions = actionsByKey[notification.notificationKey],
-                                    isExpanded = individualToggles[notification.id] ?: masterExpandedState,
+                                    isExpanded = individualToggles[notification.id] 
+                                        ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
                                     onExpandToggle = {
-                                        val currentState = individualToggles[notification.id] ?: masterExpandedState
+                                        val currentState = individualToggles[notification.id] 
+                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
                                         individualToggles[notification.id] = !currentState
                                         performHapticTick(context)
                                     },
@@ -1038,9 +1040,11 @@ fun HubScreen(
                                             showActionChips = showActionChips,
                                             minimizeIcons = settings.minimizeIcons,
                                             allActions = actionsByKey[notification.notificationKey],
-                                            isExpanded = individualToggles[notification.id] ?: masterExpandedState,
+                                            isExpanded = individualToggles[notification.id] 
+                                                ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
                                             onExpandToggle = {
-                                                val currentState = individualToggles[notification.id] ?: masterExpandedState
+                                                val currentState = individualToggles[notification.id] 
+                                                    ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
                                                 individualToggles[notification.id] = !currentState
                                                 performHapticTick(context)
                                             },

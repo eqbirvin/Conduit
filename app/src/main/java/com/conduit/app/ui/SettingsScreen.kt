@@ -101,6 +101,7 @@ interface SettingsScreenCallbacks {
     fun onRetentionDaysChanged(days: Int)
     fun onEnableAppBundlesChanged(enabled: Boolean)
     fun onMinimizeIconsChanged(enabled: Boolean)
+    fun onAutoCollapseReadChanged(enabled: Boolean)
     fun onShowWhatsNew()
     fun onNavigateToDevSettings()
 }
@@ -216,6 +217,14 @@ fun SettingsScreen(
                     Text("Shrinks app icons and aligns them with the notification title to maximize space for text and action chips", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(checked = settings.minimizeIcons, onCheckedChange = callbacks::onMinimizeIconsChanged)
+            }
+
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Auto-Collapse Read Notifications", style = MaterialTheme.typography.bodyLarge)
+                    Text("Automatically collapse read (archived) notifications. This overrides the Master 'Expand All' state unless you manually expand them one-by-one.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = settings.autoCollapseRead, onCheckedChange = callbacks::onAutoCollapseReadChanged)
             }
 
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
