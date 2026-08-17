@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.12.05",
+        date = "2026-08-17",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Further Simplified Multi-Select",
+                description = "Removed the 'Archive' option from the multi-select menu. Archiving notifications is now an individual action.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.12.04",
         date = "2026-08-17",
         highlights = listOf(

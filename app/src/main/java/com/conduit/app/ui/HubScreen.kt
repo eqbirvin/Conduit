@@ -197,19 +197,7 @@ fun HubScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = {
-                            val now = System.currentTimeMillis()
-                            val idsToArchive = selectedIds.toList()
-                            kotlinx.coroutines.GlobalScope.launch {
-                                val database = AppDatabase.getDatabase(context)
-                                database.notificationDao().archiveNotifications(idsToArchive, now)
-                                com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
-                            }
-                            performHapticClick(context)
-                            selectedIds = emptySet()
-                        }) {
-                            Icon(Icons.Filled.Email, contentDescription = "Archive selected")
-                        }
+
                         IconButton(onClick = {
                             val idsToPin = selectedIds.toList()
                             val anyUnpinned = notifications.filter { it.id in selectedIds }.any { !it.isPinned }
