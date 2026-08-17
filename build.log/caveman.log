@@ -242,4 +242,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-17T11:44] [v2.10.00] implemented customviewwidgetprovider and customviewwidgetconfigureactivity to add a new widget type for custom views, updating mainactivity to handle extra_target_view_id.
 [2026-08-17T12:57] [v2.10.01] added a split button to the date header to mark all notifications for that day as read instantly.
 [2026-08-17T14:06] [v2.11.00] changed long press to enter multi-select mode and removed app icon tap-to-select.
-[2026-08-17T14:17] [v2.11.01] added auto-collapse read notifications setting that overrides master expand state.
+[2026-08-17T14:17] [v2.12.00] added auto-collapse read notifications setting that overrides master expand state.
