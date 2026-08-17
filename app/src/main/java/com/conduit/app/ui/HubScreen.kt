@@ -934,7 +934,7 @@ fun HubScreen(
                                         else -> false
                                     }
                                 },
-                                positionalThreshold = { distance -> distance * 0.6f }
+                                positionalThreshold = { distance -> distance * 0.7f }
                             )
                             
                             LaunchedEffect(dismissState.targetValue) {
