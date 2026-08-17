@@ -922,7 +922,7 @@ fun HubScreen(
                                     val currentState = stateHolder.state
                                     if (currentState != null) {
                                         val offset = kotlin.math.abs(currentState.requireOffset())
-                                        if (offset < screenWidthPx * 0.7f) {
+                                        if (offset < screenWidthPx * 0.5f) {
                                             return@rememberSwipeToDismissBoxState false
                                         }
                                     }
@@ -950,7 +950,7 @@ fun HubScreen(
                                         else -> false
                                     }
                                 },
-                                positionalThreshold = { distance -> distance * 0.7f }
+                                positionalThreshold = { distance -> distance * 0.5f }
                             )
                             stateHolder.state = dismissState
                             
