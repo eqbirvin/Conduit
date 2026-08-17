@@ -133,63 +133,61 @@ fun NotificationItem(
                         onSelectToggle()
                     } else {
                         var launched = false
-                    val service = HubNotificationListenerService.instance
-                    if (service != null) {
-                        try {
-                            val activeNotifs = service.activeNotifications
-                            for (sbn in activeNotifs) {
-                                if (sbn.key == notification.notificationKey) {
-                                    val intent = sbn.notification.contentIntent
-                                    if (intent != null) {
+                        val service = HubNotificationListenerService.instance
+                        if (service != null) {
+                            try {
+                                val activeNotifs = service.activeNotifications
+                                for (sbn in activeNotifs) {
+                                    if (sbn.key == notification.notificationKey) {
+                                        val intent = sbn.notification.contentIntent
+                                        if (intent != null) {
+                                            val options = android.app.ActivityOptions.makeBasic()
+                                            if (android.os.Build.VERSION.SDK_INT >= 34) {
+                                                options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                                            }
+                                            intent.send(context, 0, null, null, null, null, options.toBundle())
+                                            launched = true
+                                        }
+                                        break
+                                    }
+                                }
+                                
+                                // Fallback to in-memory cache if not found in active live notifications
+                                if (!launched) {
+                                    val cachedIntent = service.getCachedContentIntent(notification.notificationKey)
+                                    if (cachedIntent != null) {
                                         val options = android.app.ActivityOptions.makeBasic()
                                         if (android.os.Build.VERSION.SDK_INT >= 34) {
                                             options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
                                         }
-                                        intent.send(context, 0, null, null, null, null, options.toBundle())
+                                        cachedIntent.send(context, 0, null, null, null, null, options.toBundle())
                                         launched = true
                                     }
-                                    break
                                 }
+                            } catch (e: Exception) {
+                                android.util.Log.e("Conduit", "Exception caught", e)
                             }
-                            
-                            // Fallback to in-memory cache if not found in active live notifications
-                            if (!launched) {
-                                val cachedIntent = service.getCachedContentIntent(notification.notificationKey)
-                                if (cachedIntent != null) {
-                                    val options = android.app.ActivityOptions.makeBasic()
-                                    if (android.os.Build.VERSION.SDK_INT >= 34) {
-                                        options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                                    }
-                                    cachedIntent.send(context, 0, null, null, null, null, options.toBundle())
-                                    launched = true
-                                }
-                            }
-                        } catch (e: Exception) {
-                            android.util.Log.e("Conduit", "Exception caught", e)
                         }
-                    }
 
-                    if (!launched) {
-                        try {
-                            val launchedCrossProfile = launchApp(context, notification.packageName)
-                            if (!launchedCrossProfile) {
-                                val launchIntent = context.packageManager.getLaunchIntentForPackage(notification.packageName)
-                                if (launchIntent != null) {
-                                    launchIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    context.startActivity(launchIntent)
+                        if (!launched) {
+                            try {
+                                val launchedCrossProfile = launchApp(context, notification.packageName)
+                                if (!launchedCrossProfile) {
+                                    val launchIntent = context.packageManager.getLaunchIntentForPackage(notification.packageName)
+                                    if (launchIntent != null) {
+                                        launchIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        context.startActivity(launchIntent)
+                                    }
                                 }
+                            } catch (e: Exception) {
+                                android.util.Log.e("Conduit", "Exception caught", e)
                             }
-                        } catch (e: Exception) {
-                            android.util.Log.e("Conduit", "Exception caught", e)
                         }
                     }
-                }
-            },
+                },
                 onLongClick = {
-                    if (!isSelectionMode) {
-                        performHapticClick(context)
-                        onPinNotification?.invoke(notification)
-                    }
+                    performHapticClick(context)
+                    onSelectToggle()
                 }
             )
     ) {
@@ -233,12 +231,7 @@ fun NotificationItem(
             Box(
                 modifier = Modifier
                     .width(avatarBoxWidth)
-                    .padding(top = if (minimizeIcons) 0.dp else 8.dp)
-                    .clickable(
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                        indication = androidx.compose.material3.ripple(bounded = false, radius = 32.dp),
-                        enabled = true
-                    ) { onSelectToggle() },
+                    .padding(top = if (minimizeIcons) 0.dp else 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (isSelected) {
@@ -518,13 +511,7 @@ fun NotificationItem(
                 Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
                     if (isSelected) {
                         Box(
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .clickable(
-                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                                    indication = androidx.compose.material3.ripple(bounded = false, radius = 32.dp),
-                                    enabled = true
-                                ) { onSelectToggle() },
+                            modifier = Modifier.padding(end = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -614,13 +601,7 @@ fun NotificationItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val avatarSize = 16.dp
                     Box(
-                        modifier = Modifier
-                            .size(avatarSize)
-                            .clickable(
-                                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                                indication = androidx.compose.material3.ripple(bounded = false, radius = 24.dp),
-                                enabled = true
-                            ) { onSelectToggle() },
+                        modifier = Modifier.size(avatarSize),
                         contentAlignment = Alignment.Center
                     ) {
                         val channelUpper = notification.channel.uppercase(java.util.Locale.ROOT)

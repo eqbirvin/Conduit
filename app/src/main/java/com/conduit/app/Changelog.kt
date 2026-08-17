@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.11.00",
+        date = "2026-08-17",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Long Press to Select",
+                description = "You can now long-press any notification to instantly select it and enter multi-select mode. The old tap-on-app-icon method has been removed to prevent accidental selections.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.10.01",
         date = "2026-08-17",
         highlights = listOf(
