@@ -915,9 +915,14 @@ fun HubScreen(
                             val stateHolder = remember { StateHolder() }
                             val dismissState = rememberSwipeToDismissBoxState(
                                 confirmValueChange = { value ->
+                                    if (value == SwipeToDismissBoxValue.Settled) {
+                                        return@rememberSwipeToDismissBoxState true
+                                    }
+                                    
                                     val currentState = stateHolder.state
-                                    if (currentState != null && value != SwipeToDismissBoxValue.Settled) {
-                                        if (kotlin.math.abs(currentState.requireOffset()) < screenWidthPx * 0.7f) {
+                                    if (currentState != null) {
+                                        val offset = kotlin.math.abs(currentState.requireOffset())
+                                        if (offset < screenWidthPx * 0.7f) {
                                             return@rememberSwipeToDismissBoxState false
                                         }
                                     }
