@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.12.02",
+        date = "2026-08-17",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Swipe Precision Tweaks",
+                description = "Fixed a bug where returning a swiped item to its resting position would accidentally trigger the swipe action, and reduced the swipe effort to make intentional flicks easier while blocking accidental scrolls.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.12.01",
         date = "2026-08-17",
         highlights = listOf(
