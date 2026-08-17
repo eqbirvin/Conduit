@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.12.03",
+        date = "2026-08-17",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Reduced Accidental Swipes",
+                description = "Increased the swipe resistance so fast vertical scrolls no longer accidentally trigger a horizontal swipe.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.12.02",
         date = "2026-08-17",
         highlights = listOf(

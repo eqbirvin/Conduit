@@ -960,7 +960,16 @@ fun HubScreen(
                                 }
                             }
                             
-                            SwipeToDismissBox(
+                            val currentViewConfiguration = LocalViewConfiguration.current
+                            val customViewConfiguration = remember(currentViewConfiguration) {
+                                object : ViewConfiguration by currentViewConfiguration {
+                                    override val touchSlop: Float
+                                        get() = currentViewConfiguration.touchSlop * 2.5f
+                                }
+                            }
+                            
+                            CompositionLocalProvider(LocalViewConfiguration provides customViewConfiguration) {
+                                SwipeToDismissBox(
                                 state = dismissState,
                                 modifier = Modifier.animateItem(
                                     placementSpec = tween(durationMillis = 300)
@@ -1072,6 +1081,7 @@ fun HubScreen(
                                     }
                                 }
                             )
+                            }
                         }
                     }
                     }
