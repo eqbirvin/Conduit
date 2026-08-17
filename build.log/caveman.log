@@ -246,3 +246,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-17T14:55] [v2.12.01] tweaked swipe-to-dismiss threshold to 70% to reduce accidental swipes.
 [2026-08-17T15:13] [v2.12.01] fixed critical swipe-to-dismiss bug where short swipes returning to settled state would erroneously trigger the swipe left action.
 [2026-08-17T15:17] [v2.12.01] reduced swipe-to-dismiss positional threshold and intercept threshold to 50% for a more comfortable experience.
+[2026-08-17T15:53] [v2.12.01] further tweaked swipe thresholds: hard fling intercept reduced to 30% to allow intentional quick flicks, while positional threshold set to 40%.
