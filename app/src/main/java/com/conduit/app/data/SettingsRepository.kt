@@ -66,7 +66,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             enableAppBundles = prefs.getBoolean("enable_app_bundles", false),
             minimizeIcons = prefs.getBoolean("minimize_icons", false),
             masterExpandedState = prefs.getBoolean("master_expanded_state", true),
-            autoCollapseRead = prefs.getBoolean("auto_collapse_read", false)
+            autoCollapseRead = prefs.getBoolean("auto_collapse_read", false),
+            autoDismissDetached = prefs.getBoolean("auto_dismiss_detached", true)
         )
     }
 
@@ -228,6 +229,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateAutoCollapseRead(enabled: Boolean) {
         prefs.edit().putBoolean("auto_collapse_read", enabled).apply()
         _settings.update { it.copy(autoCollapseRead = enabled) }
+    }
+
+    fun updateAutoDismissDetached(enabled: Boolean) {
+        prefs.edit().putBoolean("auto_dismiss_detached", enabled).apply()
+        _settings.update { it.copy(autoDismissDetached = enabled) }
     }
 }
 

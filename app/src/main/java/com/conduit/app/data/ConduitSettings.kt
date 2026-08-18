@@ -33,6 +33,7 @@ data class ConduitSettings(
     val channelStates: Map<String, Boolean> = emptyMap(),
     val retentionDays: Int = 90,
     val enableAppBundles: Boolean = false,
-    val autoCollapseRead: Boolean = false
+    val autoCollapseRead: Boolean = false,
+    val autoDismissDetached: Boolean = true
 )
 

@@ -373,6 +373,9 @@ class MainActivity : ComponentActivity() {
                                     override fun onAutoCollapseReadChanged(enabled: Boolean) {
                                         settingsViewModel.updateAutoCollapseRead(enabled)
                                     }
+                                    override fun onAutoDismissDetachedChanged(enabled: Boolean) {
+                                        settingsViewModel.updateAutoDismissDetached(enabled)
+                                    }
                                     override fun onShowWhatsNew() { showWhatsNewDialog = true }
                                     override fun onNavigateToDevSettings() { currentScreen = Screen.DEV_SETTINGS }
                                 },

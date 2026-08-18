@@ -70,6 +70,30 @@ interface NotificationDao {
     @Query("DELETE FROM notifications WHERE isArchived = 1 AND isPinned = 0 AND timestamp < :cutoffTimestamp")
     suspend fun deleteOldArchivedNotifications(cutoffTimestamp: Long): Int
 
+    @Query("UPDATE notifications SET title = :newTitle, text = :newText, timestamp = :newTimestamp, kind = :kind, detachedAt = NULL WHERE id = :id")
+    suspend fun updateNotificationContentDetailed(id: Int, newTitle: String, newText: String, newTimestamp: Long, kind: String)
+
+    @Query("UPDATE notifications SET title = :newTitle, text = :newText, timestamp = :newTimestamp, isArchived = 0, kind = :kind, detachedAt = NULL WHERE id = :id")
+    suspend fun updateAndUnarchiveDetailed(id: Int, newTitle: String, newText: String, newTimestamp: Long, kind: String)
+
+    @Query("UPDATE notifications SET detachedAt = :timestamp WHERE notificationKey = :key AND isArchived = 0")
+    suspend fun setDetachedByKey(key: String, timestamp: Long)
+
+    @Query("UPDATE notifications SET detachedAt = :timestamp WHERE id = :id")
+    suspend fun setDetached(id: Int, timestamp: Long)
+
+    @Query("UPDATE notifications SET detachedAt = NULL WHERE id = :id")
+    suspend fun clearDetached(id: Int)
+
+    @Query("SELECT id, notificationKey, detachedAt, kind, isPinned, isSnoozed FROM notifications WHERE isArchived = 0")
+    suspend fun getActiveNotificationMetadata(): List<NotificationMetadata>
+
+    @Query("UPDATE notifications SET notificationKey = :newKey, timestamp = :newTimestamp, kind = :kind, detachedAt = NULL WHERE id = :id")
+    suspend fun adoptRow(id: Int, newKey: String, newTimestamp: Long, kind: String)
+
+    @Query("SELECT * FROM notifications WHERE packageName = :pkg AND title = :title AND text = :text AND isArchived = 0 LIMIT 1")
+    suspend fun getUnarchivedExactMatch(pkg: String, title: String, text: String): HubNotification?
+
     companion object {
         const val RETENTION_DAYS = 90
     }

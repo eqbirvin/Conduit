@@ -23,6 +23,17 @@ data class HubNotification(
     val isArchived: Boolean = false,
     val archivedTimestamp: Long? = null,
     val isSnoozed: Boolean = false,
-    val isPinned: Boolean = false
+    val isPinned: Boolean = false,
+    val kind: String = "OTHER",
+    val detachedAt: Long? = null
+)
+
+data class NotificationMetadata(
+    val id: Int,
+    val notificationKey: String,
+    val detachedAt: Long?,
+    val kind: String,
+    val isPinned: Boolean,
+    val isSnoozed: Boolean
 )
 

@@ -250,3 +250,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-17T16:35] [v2.12.03] injected custom viewconfiguration to increase touch slop for swipetodismissbox by 2.5x to prevent accidental horizontal intercepts during fast vertical scrolls.
 [2026-08-17T17:08] [v2.12.04] removed block option from multi-select menu in hub.
 [2026-08-17T17:15] [v2.12.05] removed archive option from multi-select menu in hub.
+[2026-08-18T05:14] [v2.13.00] implemented sync engine v2 with kind classification, detachedat tracking, and listener reconciliation.

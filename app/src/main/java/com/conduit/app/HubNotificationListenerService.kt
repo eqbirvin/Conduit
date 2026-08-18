@@ -155,6 +155,33 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         scope.launch {
             try {
                 val prefs = getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
+                val autoDismissDetached = prefs.getBoolean("auto_dismiss_detached", true)
+                val now = System.currentTimeMillis()
+                
+                val activeKeys = try { activeNotifications.map { it.key }.toSet() } catch (e: Exception) { emptySet() }
+                val unarchivedMetadata = database.notificationDao().getActiveNotificationMetadata()
+                
+                var hasChanges = false
+                for (meta in unarchivedMetadata) {
+                    if (meta.isPinned) continue
+                    
+                    val inTray = activeKeys.contains(meta.notificationKey)
+                    if (!inTray && meta.detachedAt == null) {
+                        database.notificationDao().setDetached(meta.id, now)
+                        if (meta.kind == "OTHER" && autoDismissDetached && !meta.isSnoozed) {
+                            database.notificationDao().archiveNotification(meta.id, now)
+                        }
+                        hasChanges = true
+                    } else if (inTray && meta.detachedAt != null) {
+                        database.notificationDao().clearDetached(meta.id)
+                        hasChanges = true
+                    }
+                }
+                
+                if (hasChanges) {
+                    com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                }
+
                 val retentionDays = prefs.getInt("retention_days", 90)
                 val cutoffTimestamp = System.currentTimeMillis() - (retentionDays * 24L * 60L * 60L * 1000L)
                 val deletedCount = database.notificationDao().deleteOldArchivedNotifications(cutoffTimestamp)
@@ -828,13 +855,25 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
 
                 Log.d("HubService", "Intercepted MSG [$channel]: $title - $text")
 
+                val overrideMap = emptyMap<String, String>()
+                var kind = overrideMap[packageName]
+                if (kind == null) {
+                    val category = it.notification.category
+                    val hasMessagingStyle = it.notification.extras.containsKey(Notification.EXTRA_MESSAGES)
+                    val hasReply = postedActions.any { a -> a.remoteInputs?.isNotEmpty() == true }
+                    val isMessage = hasMessagingStyle || hasReply || category == Notification.CATEGORY_MESSAGE || category == Notification.CATEGORY_EMAIL
+                    val isCall = category == Notification.CATEGORY_CALL || category == Notification.CATEGORY_MISSED_CALL
+                    kind = if (isMessage) "MESSAGE" else if (isCall) "CALL" else "OTHER"
+                }
+
                 val hubNotification = HubNotification(
                     packageName = packageName,
                     notificationKey = notificationKey,
                     title = title,
                     text = text,
                     channel = channel,
-                    timestamp = timestamp
+                    timestamp = timestamp,
+                    kind = kind
                 )
 
                 val contentIntent = it.notification.contentIntent
@@ -844,6 +883,14 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
 
                 scope.launch {
                     notificationMutex.withLock {
+                        // Reboot-repost dedup:
+                        val unarchivedMatch = database.notificationDao().getUnarchivedExactMatch(packageName, title, text)
+                        if (unarchivedMatch != null) {
+                            database.notificationDao().adoptRow(unarchivedMatch.id, notificationKey, timestamp, kind)
+                            com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                            return@withLock
+                        }
+
                         // Prevent aggressive duplicates when Google Messages changes the notification key
                         val exactMatch = database.notificationDao().getMostRecentExactMatch(packageName, title, text)
                         if (exactMatch != null && (timestamp - exactMatch.timestamp) < 60000) {
@@ -854,10 +901,11 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                         if (existingActive != null) {
                             if (existingActive.title == title && existingActive.text == text) {
                                 // Exact duplicate update, ignore
+                                database.notificationDao().updateNotificationContentDetailed(existingActive.id, title, text, timestamp, kind)
                                 return@withLock
                             } else {
                                 // Update existing active notification
-                                database.notificationDao().updateNotificationContent(existingActive.id, title, text, timestamp)
+                                database.notificationDao().updateNotificationContentDetailed(existingActive.id, title, text, timestamp, kind)
                             }
                         } else {
                             database.notificationDao().insert(hubNotification)
@@ -917,16 +965,35 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         return false
     }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        super.onNotificationRemoved(sbn)
+    override fun onNotificationRemoved(sbn: StatusBarNotification?, rankingMap: NotificationListenerService.RankingMap?, reason: Int) {
+        super.onNotificationRemoved(sbn, rankingMap, reason)
         sbn?.let {
             actionCache[it.key] = emptyList()
             val prefs = getSharedPreferences("conduit_prefs", android.content.Context.MODE_PRIVATE)
             val syncDismissal = prefs.getBoolean("sync_dismissal", true)
-            if (syncDismissal) {
-                scope.launch {
-                    database.notificationDao().archiveNotificationByKey(it.key, System.currentTimeMillis())
-                    com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+            val autoDismissDetached = prefs.getBoolean("auto_dismiss_detached", true)
+            
+            val readReasons = setOf(
+                REASON_CANCEL, REASON_CANCEL_ALL, REASON_CLICK,
+                REASON_APP_CANCEL, REASON_APP_CANCEL_ALL
+            )
+            
+            scope.launch {
+                if (reason in readReasons) {
+                    if (syncDismissal) {
+                        database.notificationDao().archiveNotificationByKey(it.key, System.currentTimeMillis())
+                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                    }
+                } else {
+                    val activeNotification = database.notificationDao().getActiveNotificationByKey(it.key)
+                    if (activeNotification != null) {
+                        val now = System.currentTimeMillis()
+                        database.notificationDao().setDetached(activeNotification.id, now)
+                        if (activeNotification.kind == "OTHER" && autoDismissDetached && !activeNotification.isPinned && !activeNotification.isSnoozed) {
+                            database.notificationDao().archiveNotification(activeNotification.id, now)
+                        }
+                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                    }
                 }
             }
         }

@@ -102,6 +102,7 @@ interface SettingsScreenCallbacks {
     fun onEnableAppBundlesChanged(enabled: Boolean)
     fun onMinimizeIconsChanged(enabled: Boolean)
     fun onAutoCollapseReadChanged(enabled: Boolean)
+    fun onAutoDismissDetachedChanged(enabled: Boolean)
     fun onShowWhatsNew()
     fun onNavigateToDevSettings()
 }
@@ -361,6 +362,14 @@ fun SettingsScreen(
 
             Text("Sync", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
             
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Auto-dismiss detached notifications", style = MaterialTheme.typography.bodyLarge)
+                    Text("When a non-message notification is no longer in the system tray (cleared by reboot or the app), dismiss it in Conduit automatically. Messages and calls always stay until you act on them.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = settings.autoDismissDetached, onCheckedChange = callbacks::onAutoDismissDetachedChanged)
+            }
+
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Sync Dismissal with System", style = MaterialTheme.typography.bodyLarge)

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [HubNotification::class], version = 7, exportSchema = false)
+@Database(entities = [HubNotification::class], version = 8, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun notificationDao(): NotificationDao
 
@@ -23,6 +23,21 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `notifications` ADD COLUMN `kind` TEXT NOT NULL DEFAULT 'OTHER'")
+                db.execSQL("ALTER TABLE `notifications` ADD COLUMN `detachedAt` INTEGER DEFAULT NULL")
+                db.execSQL("""
+                    UPDATE `notifications`
+                    SET `kind` = CASE 
+                        WHEN UPPER(`channel`) IN ('GOOGLE MESSAGES', 'SMS', 'GMAIL', 'SPARK', 'OUTLOOK', 'EMAIL', 'SNAPCHAT', 'TELEGRAM', 'TELEGRAM X', 'MESSENGER', 'MICROSOFT TEAMS', 'STEAM CHAT') THEN 'MESSAGE'
+                        WHEN UPPER(`channel`) IN ('PHONE (GOOGLE DIALER)', 'PHONE', 'TRUECALLER') THEN 'CALL'
+                        ELSE 'OTHER'
+                    END
+                """)
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -30,7 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "conduit_database"
                 )
-                .addMigrations(MIGRATION_6_7)
+                .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
                 .build()
                 INSTANCE = instance
                 instance

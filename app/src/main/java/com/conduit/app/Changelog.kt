@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.13.00",
+        date = "2026-08-17",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Sync Engine v2",
+                description = "Implemented honest read-state tracking, notification classification, and tray reconciliation. Added a new setting to auto-dismiss detached notifications to keep your feed accurate.",
+                iconName = "Sync"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.12.05",
         date = "2026-08-17",
         highlights = listOf(
