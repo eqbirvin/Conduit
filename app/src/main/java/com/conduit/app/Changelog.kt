@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.08",
+        date = "2026-08-18",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Startup Notification Import",
+                description = "Added a one-time prompt upon first launch offering to import your existing notifications into Conduit.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.07",
         date = "2026-08-18",
         highlights = listOf(

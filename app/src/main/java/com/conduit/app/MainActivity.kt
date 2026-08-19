@@ -165,6 +165,8 @@ class MainActivity : ComponentActivity() {
             val prefs = remember { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
             var unreadReleases by remember { mutableStateOf<List<ChangelogRelease>>(emptyList()) }
             var showWhatsNewDialog by remember { mutableStateOf(false) }
+            var showImportPrompt by remember { mutableStateOf(false) }
+            var showImportLoading by remember { mutableStateOf(false) }
 
             LaunchedEffect(Unit) {
                 val currentVersion = BuildConfig.VERSION_NAME
@@ -291,6 +293,15 @@ class MainActivity : ComponentActivity() {
                     kotlinx.coroutines.delay(1000)
                     isPermissionGranted = true
                     showSuccessState = false
+                }
+            }
+
+            LaunchedEffect(isPermissionGranted, currentScreen, showSuccessState) {
+                if (isPermissionGranted && !showSuccessState && currentScreen == Screen.HOME) {
+                    val hasPrompted = prefs.getBoolean("has_prompted_import", false)
+                    if (!hasPrompted) {
+                        showImportPrompt = true
+                    }
                 }
             }
 
@@ -433,6 +444,65 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     
+                    if (showImportPrompt) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                showImportPrompt = false
+                                prefs.edit().putBoolean("has_prompted_import", true).apply()
+                            },
+                            title = { Text("Import Current Notifications?", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
+                            text = { Text("Would you like to import your current notifications? Conduit can safely grab any pending messages for supported channels from your notification tray.\n\nThis is a one-time prompt since Conduit was not capturing notifications that posted prior to installation and setup.") },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        showImportPrompt = false
+                                        showImportLoading = true
+                                        prefs.edit().putBoolean("has_prompted_import", true).apply()
+                                        coroutineScope.launch {
+                                            var retries = 0
+                                            while (HubNotificationListenerService.instance == null && retries < 20) {
+                                                kotlinx.coroutines.delay(100)
+                                                retries++
+                                            }
+                                            HubNotificationListenerService.instance?.importActiveNotifications()
+                                            kotlinx.coroutines.delay(1500)
+                                            showImportLoading = false
+                                        }
+                                    }
+                                ) {
+                                    Text("Import")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(
+                                    onClick = {
+                                        showImportPrompt = false
+                                        prefs.edit().putBoolean("has_prompted_import", true).apply()
+                                    }
+                                ) {
+                                    Text("Skip")
+                                }
+                            }
+                        )
+                    }
+
+                    if (showImportLoading) {
+                        AlertDialog(
+                            onDismissRequest = { },
+                            title = { Text("Importing...", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp)
+                                ) {
+                                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                                }
+                            },
+                            confirmButton = {}
+                        )
+                    }
+
                     if (showWhatsNewDialog && unreadReleases.isNotEmpty()) {
                         WhatsNewDialog(
                             releases = unreadReleases,

@@ -148,6 +148,17 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         return options.toBundle()
     }
 
+    fun importActiveNotifications() {
+        val active = try { activeNotifications } catch (e: Exception) { null }
+        active?.forEach { sbn ->
+            try {
+                onNotificationPosted(sbn)
+            } catch (e: Exception) {
+                android.util.Log.e("HubService", "Error importing notification", e)
+            }
+        }
+    }
+
     override fun onListenerConnected() {
         super.onListenerConnected()
         instance = this
