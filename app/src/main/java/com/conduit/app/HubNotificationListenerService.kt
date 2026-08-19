@@ -56,6 +56,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             "com.android.phone" to Pair("channel_phone", "Phone (Google Dialer)"),
             "com.android.server.telecom" to Pair("channel_phone", "Phone (Google Dialer)"),
             "com.android.contacts" to Pair("channel_phone", "Phone (Google Dialer)"),
+            "com.google.android.apps.tycho" to Pair("channel_phone", "Phone (Google Dialer)"),
             "com.truecaller" to Pair("channel_truecaller", "Truecaller"),
             "org.telegram.messenger" to Pair("channel_telegram", "Telegram"),
             "org.thunderdog.challegram" to Pair("channel_telegram_x", "Telegram X"),
