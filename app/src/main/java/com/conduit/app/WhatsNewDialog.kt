@@ -96,7 +96,7 @@ fun WhatsNewDialog(
     )
 }
 
-private fun getChangelogIcon(iconName: String): ImageVector {
+fun getChangelogIcon(iconName: String): ImageVector {
     return when (iconName) {
         "Call" -> Icons.Default.Call
         "Work" -> Icons.Default.Work

@@ -78,7 +78,7 @@ import com.conduit.app.ui.*
 import com.conduit.app.ui.theme.ConduitTheme
 import com.conduit.app.ui.HubScreen
 
-enum class Screen { HOME, SETTINGS, ARCHIVE, DEV_SETTINGS, MANAGE_VIEWS }
+enum class Screen { HOME, SETTINGS, ARCHIVE, DEV_SETTINGS, MANAGE_VIEWS, WHATS_NEW }
 
 fun performHapticTick(context: Context) {
     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -296,7 +296,10 @@ class MainActivity : ComponentActivity() {
 
             if (currentScreen != Screen.HOME) {
                 BackHandler {
-                    currentScreen = if (currentScreen == Screen.DEV_SETTINGS) Screen.SETTINGS else Screen.HOME
+                    currentScreen = when (currentScreen) {
+                        Screen.DEV_SETTINGS, Screen.WHATS_NEW -> Screen.SETTINGS
+                        else -> Screen.HOME
+                    }
                 }
             }
 
@@ -407,7 +410,7 @@ class MainActivity : ComponentActivity() {
                                     override fun onAutoDismissDetachedChanged(enabled: Boolean) {
                                         settingsViewModel.updateAutoDismissDetached(enabled)
                                     }
-                                    override fun onShowWhatsNew() { showWhatsNewDialog = true }
+                                    override fun onShowWhatsNew() { currentScreen = Screen.WHATS_NEW }
                                     override fun onNavigateToDevSettings() { currentScreen = Screen.DEV_SETTINGS }
                                 },
                                 onNavigateBack = { currentScreen = Screen.HOME }
@@ -423,6 +426,9 @@ class MainActivity : ComponentActivity() {
                             Screen.MANAGE_VIEWS -> com.conduit.app.ui.ManageViewsScreen(
                                 hubViewModel = hubViewModel,
                                 onNavigateBack = { currentScreen = Screen.HOME }
+                            )
+                            Screen.WHATS_NEW -> com.conduit.app.ui.WhatsNewScreen(
+                                onNavigateBack = { currentScreen = Screen.SETTINGS }
                             )
                         }
                     }

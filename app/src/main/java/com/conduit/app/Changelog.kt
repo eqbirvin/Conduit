@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.07",
+        date = "2026-08-18",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Full Release History",
+                description = "Added a full-screen 'What's New' page in Settings, allowing you to browse the complete, scrollable history of all Conduit updates.",
+                iconName = "Info"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.06",
         date = "2026-08-18",
         highlights = listOf(
