@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.09",
+        date = "2026-08-18",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Polished Setup UI",
+                description = "Enhanced the initial setup screen with a sleek dark background and refined copy.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.08",
         date = "2026-08-18",
         highlights = listOf(
