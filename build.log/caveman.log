@@ -256,3 +256,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-18T21:26] [v2.14.01] fixed custom view filter bug, dialer icon placeholder bug, and disabled apps showing in channels.
 [2026-08-18T21:35] [v2.14.02] actually fixed custom view filter bug and dialer icon placeholder bug by ensuring proper git diffs and launch intent checks.
 [2026-08-18T21:45] [v2.14.03] fix google fi (com.google.android.apps.tycho) voicemail notifications missing app icon and showing as T placeholder.
+[2026-08-18T21:51] [v2.14.04] set extractnativelibs/uselegacypackaging to true to fix android 15 16kb memory alignment warning.
