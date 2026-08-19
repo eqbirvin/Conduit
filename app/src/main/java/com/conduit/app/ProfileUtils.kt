@@ -16,6 +16,16 @@ val appIconCache = android.util.LruCache<String, ImageBitmap>(50)
 val representativePackageCache = ConcurrentHashMap<String, String>()
 
 fun isPackageInstalled(context: Context, packageName: String): Boolean {
+    val pm = context.packageManager
+    try {
+        val appInfo = pm.getApplicationInfo(packageName, 0)
+        if (!appInfo.enabled) {
+            return false
+        }
+    } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+        // Ignored
+    }
+
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
     for (user in userManager.userProfiles) {
@@ -24,9 +34,9 @@ fun isPackageInstalled(context: Context, packageName: String): Boolean {
                 return true
             }
         } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
-            android.util.Log.e("ProfileUtils", "Package not found", e)
+            // Ignore
         } catch (e: IllegalArgumentException) {
-            android.util.Log.e("ProfileUtils", "Invalid argument", e)
+            // Ignore
         }
     }
     return false

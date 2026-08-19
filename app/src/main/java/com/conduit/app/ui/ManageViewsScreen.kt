@@ -44,8 +44,14 @@ fun ManageViewsScreen(
     var editingView by remember { mutableStateOf<CustomView?>(null) }
     var showDeleteConfirmDialog by remember { mutableStateOf<CustomView?>(null) }
 
-    val channels = remember { getInstalledChannels(context) }
+    val settingsViewModel: com.conduit.app.SettingsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = com.conduit.app.SettingsViewModel.Factory(context.getSharedPreferences("conduit_prefs", android.content.Context.MODE_PRIVATE))
+    )
+    val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
 
+    val channels = remember(settings.channelStates) {
+        getInstalledChannels(context).filter { settings.channelStates[it.first] == true }
+    }
     Scaffold(
         topBar = {
             TopAppBar(

@@ -103,7 +103,8 @@ class ConduitWidgetFactory(
         views.setTextViewText(R.id.widget_item_time, timeString)
 
         // Set Icon
-        val iconDrawable = getAppIcon(context, notification.packageName)
+        val repPkg = com.conduit.app.getRepresentativePackage(context, notification.packageName)
+        val iconDrawable = getAppIcon(context, repPkg)
         if (iconDrawable != null) {
             try {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {

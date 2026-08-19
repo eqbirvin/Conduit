@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.01",
+        date = "2026-08-18",
+        highlights = listOf(
+            ChangelogItem(
+                title = "App Filter Enhancements",
+                description = "Fixed a bug where a filtered app dock selection wasn't clearing when switching custom views. Old phone notifications now correctly display the dialer icon and open the phone app. Disabled apps no longer clutter the channels list.",
+                iconName = "Tune"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.00",
         date = "2026-08-18",
         highlights = listOf(

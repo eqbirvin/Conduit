@@ -253,3 +253,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-18T05:14] [v2.13.00] implemented sync engine v2 with kind classification, detachedat tracking, and listener reconciliation.
 [2026-08-18T20:46] [v2.13.01] fixed widgets not updating consistently. centralized all widget refresh calls into widgetupdater. fixed n-times update loop on day header mark read.
 [2026-08-18T21:07] [v2.14.00] implemented kind-aware terminology pass. updated read/dismiss language across ui and widgets based on notification type.
+[2026-08-18T21:26] [v2.14.01] fixed custom view filter bug, dialer icon placeholder bug, and disabled apps showing in channels.

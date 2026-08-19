@@ -171,9 +171,10 @@ fun NotificationItem(
 
                         if (!launched) {
                             try {
-                                val launchedCrossProfile = launchApp(context, notification.packageName)
+                                val repPkg = getRepresentativePackage(context, notification.packageName)
+                                val launchedCrossProfile = launchApp(context, repPkg)
                                 if (!launchedCrossProfile) {
-                                    val launchIntent = context.packageManager.getLaunchIntentForPackage(notification.packageName)
+                                    val launchIntent = context.packageManager.getLaunchIntentForPackage(repPkg)
                                     if (launchIntent != null) {
                                         launchIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                                         context.startActivity(launchIntent)
@@ -196,7 +197,8 @@ fun NotificationItem(
         LaunchedEffect(notification.packageName) {
             if (!appLabelCache.containsKey(notification.packageName)) {
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    val label = getAppLabel(context, notification.packageName, notification.channel)
+                    val repPkg = getRepresentativePackage(context, notification.packageName)
+                    val label = getAppLabel(context, repPkg, notification.channel)
                     appName = label
                 }
             }
@@ -707,19 +709,20 @@ fun formatTimestampWithDate(timestamp: Long): String {
 @Composable
 fun AppIcon(packageName: String, size: androidx.compose.ui.unit.Dp = 50.dp) {
     val context = LocalContext.current
-    var iconBitmap by remember(packageName) { mutableStateOf(appIconCache[packageName]) }
+    val repPkg = remember(packageName) { getRepresentativePackage(context, packageName) }
+    var iconBitmap by remember(repPkg) { mutableStateOf(appIconCache[repPkg]) }
 
     val density = androidx.compose.ui.platform.LocalDensity.current
     val sizePx = remember(size, density) { with(density) { size.roundToPx() } }
 
-    LaunchedEffect(packageName) {
+    LaunchedEffect(repPkg) {
         if (iconBitmap == null) {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 try {
-                    val drawable = getAppIcon(context, packageName)
+                    val drawable = getAppIcon(context, repPkg)
                     if (drawable != null) {
                         val bmp = drawable.toBitmap(sizePx, sizePx).asImageBitmap()
-                        appIconCache.put(packageName, bmp)
+                        appIconCache.put(repPkg, bmp)
                         iconBitmap = bmp
                     }
                 } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
@@ -744,7 +747,7 @@ fun AppIcon(packageName: String, size: androidx.compose.ui.unit.Dp = 50.dp) {
                 .background(MaterialTheme.colorScheme.primaryContainer, shape = androidx.compose.foundation.shape.CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            val initial = packageName.split(".").lastOrNull()?.firstOrNull()?.uppercase() ?: "A"
+            val initial = repPkg.split(".").lastOrNull()?.firstOrNull()?.uppercase() ?: "A"
             Text(initial, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Medium, fontSize = (size.value * 0.4).sp)
         }
     }
