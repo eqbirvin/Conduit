@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.11",
+        date = "2026-08-19",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Immediate Block Resolution",
+                description = "When a new block rule is added, any existing notifications matching that rule are instantly removed from the app and the system tray.",
+                iconName = "Block"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.10",
         date = "2026-08-19",
         highlights = listOf(

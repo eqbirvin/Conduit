@@ -1229,10 +1229,11 @@ fun HubScreen(
                                 val updatedSet = currentSet + newRule
                                 prefs.edit().putStringSet("blocked_rules", updatedSet).apply()
                                 
-                                scope.launch {
+                                kotlinx.coroutines.GlobalScope.launch {
                                     val database = AppDatabase.getDatabase(context)
                                     val allNotifs = database.notificationDao().getAllNotificationsSync()
                                     val idsToDelete = mutableListOf<Int>()
+                                    val keysToCancel = mutableListOf<String>()
                                     allNotifs.forEach { item ->
                                         if (item.packageName == notif.packageName) {
                                             val match = if (blockType == "TITLE") {
@@ -1242,10 +1243,14 @@ fun HubScreen(
                                             }
                                             if (match) {
                                                 idsToDelete.add(item.id)
+                                                keysToCancel.add(item.notificationKey)
                                             }
                                         }
                                     }
                                     if (idsToDelete.isNotEmpty()) {
+                                        keysToCancel.forEach { key ->
+                                            HubNotificationListenerService.instance?.cancel(key)
+                                        }
                                         database.notificationDao().deleteNotifications(idsToDelete)
                                         com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                                     }
