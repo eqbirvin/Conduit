@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.10",
+        date = "2026-08-19",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Widget Titles",
+                description = "Updated widget names in the launcher selection screen to clearly distinguish between the Standard Hub and Custom View Hub.",
+                iconName = "Widgets"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.09",
         date = "2026-08-18",
         highlights = listOf(
