@@ -204,7 +204,7 @@ fun HubScreen(
                             kotlinx.coroutines.GlobalScope.launch {
                                 val database = AppDatabase.getDatabase(context)
                                 database.notificationDao().pinNotifications(idsToPin, anyUnpinned)
-                                com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
+                                com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                             }
                             performHapticClick(context)
                             selectedIds = emptySet()
@@ -241,7 +241,7 @@ fun HubScreen(
                                         database.notificationDao().archiveNotification(id, System.currentTimeMillis())
                                     }
                                 }
-                                com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
+                                com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                             }
                             performHapticClick(context)
                             selectedIds = emptySet()
@@ -596,7 +596,7 @@ fun HubScreen(
                                                             kotlinx.coroutines.GlobalScope.launch {
                                                                 val database = AppDatabase.getDatabase(context)
                                                                 notifications.forEach { database.notificationDao().archiveNotification(it.id, now) }
-                                                                com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
+                                                                com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                                                             }
                                                         }
                                                         "SEARCH" -> {
@@ -870,8 +870,9 @@ fun HubScreen(
                                                         .clickable {
                                                             performHapticClick(context)
                                                             val now = System.currentTimeMillis()
-                                                            itemsList.forEach { 
-                                                                if (notifications.contains(it)) onArchiveNotification(it.id, now) 
+                                                            val idsToArchive = itemsList.filter { notifications.contains(it) }.map { it.id }
+                                                            if (idsToArchive.isNotEmpty()) {
+                                                                viewModel.archiveMany(idsToArchive)
                                                             }
                                                         }
                                                 ) {
@@ -1155,7 +1156,7 @@ fun HubScreen(
                                     }
                                     if (idsToDelete.isNotEmpty()) {
                                         database.notificationDao().deleteNotifications(idsToDelete)
-                                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
+                                        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                                     }
                                 }
                             }

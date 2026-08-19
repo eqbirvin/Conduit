@@ -179,7 +179,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 }
                 
                 if (hasChanges) {
-                    com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                    com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
                 }
 
                 val retentionDays = prefs.getInt("retention_days", 90)
@@ -223,7 +223,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
-        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this)
+        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this)
     }
 
     override fun onDestroy() {
@@ -833,7 +833,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                                 val newText = if (textUpdated) currentText + suffix else currentText
                                 val newTitle = if (titleUpdated) "$currentTitle - Replied" else currentTitle
                                 database.notificationDao().updateAndUnarchive(existing.id, newTitle, newText, timestamp)
-                                com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                                com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
                             }
                         }
                     }
@@ -887,7 +887,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                         val unarchivedMatch = database.notificationDao().getUnarchivedExactMatch(packageName, title, text)
                         if (unarchivedMatch != null) {
                             database.notificationDao().adoptRow(unarchivedMatch.id, notificationKey, timestamp, kind)
-                            com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                            com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
                             return@withLock
                         }
 
@@ -911,7 +911,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                             database.notificationDao().insert(hubNotification)
                         }
                         
-                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
                         
                         // Post native Bubble notification
                         val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
@@ -982,7 +982,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 if (reason in readReasons) {
                     if (syncDismissal) {
                         database.notificationDao().archiveNotificationByKey(it.key, System.currentTimeMillis())
-                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
                     }
                 } else {
                     val activeNotification = database.notificationDao().getActiveNotificationByKey(it.key)
@@ -992,7 +992,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                         if (activeNotification.kind == "OTHER" && autoDismissDetached && !activeNotification.isPinned && !activeNotification.isSnoozed) {
                             database.notificationDao().archiveNotification(activeNotification.id, now)
                         }
-                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(this@HubNotificationListenerService)
+                        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
                     }
                 }
             }

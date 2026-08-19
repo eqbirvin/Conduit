@@ -121,7 +121,7 @@ class HubViewModel(
                 }
             }
             repository.archiveMany(ids)
-            com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
+            com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
         }
     }
 

@@ -436,7 +436,7 @@ fun NotificationItem(
                                         if (syncDismissal) {
                                             service?.cancel(notification.notificationKey)
                                         }
-                                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
+                                        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                                     }
                                 },
                                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),

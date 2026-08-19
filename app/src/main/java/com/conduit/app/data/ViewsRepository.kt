@@ -19,7 +19,7 @@ data class CustomView(
     val filterDock: Boolean = false
 )
 
-class ViewsRepository(context: Context) {
+class ViewsRepository(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("conduit_views_prefs", Context.MODE_PRIVATE)
 
     private val _views = MutableStateFlow<List<CustomView>>(emptyList())
@@ -59,6 +59,7 @@ class ViewsRepository(context: Context) {
             val json = Json.encodeToString(sortedViews)
             prefs.edit().putString("custom_views", json).apply()
             _views.value = sortedViews
+            com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
         } catch (e: Exception) {
             e.printStackTrace()
         }

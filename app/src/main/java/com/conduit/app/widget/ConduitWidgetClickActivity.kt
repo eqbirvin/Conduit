@@ -32,7 +32,7 @@ class ConduitWidgetClickActivity : ComponentActivity() {
                     if (syncDismissal) {
                         service?.cancel(key)
                     }
-                    ConduitWidgetProvider.updateAllWidgets(this@ConduitWidgetClickActivity)
+                    com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@ConduitWidgetClickActivity)
                     launch(Dispatchers.Main) { finish() }
                 }
             } else if (actionIndex != -1) {

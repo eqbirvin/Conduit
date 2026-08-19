@@ -249,7 +249,7 @@ fun DevSettingsScreen(
                     )
                     scope.launch {
                         testNotifications.forEach { database.notificationDao().insert(it) }
-                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
+                        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -264,7 +264,7 @@ fun DevSettingsScreen(
                     val database = AppDatabase.getDatabase(context)
                     scope.launch {
                         database.notificationDao().deleteAll()
-                        com.conduit.app.widget.ConduitWidgetProvider.updateAllWidgets(context)
+                        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
