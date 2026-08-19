@@ -11,6 +11,7 @@ data class ConduitSettings(
     val showActionChips: Boolean = true,
     val syncPinned: Boolean = false,
     val dockLongPressLaunch: Boolean = true,
+    val dockScrollIndicator: String = "FADING_EDGES",
     val swipeLeftAction: String = "SNOOZE",
     val swipeRightAction: String = "ARCHIVE",
     val dockSizeIndex: Int = 1,

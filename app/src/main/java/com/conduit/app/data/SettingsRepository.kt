@@ -44,6 +44,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             showActionChips = prefs.getBoolean("show_action_chips", true),
             syncPinned = prefs.getBoolean("sync_pinned", false),
             dockLongPressLaunch = prefs.getBoolean("dock_long_press_launch", true),
+            dockScrollIndicator = prefs.getString("dock_scroll_indicator", "FADING_EDGES") ?: "FADING_EDGES",
             swipeLeftAction = prefs.getString("swipe_left_action", "SNOOZE") ?: "SNOOZE",
             swipeRightAction = prefs.getString("swipe_right_action", "ARCHIVE") ?: "ARCHIVE",
             dockSizeIndex = prefs.getInt("dock_size", 1),
@@ -114,6 +115,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateDockLongPressLaunch(enabled: Boolean) {
         prefs.edit().putBoolean("dock_long_press_launch", enabled).apply()
         _settings.update { it.copy(dockLongPressLaunch = enabled) }
+    }
+
+    fun updateDockScrollIndicator(indicator: String) {
+        prefs.edit().putString("dock_scroll_indicator", indicator).apply()
+        _settings.update { it.copy(dockScrollIndicator = indicator) }
     }
 
     fun updateSwipeLeftAction(action: String) {

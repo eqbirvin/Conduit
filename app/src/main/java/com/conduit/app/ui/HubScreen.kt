@@ -78,6 +78,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.foundation.gestures.animateScrollBy
+
 @Composable
 fun HubScreen(
     viewModel: com.conduit.app.HubViewModel,
@@ -107,6 +110,7 @@ fun HubScreen(
     val composeBundle = settings.composeBundle
     val showActionChips = settings.showActionChips
     val dockSizeIndex = settings.dockSizeIndex
+    val dockScrollIndicator = settings.dockScrollIndicator
     val unifiedView = settings.unifiedView
 
     val onArchiveNotification: (Int, Long) -> Unit = { id, ts -> viewModel.archiveNotification(id, ts) }
@@ -427,6 +431,17 @@ fun HubScreen(
                         2 -> (-4).dp
                         else -> (-3).dp
                     }
+                    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+                    LaunchedEffect(dockPackagesList.size, dockScrollIndicator) {
+                        if (dockScrollIndicator == "BOUNCE" && dockPackagesList.size > 0) {
+                            kotlinx.coroutines.delay(500)
+                            if (listState.layoutInfo.totalItemsCount > listState.layoutInfo.visibleItemsInfo.size) {
+                                listState.animateScrollBy(80f, androidx.compose.animation.core.tween(300))
+                                listState.animateScrollBy(-80f, androidx.compose.animation.core.tween(300))
+                            }
+                        }
+                    }
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -440,12 +455,51 @@ fun HubScreen(
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shadowElevation = 8.dp
                         ) {
-                            LazyRow(
-                                modifier = Modifier.padding(vertical = 1.dp).wrapContentWidth(),
-                                contentPadding = PaddingValues(horizontal = dockPaddingHorizontal, vertical = dockPaddingVertical), 
-                                horizontalArrangement = Arrangement.spacedBy(dockSpacing, Alignment.CenterHorizontally),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                            val isFading = dockScrollIndicator == "FADING_EDGES"
+                            val fadeWidth = 32.dp
+                            val fadeWidthPx = with(androidx.compose.ui.platform.LocalDensity.current) { fadeWidth.toPx() }
+
+                            Box(contentAlignment = Alignment.BottomCenter) {
+                                LazyRow(
+                                    state = listState,
+                                    modifier = Modifier
+                                        .padding(vertical = 1.dp)
+                                        .wrapContentWidth()
+                                        .then(
+                                            if (isFading) {
+                                                Modifier
+                                                    .graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
+                                                    .drawWithContent {
+                                                        drawContent()
+                                                        val canScrollBackward = listState.canScrollBackward
+                                                        val canScrollForward = listState.canScrollForward
+                                                        if (canScrollBackward) {
+                                                            drawRect(
+                                                                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                                                    colors = listOf(Color.Transparent, Color.Black),
+                                                                    startX = 0f,
+                                                                    endX = fadeWidthPx
+                                                                ),
+                                                                blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
+                                                            )
+                                                        }
+                                                        if (canScrollForward) {
+                                                            drawRect(
+                                                                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                                                    colors = listOf(Color.Black, Color.Transparent),
+                                                                    startX = this.size.width - fadeWidthPx,
+                                                                    endX = this.size.width
+                                                                ),
+                                                                blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
+                                                            )
+                                                        }
+                                                    }
+                                            } else Modifier
+                                        ),
+                                    contentPadding = PaddingValues(horizontal = dockPaddingHorizontal, vertical = dockPaddingVertical), 
+                                    horizontalArrangement = Arrangement.spacedBy(dockSpacing, Alignment.CenterHorizontally),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                 items(dockPackagesList.size) { index ->
                                     val pkg = dockPackagesList[index]
                                     val groupNotifs = grouped[pkg] ?: emptyList()
@@ -517,6 +571,42 @@ fun HubScreen(
                                         }
                                     }
                                 }
+                            }
+
+                            if (dockScrollIndicator == "SCROLLBAR" && dockPackagesList.isNotEmpty()) {
+                                val layoutInfo = listState.layoutInfo
+                                val totalItems = layoutInfo.totalItemsCount
+                                val visibleItems = layoutInfo.visibleItemsInfo.size
+                                if (totalItems > 0 && visibleItems < totalItems) {
+                                    val scrollRange = totalItems - visibleItems
+                                    val scrollFraction = if (scrollRange > 0) {
+                                        val firstIndex = listState.firstVisibleItemIndex
+                                        val firstOffset = listState.firstVisibleItemScrollOffset
+                                        val itemSize = layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
+                                        ((firstIndex.toFloat() + (firstOffset.toFloat() / itemSize)) / scrollRange).coerceIn(0f, 1f)
+                                    } else 0f
+                                    
+                                    val trackWidth = 40.dp
+                                    val thumbWidth = 12.dp
+                                    val maxThumbOffset = trackWidth - thumbWidth
+                                    
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(bottom = 2.dp)
+                                            .width(trackWidth)
+                                            .height(3.dp)
+                                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f), androidx.compose.foundation.shape.CircleShape)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .offset(x = maxThumbOffset * scrollFraction)
+                                                .width(thumbWidth)
+                                                .fillMaxHeight()
+                                                .background(MaterialTheme.colorScheme.primary, androidx.compose.foundation.shape.CircleShape)
+                                        )
+                                    }
+                                }
+                            }
                             }
                         }
                     }

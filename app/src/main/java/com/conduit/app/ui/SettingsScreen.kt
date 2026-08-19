@@ -87,6 +87,7 @@ interface SettingsScreenCallbacks {
     fun onRecorderBundleChanged(bundle: List<String>)
     fun onComposeBundleChanged(bundle: List<String>)
     fun onDockLongPressLaunchChanged(enabled: Boolean)
+    fun onDockScrollIndicatorChanged(indicator: String)
     fun onSwipeLeftActionChanged(action: String)
     fun onSwipeRightActionChanged(action: String)
     fun onDockSizeChanged(size: Int)
@@ -349,6 +350,56 @@ fun SettingsScreen(
                                 Text(
                                     text = label,
                                     style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Text("Scroll Indicator", style = MaterialTheme.typography.bodyLarge)
+                Text("Choose how the dock shows when it has more apps to scroll", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 12.dp))
+                
+                val indicatorOptions = listOf("NONE" to "None", "FADING_EDGES" to "Fade Edges", "SCROLLBAR" to "Track", "BOUNCE" to "Bounce")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectableGroup(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    indicatorOptions.forEach { (value, label) ->
+                        val isSelected = settings.dockScrollIndicator == value
+                        OutlinedCard(
+                            onClick = { 
+                                callbacks.onDockScrollIndicatorChanged(value)
+                                performHapticClick(context)
+                            },
+                            colors = CardDefaults.outlinedCardColors(
+                                containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp, 
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 11.sp,
+                                    maxLines = 1,
                                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                     color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                 )

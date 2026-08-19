@@ -345,6 +345,7 @@ class MainActivity : ComponentActivity() {
                                     override fun onRecorderBundleChanged(bundle: List<String>) { settingsViewModel.updateRecorderBundle(bundle) }
                                     override fun onComposeBundleChanged(bundle: List<String>) { settingsViewModel.updateComposeBundle(bundle) }
                                     override fun onDockLongPressLaunchChanged(enabled: Boolean) { settingsViewModel.updateDockLongPressLaunch(enabled) }
+                                    override fun onDockScrollIndicatorChanged(indicator: String) { settingsViewModel.updateDockScrollIndicator(indicator) }
                                     override fun onSwipeLeftActionChanged(action: String) { settingsViewModel.updateSwipeLeftAction(action) }
                                     override fun onSwipeRightActionChanged(action: String) { settingsViewModel.updateSwipeRightAction(action) }
                                     override fun onDockSizeChanged(size: Int) { settingsViewModel.updateDockSize(size) }

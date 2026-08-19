@@ -22,6 +22,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateShowActionChips(enabled: Boolean) = viewModelScope.launch { repository.updateShowActionChips(enabled) }
     fun updateSyncPinned(enabled: Boolean) = viewModelScope.launch { repository.updateSyncPinned(enabled) }
     fun updateDockLongPressLaunch(enabled: Boolean) = viewModelScope.launch { repository.updateDockLongPressLaunch(enabled) }
+    fun updateDockScrollIndicator(indicator: String) = viewModelScope.launch { repository.updateDockScrollIndicator(indicator) }
     fun updateSwipeLeftAction(action: String) = viewModelScope.launch { repository.updateSwipeLeftAction(action) }
     fun updateSwipeRightAction(action: String) = viewModelScope.launch { repository.updateSwipeRightAction(action) }
     fun updateDockSize(size: Int) = viewModelScope.launch { repository.updateDockSize(size) }

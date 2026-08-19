@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.05",
+        date = "2026-08-18",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Dock Scroll Indicators",
+                description = "Added the ability to customize how the dock indicates scrollable content. Choose from Fading Edges, Scrollbar Track, Initial Bounce, or None.",
+                iconName = "Tune"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.01",
         date = "2026-08-18",
         highlights = listOf(
