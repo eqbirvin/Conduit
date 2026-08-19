@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.00",
+        date = "2026-08-18",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Smart Terminology",
+                description = "Updated action verbs to match the notification type. You now 'Dismiss' social and system alerts, and 'Mark Read' messages.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.13.01",
         date = "2026-08-18",
         highlights = listOf(

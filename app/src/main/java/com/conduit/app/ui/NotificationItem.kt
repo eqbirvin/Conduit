@@ -291,7 +291,7 @@ fun NotificationItem(
                                 modifier = Modifier.padding(end = 6.dp)
                             ) {
                                 Text(
-                                    if (isUnifiedView) "READ" else "ARCHIVED",
+                                    if (isUnifiedView) { if (notification.kind == "MESSAGE") "READ" else "DISMISSED" } else "ARCHIVED",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
@@ -335,7 +335,7 @@ fun NotificationItem(
                 }
                 
                 if (isArchivedView && notification.archivedTimestamp != null) {
-                    val label = if (notification.isSnoozed) "Snoozed: " else "Read: "
+                    val label = if (notification.isSnoozed) "Snoozed: " else if (notification.kind == "MESSAGE") "Read: " else "Dismissed: "
                     val color = if (notification.isSnoozed) Color(0xFFFF9800) else MaterialTheme.colorScheme.onSurfaceVariant
                     Text(
                         text = label + formatTimestamp(notification.archivedTimestamp),
@@ -444,7 +444,7 @@ fun NotificationItem(
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
                             ) {
                                 Text(
-                                    text = "Mark Read",
+                                    text = if (notification.kind == "MESSAGE") "Mark Read" else "Dismiss",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,

@@ -979,7 +979,7 @@ fun HubScreen(
                                     }
                                     
                                     val label = when (action) {
-                                        "ARCHIVE" -> if (unifiedView) "Mark Read" else "Clear"
+                                        "ARCHIVE" -> if (notification.kind == "MESSAGE") "Mark Read" else "Dismiss"
                                         "SNOOZE" -> "Snooze"
                                         "PIN" -> if (notification.isPinned) "Unpin" else "Pin"
                                         "BLOCK" -> "Block"

@@ -169,7 +169,7 @@ class ConduitWidgetFactory(
             if (currentSlot < 3) {
                 val viewId = actionViews[currentSlot]
                 views.setViewVisibility(viewId, android.view.View.VISIBLE)
-                views.setTextViewText(viewId, "Mark Read")
+                views.setTextViewText(viewId, if (notification.kind == "MESSAGE") "Mark Read" else "Dismiss")
                 views.setInt(viewId, "setBackgroundResource", R.drawable.widget_chip_conduit_bg)
 
                 val actionFillInIntent = Intent().apply {

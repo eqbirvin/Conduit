@@ -238,8 +238,8 @@ fun SettingsScreen(
 
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Smart Mark as Read Chips", style = MaterialTheme.typography.bodyLarge)
-                    Text("Automatically inserts a \"Mark Read\" action chip if an app notification doesn't natively support it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Smart Action Chips", style = MaterialTheme.typography.bodyLarge)
+                    Text("Automatically inserts a \"Mark Read\" action chip on messages (and \"Dismiss\" on other notifications) if an app notification doesn't natively support it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(checked = settings.smartMarkRead, onCheckedChange = callbacks::onSmartMarkReadChanged)
             }
@@ -1010,7 +1010,7 @@ fun SwipeActionSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val displayNames = mapOf(
-        "ARCHIVE" to if (isUnifiedView) "Mark Read" else "Clear",
+        "ARCHIVE" to "Mark Read / Dismiss",
         "SNOOZE" to "Snooze",
         "PIN" to "Pin / Unpin",
         "BLOCK" to "Block Notification Type"
