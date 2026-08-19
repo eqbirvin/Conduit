@@ -266,6 +266,33 @@ class MainActivity : ComponentActivity() {
             
             var currentScreen by remember { mutableStateOf(Screen.HOME) }
             var isPermissionGranted by remember { mutableStateOf(isNotificationServiceEnabled()) }
+            var showSuccessState by remember { mutableStateOf(false) }
+
+            val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+                    if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                        val currentlyEnabled = isNotificationServiceEnabled()
+                        if (!isPermissionGranted && currentlyEnabled) {
+                            showSuccessState = true
+                        } else if (!currentlyEnabled) {
+                            isPermissionGranted = false
+                        }
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
+            }
+
+            LaunchedEffect(showSuccessState) {
+                if (showSuccessState) {
+                    kotlinx.coroutines.delay(1000)
+                    isPermissionGranted = true
+                    showSuccessState = false
+                }
+            }
 
             if (currentScreen != Screen.HOME) {
                 BackHandler {
@@ -306,15 +333,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (!isPermissionGranted) {
+                    if (!isPermissionGranted && !showSuccessState) {
                         PermissionScreen(
+                            showSuccess = false,
                             onGrantClick = {
                                 val intent = Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                                 context.startActivity(intent)
-                            },
-                            onCheckAgainClick = {
-                                isPermissionGranted = isNotificationServiceEnabled()
                             }
+                        )
+                    } else if (showSuccessState) {
+                        PermissionScreen(
+                            showSuccess = true,
+                            onGrantClick = {}
                         )
                     } else {
                         when (currentScreen) {

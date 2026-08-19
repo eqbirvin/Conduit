@@ -258,4 +258,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-18T21:45] [v2.14.03] fix google fi (com.google.android.apps.tycho) voicemail notifications missing app icon and showing as T placeholder.
 [2026-08-18T21:51] [v2.14.04] set extractnativelibs/uselegacypackaging to true to fix android 15 16kb memory alignment warning.
 [ 2 0 2 6 - 0 8 - 1 9 T 0 4 : 2 2 ]   [ v 2 . 1 4 . 0 5 ]   a d d e d   o p t i o n s   f o r   d o c k   s c r o l l   i n d i c a t o r s :   f a d i n g   e d g e s   s c r o l l b a r   t r a c k   i n i t i a l   b o u n c e   a n d   n o n e .  
- 
+ [2026-08-18T23:38] [v2.14.06] updated permission screen ui to feel more premium and added auto-detection of permission granting via lifecycle event.

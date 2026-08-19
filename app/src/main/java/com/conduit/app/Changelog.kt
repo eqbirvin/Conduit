@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.06",
+        date = "2026-08-18",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Permission Screen Polish",
+                description = "Upgraded the initial permission screen with a premium design and auto-detection, making the first launch experience completely seamless.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.05",
         date = "2026-08-18",
         highlights = listOf(
