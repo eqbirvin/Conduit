@@ -667,6 +667,7 @@ fun HubScreen(
                                     viewModel.setActiveViewId(null)
                                 } else {
                                     viewModel.setActiveViewId(view.id)
+                                    selectedDockPackage = null
                                 }
                             },
                             label = { Text(view.name) },

@@ -180,7 +180,10 @@ fun getRepresentativePackage(context: Context, packageName: String): String {
         val rep = HubNotificationListenerService.supportedApps.entries
             .filter { it.value.first == channelKey }
             .map { it.key }
-            .firstOrNull { isPackageInstalled(context, it) }
+            .firstOrNull { 
+                isPackageInstalled(context, it) && 
+                context.packageManager.getLaunchIntentForPackage(it) != null 
+            }
         rep ?: packageName
     } else {
         packageName
