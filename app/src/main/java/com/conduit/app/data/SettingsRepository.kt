@@ -17,7 +17,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     private fun loadInitialSettings(): ConduitSettings {
         val channelStates = mutableMapOf<String, Boolean>()
         HubNotificationListenerService.supportedApps.values.forEach { (prefKey, _) ->
-            channelStates[prefKey] = prefs.getBoolean(prefKey, true)
+            val defaultVal = if (prefKey == "channel_airbnb") false else true
+            channelStates[prefKey] = prefs.getBoolean(prefKey, defaultVal)
         }
 
         val fabConfigsJson = prefs.getString("fab_configs", null)

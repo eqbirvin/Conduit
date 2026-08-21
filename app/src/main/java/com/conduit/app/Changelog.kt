@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.14.12",
+        date = "2026-08-20",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Airbnb Support",
+                description = "Added support for Airbnb notifications! You can enable it anytime from the Supported Apps menu in Settings.",
+                iconName = "Travel"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.11",
         date = "2026-08-19",
         highlights = listOf(

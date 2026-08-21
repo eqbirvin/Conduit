@@ -264,3 +264,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-19T00:28] [v2.14.09] updated permission screen to use a dark neutral background and polished the copy.
 [2026-08-19T17:48] [v2.14.10] added explicit android:label to both widget receivers in androidmanifest to distinguish them in the launcher widget picker.
 [2026-08-19T17:56] [v2.14.11] fixed scope cancellation in hubscreen blocking dialog and added explicit cancellation of blocked system notifications.
+[2026-08-20T21:28] [v2.14.12] added support for airbnb (com.airbnb.android) as a channel and defaulted it to off in settingsrepository.

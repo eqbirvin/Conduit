@@ -66,7 +66,8 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             "com.facebook.katana" to Pair("channel_facebook", "Facebook"),
             "com.facebook.orca" to Pair("channel_messenger", "Messenger"),
             "com.twitter.android" to Pair("channel_twitter", "Twitter (X)"),
-            "com.microsoft.teams" to Pair("channel_teams", "Microsoft Teams")
+            "com.microsoft.teams" to Pair("channel_teams", "Microsoft Teams"),
+            "com.airbnb.android" to Pair("channel_airbnb", "Airbnb")
         )
     }
 
