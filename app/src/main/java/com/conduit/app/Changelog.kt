@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.15.01",
+        date = "2026-08-25",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Custom View Chip Spacing",
+                description = "Adjusted the layout of custom view chips so they are perfectly spaced when wrapping across multiple lines.",
+                iconName = "FilterList"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.15.00",
         date = "2026-08-25",
         highlights = listOf(
