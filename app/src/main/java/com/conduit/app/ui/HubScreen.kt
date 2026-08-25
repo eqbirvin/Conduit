@@ -119,6 +119,10 @@ fun HubScreen(
     var showBundleMenu by remember { mutableStateOf<Pair<String, List<String>>?>(null) }
     var showCustomizeFab by remember { mutableStateOf<FabAction?>(null) }
     
+    val hasUpdateAvailable = settings.hasUpdateAvailable
+    val latestVersionAvailable = settings.latestVersionAvailable
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    
     var isFabExpanded by remember { mutableStateOf(prefs.getBoolean("fab_expanded", true)) }
     val masterExpandedState = settings.masterExpandedState
     val individualToggles = remember { androidx.compose.runtime.mutableStateMapOf<Int, Boolean>() }
@@ -297,7 +301,28 @@ fun HubScreen(
                 )
             } else {
                 CenterAlignedTopAppBar(
-                    title = { Text("Conduit", fontSize = 22.sp, fontWeight = FontWeight.SemiBold) },
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Conduit", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+                            if (hasUpdateAvailable) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                IconButton(
+                                    onClick = { 
+                                        performHapticClick(context)
+                                        showUpdateDialog = true 
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Filled.SystemUpdate,
+                                        contentDescription = "Update Available",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    },
                     navigationIcon = {
                         Row {
                             IconButton(onClick = {
@@ -737,6 +762,35 @@ fun HubScreen(
             }
         }
     ) { padding ->
+        if (showUpdateDialog) {
+            AlertDialog(
+                onDismissRequest = { showUpdateDialog = false },
+                title = { Text("Update Available", fontWeight = FontWeight.Bold) },
+                text = { Text("A new version of Conduit is available!\n\nCurrent Version: ${BuildConfig.VERSION_NAME}\nNew Version: $latestVersionAvailable") },
+                confirmButton = {
+                    Button(onClick = {
+                        showUpdateDialog = false
+                        kotlinx.coroutines.GlobalScope.launch {
+                            val updateInfo = com.conduit.app.updater.UpdateManager.checkForUpdates()
+                            if (updateInfo != null) {
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                    android.widget.Toast.makeText(context, "Starting download...", android.widget.Toast.LENGTH_SHORT).show()
+                                    com.conduit.app.updater.UpdateManager.downloadAndInstall(context, updateInfo.second, updateInfo.first)
+                                }
+                            }
+                        }
+                    }) {
+                        Text("Update")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showUpdateDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+        
         Column(modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize()) {
             if (views.isNotEmpty()) {
                 @OptIn(ExperimentalLayoutApi::class)

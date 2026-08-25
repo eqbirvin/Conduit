@@ -35,6 +35,9 @@ data class ConduitSettings(
     val retentionDays: Int = 90,
     val enableAppBundles: Boolean = false,
     val autoCollapseRead: Boolean = false,
-    val autoDismissDetached: Boolean = true
+    val autoDismissDetached: Boolean = true,
+    val updateInterval: String = "DAILY",
+    val hasUpdateAvailable: Boolean = false,
+    val latestVersionAvailable: String = ""
 )
 

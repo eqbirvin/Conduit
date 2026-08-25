@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Requires this permission if the app wants to read its own notifications. But NotificationListenerService needs BIND_NOTIFICATION_LISTENER_SERVICE on the service itself -->
 
@@ -162,6 +164,16 @@
         <service android:name=".widget.ConduitWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="true" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
 
     </application>
 

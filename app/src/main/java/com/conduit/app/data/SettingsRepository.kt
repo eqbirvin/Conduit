@@ -69,7 +69,10 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             minimizeIcons = prefs.getBoolean("minimize_icons", false),
             masterExpandedState = prefs.getBoolean("master_expanded_state", true),
             autoCollapseRead = prefs.getBoolean("auto_collapse_read", false),
-            autoDismissDetached = prefs.getBoolean("auto_dismiss_detached", true)
+            autoDismissDetached = prefs.getBoolean("auto_dismiss_detached", true),
+            updateInterval = prefs.getString("update_interval", "DAILY") ?: "DAILY",
+            hasUpdateAvailable = prefs.getBoolean("has_update_available", false),
+            latestVersionAvailable = prefs.getString("latest_version_available", "") ?: ""
         )
     }
 
@@ -241,6 +244,24 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateAutoDismissDetached(enabled: Boolean) {
         prefs.edit().putBoolean("auto_dismiss_detached", enabled).apply()
         _settings.update { it.copy(autoDismissDetached = enabled) }
+    }
+    
+    fun updateUpdateInterval(interval: String) {
+        prefs.edit().putString("update_interval", interval).apply()
+        _settings.update { it.copy(updateInterval = interval) }
+    }
+    
+    fun updateUpdateAvailableState(hasUpdate: Boolean, latestVersion: String) {
+        prefs.edit()
+            .putBoolean("has_update_available", hasUpdate)
+            .putString("latest_version_available", latestVersion)
+            .apply()
+        _settings.update { 
+            it.copy(
+                hasUpdateAvailable = hasUpdate,
+                latestVersionAvailable = latestVersion
+            )
+        }
     }
 }
 

@@ -104,6 +104,8 @@ interface SettingsScreenCallbacks {
     fun onMinimizeIconsChanged(enabled: Boolean)
     fun onAutoCollapseReadChanged(enabled: Boolean)
     fun onAutoDismissDetachedChanged(enabled: Boolean)
+    fun onUpdateIntervalChanged(interval: String)
+    fun onManualUpdateCheck()
     fun onShowWhatsNew()
     fun onNavigateToDevSettings()
 }
@@ -144,6 +146,74 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Text("App Info & Updates", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Text("Auto-Check for Updates", style = MaterialTheme.typography.bodyLarge)
+                Text("Select how often Conduit should check for app updates in the background", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 12.dp))
+                
+                val intervalOptions = listOf("DAILY" to "Daily", "EVERY_3_DAYS" to "Every 3 Days", "WEEKLY" to "Weekly", "DISABLED" to "Disabled")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectableGroup(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    intervalOptions.forEach { (value, label) ->
+                        val isSelected = settings.updateInterval == value
+                        OutlinedCard(
+                            onClick = { 
+                                callbacks.onUpdateIntervalChanged(value)
+                                performHapticClick(context)
+                            },
+                            colors = CardDefaults.outlinedCardColors(
+                                containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp, 
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 11.sp,
+                                    maxLines = 1,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { 
+                        performHapticClick(context)
+                        callbacks.onManualUpdateCheck() 
+                    }
+            ) {
+                ListItem(
+                    headlineContent = { Text("Check for Updates") },
+                    supportingContent = { Text("Current version: ${BuildConfig.VERSION_NAME}") },
+                    leadingContent = { Icon(Icons.Default.SystemUpdate, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()

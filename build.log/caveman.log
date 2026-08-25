@@ -257,8 +257,8 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-18T21:35] [v2.14.02] actually fixed custom view filter bug and dialer icon placeholder bug by ensuring proper git diffs and launch intent checks.
 [2026-08-18T21:45] [v2.14.03] fix google fi (com.google.android.apps.tycho) voicemail notifications missing app icon and showing as T placeholder.
 [2026-08-18T21:51] [v2.14.04] set extractnativelibs/uselegacypackaging to true to fix android 15 16kb memory alignment warning.
-[ 2 0 2 6 - 0 8 - 1 9 T 0 4 : 2 2 ]   [ v 2 . 1 4 . 0 5 ]   a d d e d   o p t i o n s   f o r   d o c k   s c r o l l   i n d i c a t o r s :   f a d i n g   e d g e s   s c r o l l b a r   t r a c k   i n i t i a l   b o u n c e   a n d   n o n e .  
- [2026-08-18T23:38] [v2.14.06] updated permission screen ui to feel more premium and added auto-detection of permission granting via lifecycle event.
+[2026-08-19T04:22] [v2.14.05] added options for dock scroll indicators: fading edges scrollbar track initial bounce and none.
+[2026-08-18T23:38] [v2.14.06] updated permission screen ui to feel more premium and added auto-detection of permission granting via lifecycle event.
 [2026-08-18T23:48] [v2.14.07] added full-screen release history page accessible from settings.
 [2026-08-19T00:20] [v2.14.08] added one time prompt to import active notifications from system tray on first launch.
 [2026-08-19T00:28] [v2.14.09] updated permission screen to use a dark neutral background and polished the copy.
@@ -266,3 +266,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-19T17:56] [v2.14.11] fixed scope cancellation in hubscreen blocking dialog and added explicit cancellation of blocked system notifications.
 [2026-08-20T21:28] [v2.14.12] added support for airbnb (com.airbnb.android) as a channel and defaulted it to off in settingsrepository.
 [2026-08-20T22:45] [v2.14.13] version bump purely to deliver release apk after debug investigation.
+[2026-08-25T02:52] [v2.15.00] implemented ota updates natively using retrofit and workmanager.

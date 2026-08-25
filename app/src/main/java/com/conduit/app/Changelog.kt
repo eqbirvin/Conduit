@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.15.00",
+        date = "2026-08-25",
+        highlights = listOf(
+            ChangelogItem(
+                title = "OTA Updates",
+                description = "Conduit can now automatically check for updates! You can manually check for updates or change the auto-check interval in Settings.",
+                iconName = "SystemUpdate"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.14.12",
         date = "2026-08-20",
         highlights = listOf(

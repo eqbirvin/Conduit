@@ -182,6 +182,9 @@ class MainActivity : ComponentActivity() {
                         prefs.edit().putString("last_run_version", currentVersion).apply()
                     }
                 }
+                
+                val currentInterval = prefs.getString("update_interval", "DAILY") ?: "DAILY"
+                com.conduit.app.updater.UpdateManager.setupWorker(context, currentInterval)
             }
             val hubViewModel: HubViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                 factory = HubViewModel.Factory(
@@ -420,6 +423,24 @@ class MainActivity : ComponentActivity() {
                                     }
                                     override fun onAutoDismissDetachedChanged(enabled: Boolean) {
                                         settingsViewModel.updateAutoDismissDetached(enabled)
+                                    }
+                                    override fun onUpdateIntervalChanged(interval: String) {
+                                        settingsViewModel.updateUpdateInterval(interval)
+                                        com.conduit.app.updater.UpdateManager.setupWorker(context, interval)
+                                    }
+                                    override fun onManualUpdateCheck() {
+                                        kotlinx.coroutines.GlobalScope.launch {
+                                            val updateInfo = com.conduit.app.updater.UpdateManager.checkForUpdates()
+                                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                                if (updateInfo != null) {
+                                                    settingsViewModel.updateUpdateAvailableState(true, updateInfo.first)
+                                                    android.widget.Toast.makeText(context, "Update available: ${updateInfo.first}. Check Hub.", android.widget.Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    settingsViewModel.updateUpdateAvailableState(false, "")
+                                                    android.widget.Toast.makeText(context, "Conduit is up to date.", android.widget.Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
                                     }
                                     override fun onShowWhatsNew() { currentScreen = Screen.WHATS_NEW }
                                     override fun onNavigateToDevSettings() { currentScreen = Screen.DEV_SETTINGS }
