@@ -793,14 +793,17 @@ fun HubScreen(
         
         Column(modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize()) {
             if (views.isNotEmpty()) {
-                @OptIn(ExperimentalLayoutApi::class)
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                @OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.material3.LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
                 ) {
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                     views.forEach { view ->
                         val isSelected = activeViewId == view.id
                         FilterChip(
@@ -820,6 +823,7 @@ fun HubScreen(
                             } else null
                         )
                     }
+                }
                 }
             }
 
