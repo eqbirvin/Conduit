@@ -270,3 +270,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-25T03:51] [v2.15.01] fixed custom view chips vertical wrap spacing to match horizontal spacing.
 [2026-08-26T19:02] [v2.15.02] moved update available icon to the left of conduit title.
 [2026-08-26T20:02] [v2.15.03] fixed stale update available flag persisting after updating app.
+[2026-08-27T03:32] [v2.15.04] added default to todo mode setting.

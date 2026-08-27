@@ -38,6 +38,7 @@ data class ConduitSettings(
     val autoDismissDetached: Boolean = true,
     val updateInterval: String = "DAILY",
     val hasUpdateAvailable: Boolean = false,
-    val latestVersionAvailable: String = ""
+    val latestVersionAvailable: String = "",
+    val defaultToTodoMode: Boolean = false
 )
 

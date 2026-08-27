@@ -48,6 +48,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateAutoDismissDetached(enabled: Boolean) = viewModelScope.launch { repository.updateAutoDismissDetached(enabled) }
     fun updateUpdateInterval(interval: String) = viewModelScope.launch { repository.updateUpdateInterval(interval) }
     fun updateUpdateAvailableState(hasUpdate: Boolean, latestVersion: String) = viewModelScope.launch { repository.updateUpdateAvailableState(hasUpdate, latestVersion) }
+    fun updateDefaultToTodoMode(enabled: Boolean) = viewModelScope.launch { repository.updateDefaultToTodoMode(enabled) }
 
     class Factory(private val prefs: SharedPreferences) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

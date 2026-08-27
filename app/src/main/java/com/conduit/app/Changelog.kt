@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.15.04",
+        date = "2026-08-26",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Default to Todo Mode",
+                description = "Added a new setting to automatically open Conduit in Todo Mode on startup instead of the Unified View.",
+                iconName = "Checklist"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.15.03",
         date = "2026-08-26",
         highlights = listOf(

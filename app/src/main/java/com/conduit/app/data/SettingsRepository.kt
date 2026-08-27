@@ -84,7 +84,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             autoDismissDetached = prefs.getBoolean("auto_dismiss_detached", true),
             updateInterval = prefs.getString("update_interval", "DAILY") ?: "DAILY",
             hasUpdateAvailable = storedHasUpdate,
-            latestVersionAvailable = storedLatestVersion
+            latestVersionAvailable = storedLatestVersion,
+            defaultToTodoMode = prefs.getBoolean("default_to_todo_mode", false)
         )
     }
 
@@ -274,6 +275,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
                 latestVersionAvailable = latestVersion
             )
         }
+    }
+
+    fun updateDefaultToTodoMode(enabled: Boolean) {
+        prefs.edit().putBoolean("default_to_todo_mode", enabled).apply()
+        _settings.update { it.copy(defaultToTodoMode = enabled) }
     }
 }
 

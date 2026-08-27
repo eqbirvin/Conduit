@@ -197,6 +197,12 @@ class MainActivity : ComponentActivity() {
                 factory = com.conduit.app.SettingsViewModel.Factory(prefs)
             )
             val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
+
+            LaunchedEffect(Unit) {
+                if (prefs.getBoolean("default_to_todo_mode", false)) {
+                    settingsViewModel.updateUnifiedView(false)
+                }
+            }
             
             val latestIntent = intentState
             LaunchedEffect(latestIntent) {
@@ -228,7 +234,7 @@ class MainActivity : ComponentActivity() {
             var bracketNotificationPopup by remember { mutableStateOf(prefs.getBoolean("bracket_notification_popup", true)) }
             var bracketHangerEnabled by remember { mutableStateOf(prefs.getBoolean("bracket_hanger_enabled", true)) }
             var bracketVerticalPosition by remember { mutableFloatStateOf(prefs.getFloat("bracket_vertical_position", 0.5f)) }
-            var unifiedView by remember { mutableStateOf(prefs.getBoolean("unified_view", true)) }
+            var unifiedView by remember { mutableStateOf(if (prefs.getBoolean("default_to_todo_mode", false)) false else prefs.getBoolean("unified_view", true)) }
             var activeAppIcon by remember { mutableStateOf(prefs.getString("active_app_icon", "MANILA") ?: "MANILA") }
             var smartMarkRead by remember { mutableStateOf(prefs.getBoolean("smart_mark_read", true)) }
             var smartMarkReadTarget by remember { mutableStateOf(prefs.getString("smart_mark_read_target", "widget_only") ?: "widget_only") }
@@ -444,6 +450,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                     override fun onShowWhatsNew() { currentScreen = Screen.WHATS_NEW }
                                     override fun onNavigateToDevSettings() { currentScreen = Screen.DEV_SETTINGS }
+                                    override fun onDefaultToTodoModeChanged(enabled: Boolean) { settingsViewModel.updateDefaultToTodoMode(enabled) }
                                 },
                                 onNavigateBack = { currentScreen = Screen.HOME }
                             )

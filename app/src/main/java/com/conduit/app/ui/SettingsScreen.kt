@@ -108,6 +108,7 @@ interface SettingsScreenCallbacks {
     fun onManualUpdateCheck()
     fun onShowWhatsNew()
     fun onNavigateToDevSettings()
+    fun onDefaultToTodoModeChanged(enabled: Boolean)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -283,6 +284,14 @@ fun SettingsScreen(
 
             Text("Layout", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
             
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Default to Todo Mode", style = MaterialTheme.typography.bodyLarge)
+                    Text("Automatically open Conduit in Todo Mode on startup instead of the Unified View", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = settings.defaultToTodoMode, onCheckedChange = callbacks::onDefaultToTodoModeChanged)
+            }
+
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Minimize Notification Icons", style = MaterialTheme.typography.bodyLarge)
