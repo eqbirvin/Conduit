@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.15.03",
+        date = "2026-08-26",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Stale Update Icon Fix",
+                description = "Fixed an issue where the update available icon would persist even after successfully updating to the latest version.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.15.02",
         date = "2026-08-26",
         highlights = listOf(

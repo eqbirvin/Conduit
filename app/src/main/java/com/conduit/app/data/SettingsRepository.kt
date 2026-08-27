@@ -36,6 +36,18 @@ class SettingsRepository(private val prefs: SharedPreferences) {
                 ?: default.split(",").filter { it.isNotEmpty() }
         }
 
+        var storedHasUpdate = prefs.getBoolean("has_update_available", false)
+        var storedLatestVersion = prefs.getString("latest_version_available", "") ?: ""
+        
+        if (storedHasUpdate && !com.conduit.app.updater.UpdateManager.isNewerVersion(com.conduit.app.BuildConfig.VERSION_NAME, storedLatestVersion)) {
+            storedHasUpdate = false
+            storedLatestVersion = ""
+            prefs.edit()
+                .putBoolean("has_update_available", false)
+                .putString("latest_version_available", "")
+                .apply()
+        }
+
         return ConduitSettings(
             themePreference = prefs.getInt("theme", 0),
             jacobMonochrome = prefs.getBoolean("jacob_monochrome", false),
@@ -71,8 +83,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             autoCollapseRead = prefs.getBoolean("auto_collapse_read", false),
             autoDismissDetached = prefs.getBoolean("auto_dismiss_detached", true),
             updateInterval = prefs.getString("update_interval", "DAILY") ?: "DAILY",
-            hasUpdateAvailable = prefs.getBoolean("has_update_available", false),
-            latestVersionAvailable = prefs.getString("latest_version_available", "") ?: ""
+            hasUpdateAvailable = storedHasUpdate,
+            latestVersionAvailable = storedLatestVersion
         )
     }
 
