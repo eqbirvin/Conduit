@@ -268,3 +268,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-20T22:45] [v2.14.13] version bump purely to deliver release apk after debug investigation.
 [2026-08-25T02:52] [v2.15.00] implemented ota updates natively using retrofit and workmanager.
 [2026-08-25T03:51] [v2.15.01] fixed custom view chips vertical wrap spacing to match horizontal spacing.
+[2026-08-26T19:02] [v2.15.02] moved update available icon to the left of conduit title.

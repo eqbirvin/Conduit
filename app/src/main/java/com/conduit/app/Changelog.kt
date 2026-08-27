@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.15.02",
+        date = "2026-08-26",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Update Icon Placement",
+                description = "Moved the 'Update Available' icon to the left side of the Conduit title for better visibility.",
+                iconName = "SystemUpdate"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.15.01",
         date = "2026-08-25",
         highlights = listOf(

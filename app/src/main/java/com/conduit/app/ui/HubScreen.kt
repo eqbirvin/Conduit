@@ -303,9 +303,7 @@ fun HubScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Conduit", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
                             if (hasUpdateAvailable) {
-                                Spacer(modifier = Modifier.width(8.dp))
                                 IconButton(
                                     onClick = { 
                                         performHapticClick(context)
@@ -320,7 +318,9 @@ fun HubScreen(
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
                             }
+                            Text("Conduit", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
                         }
                     },
                     navigationIcon = {
