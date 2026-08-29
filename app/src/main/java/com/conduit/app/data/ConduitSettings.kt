@@ -39,6 +39,7 @@ data class ConduitSettings(
     val updateInterval: String = "DAILY",
     val hasUpdateAvailable: Boolean = false,
     val latestVersionAvailable: String = "",
-    val defaultToTodoMode: Boolean = false
+    val defaultToTodoMode: Boolean = false,
+    val demoModeEnabled: Boolean = false
 )
 

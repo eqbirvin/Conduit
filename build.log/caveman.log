@@ -271,3 +271,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-26T19:02] [v2.15.02] moved update available icon to the left of conduit title.
 [2026-08-26T20:02] [v2.15.03] fixed stale update available flag persisting after updating app.
 [2026-08-27T03:32] [v2.15.04] added default to todo mode setting.
+[2026-08-29T16:20] [v2.15.05] replaced legacy test notifications with a robust demo mode featuring 5 days of realistic mock notifications across all supported channels for screenshots.

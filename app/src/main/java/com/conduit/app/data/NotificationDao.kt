@@ -7,11 +7,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NotificationDao {
-    @Query("SELECT * FROM notifications WHERE isArchived = 0 ORDER BY timestamp DESC")
-    fun getAllNotifications(): Flow<List<HubNotification>>
+    @Query("SELECT * FROM notifications WHERE isArchived = 0 AND isDemo = :isDemo ORDER BY timestamp DESC")
+    fun getAllNotifications(isDemo: Boolean): Flow<List<HubNotification>>
 
-    @Query("SELECT * FROM notifications WHERE isArchived = 1 ORDER BY archivedTimestamp DESC")
-    fun getArchivedNotifications(): Flow<List<HubNotification>>
+    @Query("SELECT * FROM notifications WHERE isArchived = 1 AND isDemo = :isDemo ORDER BY archivedTimestamp DESC")
+    fun getArchivedNotifications(isDemo: Boolean): Flow<List<HubNotification>>
 
     @Insert
     suspend fun insert(notification: HubNotification)
@@ -36,6 +36,9 @@ interface NotificationDao {
 
     @Query("DELETE FROM notifications")
     suspend fun deleteAll()
+
+    @Query("DELETE FROM notifications WHERE isDemo = 1")
+    suspend fun deleteDemoNotifications()
 
     @Query("SELECT * FROM notifications WHERE isArchived = 0 ORDER BY timestamp DESC")
     fun getActiveNotificationsWidgetSync(): List<HubNotification>

@@ -45,7 +45,7 @@ fun ManageViewsScreen(
     var showDeleteConfirmDialog by remember { mutableStateOf<CustomView?>(null) }
 
     val settingsViewModel: com.conduit.app.SettingsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = com.conduit.app.SettingsViewModel.Factory(context.getSharedPreferences("conduit_prefs", android.content.Context.MODE_PRIVATE))
+        factory = com.conduit.app.SettingsViewModel.Factory(com.conduit.app.data.SettingsRepository(context.getSharedPreferences("conduit_prefs", android.content.Context.MODE_PRIVATE)))
     )
     val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
 

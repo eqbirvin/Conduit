@@ -163,6 +163,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val prefs = remember { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
+            val settingsRepo = remember { com.conduit.app.data.SettingsRepository(prefs) }
             var unreadReleases by remember { mutableStateOf<List<ChangelogRelease>>(emptyList()) }
             var showWhatsNewDialog by remember { mutableStateOf(false) }
             var showImportPrompt by remember { mutableStateOf(false) }
@@ -189,12 +190,12 @@ class MainActivity : ComponentActivity() {
             val hubViewModel: HubViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                 factory = HubViewModel.Factory(
                     application = context.applicationContext as android.app.Application,
-                    repository = com.conduit.app.data.NotificationRepository(context, AppDatabase.getDatabase(context)),
+                    repository = com.conduit.app.data.NotificationRepository(context, AppDatabase.getDatabase(context), settingsRepo),
                     viewsRepository = com.conduit.app.data.ViewsRepository(context)
                 )
             )
             val settingsViewModel: com.conduit.app.SettingsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-                factory = com.conduit.app.SettingsViewModel.Factory(prefs)
+                factory = com.conduit.app.SettingsViewModel.Factory(settingsRepo)
             )
             val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
 
@@ -325,8 +326,8 @@ class MainActivity : ComponentActivity() {
 
             // Observe notifications from Room
             val database = remember { AppDatabase.getDatabase(context) }
-            val notifications by database.notificationDao().getAllNotifications().collectAsStateWithLifecycle(initialValue = emptyList())
-            val archivedNotifications by database.notificationDao().getArchivedNotifications().collectAsStateWithLifecycle(initialValue = emptyList())
+            val notifications by database.notificationDao().getAllNotifications(settings.demoModeEnabled).collectAsStateWithLifecycle(initialValue = emptyList())
+            val archivedNotifications by database.notificationDao().getArchivedNotifications(settings.demoModeEnabled).collectAsStateWithLifecycle(initialValue = emptyList())
             val coroutineScope = rememberCoroutineScope()
             
             val filteredNotifications = remember(notifications, channelStates.toMap()) {
@@ -459,6 +460,7 @@ class MainActivity : ComponentActivity() {
                                 callbacks = object : com.conduit.app.ui.DevSettingsScreenCallbacks {
                                     override fun onPersistentTrayEnabledChanged(enabled: Boolean) { settingsViewModel.updatePersistentTrayEnabled(enabled) }
                                     override fun onEnableBubblesChanged(enabled: Boolean) { settingsViewModel.updateEnableBubbles(enabled) }
+                                    override fun onDemoModeEnabledChanged(enabled: Boolean) { settingsViewModel.updateDemoModeEnabled(enabled) }
                                 },
                                 onNavigateBack = { currentScreen = Screen.SETTINGS }
                             )

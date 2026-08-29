@@ -8,14 +8,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
 class NotificationRepository(
     private val context: Context,
-    private val database: AppDatabase
+    private val database: AppDatabase,
+    private val settingsRepository: SettingsRepository
 ) {
     private val notificationDao = database.notificationDao()
 
-    val activeNotifications: Flow<List<HubNotification>> = notificationDao.getAllNotifications()
-    val archivedNotifications: Flow<List<HubNotification>> = notificationDao.getArchivedNotifications()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val activeNotifications: Flow<List<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
+        notificationDao.getAllNotifications(settings.demoModeEnabled)
+    }
+    
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val archivedNotifications: Flow<List<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
+        notificationDao.getArchivedNotifications(settings.demoModeEnabled)
+    }
 
     suspend fun archiveNotification(id: Int, timestamp: Long) = withContext(Dispatchers.IO) {
         notificationDao.archiveNotification(id, timestamp)
@@ -108,22 +119,54 @@ class NotificationRepository(
 
     // Service passthroughs (null-safe)
     fun cancelServiceNotification(key: String) {
+        if (key.startsWith("demo_")) return
         HubNotificationListenerService.instance?.cancel(key)
     }
 
     fun snoozeServiceNotification(key: String, durationMs: Long) {
+        if (key.startsWith("demo_")) return
         HubNotificationListenerService.instance?.snooze(key, durationMs)
     }
 
     fun getNotificationActions(key: String): List<Notification.Action>? {
+        if (key.startsWith("demo_")) {
+            val dummyIntent = android.app.PendingIntent.getBroadcast(context, 0, android.content.Intent("com.conduit.app.DEMO_ACTION"), android.app.PendingIntent.FLAG_IMMUTABLE)
+            
+            // Check channel based on key (e.g., demo_SMS_1)
+            return if (key.contains("_SMS_") || key.contains("_SNAP_") || key.contains("_INSTA_") || key.contains("_LINKEDIN_")) {
+                listOf(
+                    Notification.Action.Builder(0, "Reply", dummyIntent).build(),
+                    Notification.Action.Builder(0, "Mark as read", dummyIntent).build()
+                )
+            } else if (key.contains("_EMAIL_")) {
+                listOf(
+                    Notification.Action.Builder(0, "Archive", dummyIntent).build(),
+                    Notification.Action.Builder(0, "Reply", dummyIntent).build()
+                )
+            } else {
+                listOf(
+                    Notification.Action.Builder(0, "Dismiss", dummyIntent).build()
+                )
+            }
+        }
         return HubNotificationListenerService.instance?.getNotificationActions(key)
     }
 
     fun getReplyAction(key: String): Notification.Action? {
+        if (key.startsWith("demo_")) {
+            if (key.contains("_SMS_") || key.contains("_SNAP_") || key.contains("_INSTA_") || key.contains("_LINKEDIN_") || key.contains("_EMAIL_")) {
+                val dummyIntent = android.app.PendingIntent.getBroadcast(context, 0, android.content.Intent("com.conduit.app.DEMO_ACTION"), android.app.PendingIntent.FLAG_IMMUTABLE)
+                return Notification.Action.Builder(0, "Reply", dummyIntent).build()
+            }
+            return null
+        }
         return HubNotificationListenerService.instance?.getReplyAction(key)
     }
 
     fun getContentIntent(key: String): android.app.PendingIntent? {
+        if (key.startsWith("demo_")) {
+            return android.app.PendingIntent.getBroadcast(context, 0, android.content.Intent("com.conduit.app.DEMO_ACTION"), android.app.PendingIntent.FLAG_IMMUTABLE)
+        }
         val sbn = HubNotificationListenerService.instance?.activeNotifications?.find { it.key == key }
         if (sbn?.notification?.contentIntent != null) {
             return sbn.notification.contentIntent

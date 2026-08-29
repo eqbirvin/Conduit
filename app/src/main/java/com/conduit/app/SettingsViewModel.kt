@@ -49,12 +49,13 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateUpdateInterval(interval: String) = viewModelScope.launch { repository.updateUpdateInterval(interval) }
     fun updateUpdateAvailableState(hasUpdate: Boolean, latestVersion: String) = viewModelScope.launch { repository.updateUpdateAvailableState(hasUpdate, latestVersion) }
     fun updateDefaultToTodoMode(enabled: Boolean) = viewModelScope.launch { repository.updateDefaultToTodoMode(enabled) }
+    fun updateDemoModeEnabled(enabled: Boolean) = viewModelScope.launch { repository.updateDemoModeEnabled(enabled) }
 
-    class Factory(private val prefs: SharedPreferences) : ViewModelProvider.Factory {
+    class Factory(private val repository: SettingsRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return SettingsViewModel(SettingsRepository(prefs)) as T
+                return SettingsViewModel(repository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

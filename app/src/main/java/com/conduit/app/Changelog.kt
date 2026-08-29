@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.15.05",
+        date = "2026-08-29",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Demo Mode",
+                description = "Replaced the old test notifications with a robust new Demo Mode in Developer Settings. Turning it on populates your feed with realistic mock notifications spread out over 5 days, perfect for taking clean screenshots.",
+                iconName = "Settings"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.15.04",
         date = "2026-08-26",
         highlights = listOf(

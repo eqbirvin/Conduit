@@ -85,7 +85,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             updateInterval = prefs.getString("update_interval", "DAILY") ?: "DAILY",
             hasUpdateAvailable = storedHasUpdate,
             latestVersionAvailable = storedLatestVersion,
-            defaultToTodoMode = prefs.getBoolean("default_to_todo_mode", false)
+            defaultToTodoMode = prefs.getBoolean("default_to_todo_mode", false),
+            demoModeEnabled = prefs.getBoolean("demo_mode_enabled", false)
         )
     }
 
@@ -280,6 +281,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateDefaultToTodoMode(enabled: Boolean) {
         prefs.edit().putBoolean("default_to_todo_mode", enabled).apply()
         _settings.update { it.copy(defaultToTodoMode = enabled) }
+    }
+
+    fun updateDemoModeEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean("demo_mode_enabled", enabled).apply()
+        _settings.update { it.copy(demoModeEnabled = enabled) }
     }
 }
 
