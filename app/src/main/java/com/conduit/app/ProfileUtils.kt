@@ -128,7 +128,12 @@ fun getAppIcon(context: Context, packageName: String): Drawable? {
             val safePkgName = packageName.replace(".", "_").lowercase(java.util.Locale.ROOT)
             val resId = context.resources.getIdentifier("demo_icon_$safePkgName", "drawable", context.packageName)
             if (resId != 0) {
-                return androidx.core.content.ContextCompat.getDrawable(context, resId)
+                val drawable = androidx.core.content.ContextCompat.getDrawable(context, resId)
+                if (drawable != null) {
+                    val circularDrawable = androidx.core.graphics.drawable.RoundedBitmapDrawableFactory.create(context.resources, drawable.toBitmap())
+                    circularDrawable.isCircular = true
+                    return circularDrawable
+                }
             }
         }
         android.util.Log.e("ProfileUtils", "Package not found in fallback", e)
