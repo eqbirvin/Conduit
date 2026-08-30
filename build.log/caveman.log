@@ -277,3 +277,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-29T19:44] [v2.15.07] overhauls demo mode with dynamic realistic notifications across 5 days and bundled play store icons for uninstalled apps
 [2026-08-29T22:36] [v2.15.08] fixes pendingintent crash on android 14 in demo mode
 [2026-08-29T23:03] [v2.15.09] demo mode uninstalled icons are now shaped as circles to match installed icons
+[2026-08-29T23:10] [v2.15.10] adds missing steam chat and airbnb channels to the app icon ui renderer
