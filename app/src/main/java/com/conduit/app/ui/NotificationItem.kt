@@ -253,9 +253,9 @@ fun NotificationItem(
                         channelUpper == "PHONE" || channelUpper == "SYSTEM PHONE" || channelUpper == "PHONE (GOOGLE DIALER)" || channelUpper == "TRUECALLER" ||
                         channelUpper == "TELEGRAM" || channelUpper == "TELEGRAM X" ||
                         channelUpper == "REDDIT" ||
-                        channelUpper == "STEAM" ||
+                        channelUpper == "STEAM" || channelUpper == "STEAM CHAT" ||
                         channelUpper == "FACEBOOK" || channelUpper == "MESSENGER" ||
-                        channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS"
+                        channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS" || channelUpper == "AIRBNB"
                     ) {
                         AppIcon(notification.packageName, size = avatarSize)
                     } else {
