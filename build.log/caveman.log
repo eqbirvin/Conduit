@@ -275,3 +275,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [ ]   [ v 2 . 1 5 . 0 6 ]   f i x e d   u n i n s t a l l e d   m o c k   a p p s   b e i n g   f i l t e r e d   o u t   o f   d e m o   m o d e   b y   b y p a s s i n g   v i e w   f i l t e r i n g   a n d   t h e   e n a b l e d   p a c k a g e s   c h e c k .  
  [2026-08-29T18:42] [v2.15.06] fixed uninstalled mock apps being filtered out of demo mode by bypassing view filtering and the enabled packages check.
 [2026-08-29T19:44] [v2.15.07] overhauls demo mode with dynamic realistic notifications across 5 days and bundled play store icons for uninstalled apps
+[2026-08-29T22:36] [v2.15.08] fixes pendingintent crash on android 14 in demo mode

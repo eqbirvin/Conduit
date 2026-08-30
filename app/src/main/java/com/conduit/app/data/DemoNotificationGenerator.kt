@@ -153,7 +153,7 @@ object DemoNotificationGenerator {
     }
     
     private fun generateMockActions(context: Context, kind: String, channelName: String): List<Notification.Action> {
-        val dummyIntent = PendingIntent.getActivity(context, 0, Intent(), PendingIntent.FLAG_IMMUTABLE)
+        val dummyIntent = PendingIntent.getActivity(context, 0, Intent().setPackage(context.packageName), PendingIntent.FLAG_IMMUTABLE)
         val actions = mutableListOf<Notification.Action>()
         
         if (kind == "MESSAGE") {
@@ -165,7 +165,7 @@ object DemoNotificationGenerator {
             val replyIntent = PendingIntent.getActivity(
                 context, 
                 0, 
-                Intent(), 
+                Intent().setPackage(context.packageName), 
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
             )
             actions.add(
