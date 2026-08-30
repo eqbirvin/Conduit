@@ -62,8 +62,12 @@ class HubViewModel(
         val activeView = views.find { it.id == activeId } ?: return notifications
         val context = getApplication<Application>()
         return notifications.filter { notif ->
-            val repPkg = getRepresentativePackage(context, notif.packageName)
-            activeView.packageNames.contains(repPkg)
+            if (notif.isDemo) {
+                true
+            } else {
+                val repPkg = getRepresentativePackage(context, notif.packageName)
+                activeView.packageNames.contains(repPkg)
+            }
         }
     }
 

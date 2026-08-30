@@ -330,27 +330,7 @@ class MainActivity : ComponentActivity() {
             val archivedNotifications by database.notificationDao().getArchivedNotifications(settings.demoModeEnabled).collectAsStateWithLifecycle(initialValue = emptyList())
             val coroutineScope = rememberCoroutineScope()
             
-            val filteredNotifications = remember(notifications, channelStates.toMap()) {
-                notifications.filter {
-                    val prefKey = HubNotificationListenerService.supportedApps.values.find { appInfo -> appInfo.second == it.channel }?.first
-                    if (prefKey != null) {
-                        channelStates[prefKey] ?: true
-                    } else {
-                        true
-                    }
-                }
-            }
 
-            val filteredArchivedNotifications = remember(archivedNotifications, channelStates.toMap()) {
-                archivedNotifications.filter {
-                    val prefKey = HubNotificationListenerService.supportedApps.values.find { appInfo -> appInfo.second == it.channel }?.first
-                    if (prefKey != null) {
-                        channelStates[prefKey] ?: true
-                    } else {
-                        true
-                    }
-                }
-            }
 
             ConduitTheme(themePreference = themePreference, jacobMonochrome = jacobMonochrome) {
                 Surface(
@@ -380,7 +360,7 @@ class MainActivity : ComponentActivity() {
                                 onUnifiedViewChanged = { settingsViewModel.updateUnifiedView(it) }
                             )
                             Screen.ARCHIVE -> ArchiveScreen(
-                                archivedNotifications = filteredArchivedNotifications,
+                                archivedNotifications = archivedNotifications,
                                 showActionChips = settings.showActionChips,
                                 onNavigateBack = { currentScreen = Screen.HOME }
                             )

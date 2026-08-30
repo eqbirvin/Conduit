@@ -395,7 +395,7 @@ fun HubScreen(
                             .filter { pkg ->
                                 val prefKey = HubNotificationListenerService.supportedApps[pkg]?.first
                                 if (prefKey != null && channelStates[prefKey] == true) {
-                                    isPackageInstalled(context, pkg)
+                                    isPackageInstalled(context, pkg) || settings.demoModeEnabled
                                 } else false
                             }
                             .map { getRepresentativePackage(context, it) }
