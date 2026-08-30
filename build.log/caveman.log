@@ -279,3 +279,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-29T23:03] [v2.15.09] demo mode uninstalled icons are now shaped as circles to match installed icons
 [2026-08-29T23:10] [v2.15.10] adds missing steam chat and airbnb channels to the app icon ui renderer
 [2026-08-29T23:18] [v2.15.11] adds missing steam chat and airbnb channels to the large avatar icon ui renderer
+[2026-08-30T00:17] [v2.15.12] removes legacy demo action generation from notificationrepository to allow the dynamic mock actions to render
