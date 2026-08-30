@@ -247,25 +247,7 @@ fun DevSettingsScreen(
                                 val database = AppDatabase.getDatabase(context)
                                 scope.launch {
                                     if (enabled) {
-                                        val now = System.currentTimeMillis()
-                                        val dayMs = 86_400_000L
-                                        
-                                        val testNotifications = listOf(
-                                            HubNotification(packageName = "com.google.android.apps.messaging", notificationKey = "demo_SMS_1", title = "Mom", text = "Hey, are you coming over for dinner tonight? Let me know!", timestamp = now - 60_000, channel = "SMS", isDemo = true, kind = "MESSAGE"),
-                                            HubNotification(packageName = "com.google.android.apps.messaging", notificationKey = "demo_SMS_2", title = "Alex", text = "Can you pick up groceries on the way home?", timestamp = now - 300_000, channel = "SMS", isDemo = true, kind = "MESSAGE"),
-                                            HubNotification(packageName = "com.google.android.apps.messaging", notificationKey = "demo_SMS_3", title = "Work Group", text = "Meeting moved to 3pm. Please update your calendars.", timestamp = now - (dayMs * 1) - 3_600_000, channel = "SMS", isDemo = true, kind = "MESSAGE"),
-                                            HubNotification(packageName = "com.readdle.spark", notificationKey = "demo_EMAIL_1", title = "GitHub", text = "Your pull request #142 has been approved and merged into main.", timestamp = now - 120_000, channel = "EMAIL", isDemo = true, kind = "MESSAGE"),
-                                            HubNotification(packageName = "com.readdle.spark", notificationKey = "demo_EMAIL_2", title = "Amazon", text = "Your order has shipped! Expected delivery: Wednesday.", timestamp = now - (dayMs * 2), channel = "EMAIL", isDemo = true, kind = "MESSAGE"),
-                                            HubNotification(packageName = "com.snapchat.android", notificationKey = "demo_SNAP_1", title = "Jordan", text = "Sent you a snap! \uD83D\uDC40", timestamp = now - 180_000, channel = "SNAPCHAT", isDemo = true, kind = "MESSAGE"),
-                                            HubNotification(packageName = "com.snapchat.android", notificationKey = "demo_SNAP_2", title = "Sarah", text = "New story available", timestamp = now - (dayMs * 1) - 5_400_000, channel = "SNAPCHAT", isDemo = true, kind = "MESSAGE"),
-                                            HubNotification(packageName = "com.linkedin.android", notificationKey = "demo_LINKEDIN_1", title = "LinkedIn", text = "John Smith viewed your profile. See their details.", timestamp = now - 600_000, channel = "LINKEDIN", isDemo = true, kind = "OTHER"),
-                                            HubNotification(packageName = "com.linkedin.android", notificationKey = "demo_LINKEDIN_2", title = "LinkedIn", text = "You have 3 new job recommendations matching your skills.", timestamp = now - (dayMs * 3), channel = "LINKEDIN", isDemo = true, kind = "OTHER"),
-                                            HubNotification(packageName = "com.instagram.android", notificationKey = "demo_INSTA_1", title = "Instagram", text = "photography_daily liked your photo.", timestamp = now - 240_000, channel = "INSTAGRAM", isDemo = true, kind = "OTHER"),
-                                            HubNotification(packageName = "com.instagram.android", notificationKey = "demo_INSTA_2", title = "Instagram", text = "travel.vibes started following you.", timestamp = now - (dayMs * 4), channel = "INSTAGRAM", isDemo = true, kind = "OTHER"),
-                                            HubNotification(packageName = "com.google.android.dialer", notificationKey = "demo_PHONE_1", title = "Missed call", text = "Missed call from (555) 123-4567", timestamp = now - 900_000, channel = "PHONE", isDemo = true, kind = "CALL"),
-                                            HubNotification(packageName = "com.google.android.dialer", notificationKey = "demo_PHONE_2", title = "Voicemail", text = "New voicemail from Dr. Johnson's office (2:34)", timestamp = now - (dayMs * 2) - 43_200_000, channel = "PHONE", isDemo = true, kind = "CALL")
-                                        )
-                                        testNotifications.forEach { database.notificationDao().insert(it) }
+                                        com.conduit.app.data.DemoNotificationGenerator.generate(context, database, HubNotificationListenerService.instance)
                                     } else {
                                         database.notificationDao().deleteDemoNotifications()
                                     }

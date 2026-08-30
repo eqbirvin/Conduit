@@ -160,6 +160,10 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         }
     }
 
+    fun injectDemoActions(key: String, actions: List<Notification.Action>) {
+        actionCache[key] = actions
+    }
+
     override fun onListenerConnected() {
         super.onListenerConnected()
         instance = this

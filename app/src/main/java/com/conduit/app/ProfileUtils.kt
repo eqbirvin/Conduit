@@ -123,6 +123,14 @@ fun getAppIcon(context: Context, packageName: String): Drawable? {
     try {
         return context.packageManager.getApplicationIcon(packageName)
     } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+        val prefs = context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("demo_mode_enabled", false)) {
+            val safePkgName = packageName.replace(".", "_").lowercase(java.util.Locale.ROOT)
+            val resId = context.resources.getIdentifier("demo_icon_$safePkgName", "drawable", context.packageName)
+            if (resId != 0) {
+                return androidx.core.content.ContextCompat.getDrawable(context, resId)
+            }
+        }
         android.util.Log.e("ProfileUtils", "Package not found in fallback", e)
     } catch (e: SecurityException) {
         android.util.Log.e("ProfileUtils", "Security exception in fallback", e)
