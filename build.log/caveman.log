@@ -1,4 +1,4 @@
-[2026-05-09T21:10] [v1.0] init proj. tgt: legacy hub reimplementation. Kotlin/Compose. RoomDB. NotifListenerService.
+[2026-05-09T21:10] [v1.0] init proj. tgt: Kotlin/Compose. RoomDB. NotifListenerService.
 [2026-05-09T21:55] [v1.1] UI tweaks. name -> Conduit. MD3 design applied. gen & add custom app icon.
 [2026-05-09T22:00] [v1.2] add EMAIL chan support. use PackageManager to fetch orig app icons dyn. filter sys/bg notifs. setup gradle copyApkToOutputs.
 [2026-05-09T22:15] [v1.2] setup docs versioning & caveman log rules. add timestamps.
@@ -272,7 +272,8 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-26T20:02] [v2.15.03] fixed stale update available flag persisting after updating app.
 [2026-08-27T03:32] [v2.15.04] added default to todo mode setting.
 [2026-08-29T16:20] [v2.15.05] replaced legacy test notifications with a robust demo mode featuring 5 days of realistic mock notifications across all supported channels for screenshots.
-[ ]   [ v 2 . 1 5 . 0 6 ]   f i x e d   u n i n s t a l l e d   m o c k   a p p s   b e i n g   f i l t e r e d   o u t   o f   d e m o   m o d e   b y   b y p a s s i n g   v i e w   f i l t e r i n g   a n d   t h e   e n a b l e d   p a c k a g e s   c h e c k .  
+[ ]   [ v 2 . 1 5 . 0 6 ]   f i x e d   u n i n s t a l l e d   m o c k   a p p s   b e i n g   f i l t e r e d   o u t   o f   d e m o   m o d e   b y   b y p a s s i n g   v i e w   f i l t e r i n g   a n d   t h e   e n a b l e d   p a c k a g e s   c h e c k . 
+ 
  [2026-08-29T18:42] [v2.15.06] fixed uninstalled mock apps being filtered out of demo mode by bypassing view filtering and the enabled packages check.
 [2026-08-29T19:44] [v2.15.07] overhauls demo mode with dynamic realistic notifications across 5 days and bundled play store icons for uninstalled apps
 [2026-08-29T22:36] [v2.15.08] fixes pendingintent crash on android 14 in demo mode
