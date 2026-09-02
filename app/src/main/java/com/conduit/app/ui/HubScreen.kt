@@ -115,7 +115,7 @@ fun HubScreen(
 
     val onArchiveNotification: (Int, Long) -> Unit = { id, ts -> viewModel.archiveNotification(id, ts) }
     val onSnoozeNotification: (Int, Long) -> Unit = { id, ts ->  }
-    val onPinNotification: (HubNotification) -> Unit = { notif ->  }
+    val onPinNotification: (HubNotification) -> Unit = { notif -> viewModel.togglePin(notif, settings.syncPinned) }
     var showBundleMenu by remember { mutableStateOf<Pair<String, List<String>>?>(null) }
     var showCustomizeFab by remember { mutableStateOf<FabAction?>(null) }
     

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.15.13",
+        date = "September 2, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Fixed Swipe-to-Pin",
+                description = "Fixed a bug where swiping to trigger the Pin action would not correctly pin the notification.",
+                iconName = "Icons.Filled.PushPin"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.15.05",
         date = "2026-08-29",
         highlights = listOf(
