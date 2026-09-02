@@ -255,7 +255,7 @@ fun NotificationItem(
                         channelUpper == "REDDIT" ||
                         channelUpper == "STEAM" || channelUpper == "STEAM CHAT" ||
                         channelUpper == "FACEBOOK" || channelUpper == "MESSENGER" ||
-                        channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS" || channelUpper == "AIRBNB"
+                        channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS" || channelUpper == "AIRBNB" || channelUpper == "BLACKBERRY INBOX"
                     ) {
                         AppIcon(notification.packageName, size = avatarSize)
                     } else {
@@ -617,7 +617,7 @@ fun NotificationItem(
                             channelUpper == "REDDIT" ||
                             channelUpper == "STEAM" || channelUpper == "STEAM CHAT" ||
                             channelUpper == "FACEBOOK" || channelUpper == "MESSENGER" ||
-                            channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS" || channelUpper == "AIRBNB"
+                            channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS" || channelUpper == "AIRBNB" || channelUpper == "BLACKBERRY INBOX"
                         ) {
                             AppIcon(notification.packageName, size = avatarSize)
                         } else {

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.15.15",
+        date = "September 2, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Fixed BlackBerry Inbox Icon",
+                description = "Fixed an issue where the BlackBerry Inbox icon would not display properly on notifications.",
+                iconName = "Icons.Filled.MailOutline"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.15.14",
         date = "September 2, 2026",
         highlights = listOf(
