@@ -272,3 +272,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-08-30T00:17] [v2.15.12] removes legacy demo action generation from notificationrepository to allow the dynamic mock actions to render
 [2026-09-01T23:19] [v2.15.12] history rewrite via filter-repo, 90 commits, legacy-product references replaced, new main head 47c9b62.
 [2026-09-02T05:27] [v2.15.13] fix swipe to pin gesture not triggering the pin action.
+[2026-09-02T11:25] [v2.15.14] adds blackberry inbox to supported notification channels.

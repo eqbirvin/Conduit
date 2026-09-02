@@ -41,6 +41,7 @@
         <package android:name="com.twitter.android" />
         <package android:name="com.microsoft.teams" />
         <package android:name="com.airbnb.android" />
+        <package android:name="com.blackberry.hub" />
     </queries>
 
     <application

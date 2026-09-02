@@ -67,7 +67,8 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             "com.facebook.orca" to Pair("channel_messenger", "Messenger"),
             "com.twitter.android" to Pair("channel_twitter", "Twitter (X)"),
             "com.microsoft.teams" to Pair("channel_teams", "Microsoft Teams"),
-            "com.airbnb.android" to Pair("channel_airbnb", "Airbnb")
+            "com.airbnb.android" to Pair("channel_airbnb", "Airbnb"),
+            "com.blackberry.hub" to Pair("channel_blackberry_inbox", "BlackBerry Inbox")
         )
     }
 
