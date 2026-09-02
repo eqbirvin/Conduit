@@ -955,8 +955,8 @@ fun HubScreen(
                                         individualToggles[notification.id] = !currentState
                                         performHapticTick(context)
                                     },
-                                    onTriggerAction = { action -> viewModel.triggerAction(notification, action) },
-                                    onReply = { text, action -> viewModel.sendReply(notification, text, action) }
+                                    onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
+                                    onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
                                 )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                             }
@@ -1204,8 +1204,8 @@ fun HubScreen(
                                                 individualToggles[notification.id] = !currentState
                                                 performHapticTick(context)
                                             },
-                                            onTriggerAction = { action -> viewModel.triggerAction(notification, action) },
-                                            onReply = { text, action -> viewModel.sendReply(notification, text, action) }
+                                            onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
+                                            onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
                                         )
                                         Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                                     }

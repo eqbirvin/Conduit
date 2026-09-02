@@ -147,10 +147,14 @@ class HubViewModel(
         }
     }
 
-    fun triggerAction(notification: HubNotification, action: Notification.Action) {
+    fun triggerAction(context: android.content.Context, notification: HubNotification, action: Notification.Action) {
         viewModelScope.launch {
             try {
-                action.actionIntent.send()
+                val options = android.app.ActivityOptions.makeBasic()
+                if (android.os.Build.VERSION.SDK_INT >= 34) {
+                    options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                }
+                action.actionIntent.send(context, 0, null, null, null, null, options.toBundle())
                 val titleString = action.title?.toString()?.lowercase() ?: ""
                 if (titleString.contains("archive") || 
                     titleString.contains("delete") || 
@@ -164,7 +168,7 @@ class HubViewModel(
         }
     }
 
-    fun sendReply(notification: HubNotification, text: String, action: Notification.Action) {
+    fun sendReply(context: android.content.Context, notification: HubNotification, text: String, action: Notification.Action) {
         viewModelScope.launch {
             try {
                 val remoteInputs = action.remoteInputs
@@ -175,7 +179,12 @@ class HubViewModel(
                         bundle.putCharSequence(remoteInput.resultKey, text)
                     }
                     android.app.RemoteInput.addResultsToIntent(remoteInputs, intent, bundle)
-                    action.actionIntent.send(null, 0, intent)
+                    
+                    val options = android.app.ActivityOptions.makeBasic()
+                    if (android.os.Build.VERSION.SDK_INT >= 34) {
+                        options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                    }
+                    action.actionIntent.send(context, 0, intent, null, null, null, options.toBundle())
                     
                     // Auto-archive on reply
                     repository.archiveNotificationByKey(notification.notificationKey, System.currentTimeMillis())
