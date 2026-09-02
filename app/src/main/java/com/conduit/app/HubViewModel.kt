@@ -155,13 +155,6 @@ class HubViewModel(
                     options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
                 }
                 action.actionIntent.send(context, 0, null, null, null, null, options.toBundle())
-                val titleString = action.title?.toString()?.lowercase() ?: ""
-                if (titleString.contains("archive") || 
-                    titleString.contains("delete") || 
-                    titleString.contains("mark as read") || 
-                    titleString.contains("clear")) {
-                    repository.archiveNotificationByKey(notification.notificationKey, System.currentTimeMillis())
-                }
             } catch (e: android.app.PendingIntent.CanceledException) {
                 android.util.Log.e("HubViewModel", "Failed to trigger action", e)
             }
@@ -185,9 +178,6 @@ class HubViewModel(
                         options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
                     }
                     action.actionIntent.send(context, 0, intent, null, null, null, options.toBundle())
-                    
-                    // Auto-archive on reply
-                    repository.archiveNotificationByKey(notification.notificationKey, System.currentTimeMillis())
                 }
             } catch (e: android.app.PendingIntent.CanceledException) {
                 android.util.Log.e("HubViewModel", "Failed to send reply", e)

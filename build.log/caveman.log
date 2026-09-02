@@ -276,3 +276,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-02T12:10] [v2.15.15] fixes blackberry inbox icon rendering as an initial instead of the app icon.
 [2026-09-02T12:43] [v2.16.00] refactors notificationitem ui to dynamically look up supported app icons from the service map instead of a hardcoded string whitelist.
 [2026-09-02T12:56] [v2.16.01] passes context and background activity start options to action chips to fix silent failures on android 14+.
+[2026-09-02T13:14] [v2.16.02] removes proactive auto-archiving from action chips to prevent race conditions with apps that open activities.
