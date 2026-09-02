@@ -245,18 +245,10 @@ fun NotificationItem(
                     )
                 } else {
                     val channelUpper = notification.channel.uppercase(java.util.Locale.ROOT)
-                    if (channelUpper == "SMS" || channelUpper == "GOOGLE MESSAGES" ||
-                        channelUpper == "EMAIL" || channelUpper == "GMAIL" || channelUpper == "SPARK" || channelUpper == "OUTLOOK" ||
-                        channelUpper == "SNAPCHAT" ||
-                        channelUpper == "LINKEDIN" ||
-                        channelUpper == "INSTAGRAM" ||
-                        channelUpper == "PHONE" || channelUpper == "SYSTEM PHONE" || channelUpper == "PHONE (GOOGLE DIALER)" || channelUpper == "TRUECALLER" ||
-                        channelUpper == "TELEGRAM" || channelUpper == "TELEGRAM X" ||
-                        channelUpper == "REDDIT" ||
-                        channelUpper == "STEAM" || channelUpper == "STEAM CHAT" ||
-                        channelUpper == "FACEBOOK" || channelUpper == "MESSENGER" ||
-                        channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS" || channelUpper == "AIRBNB" || channelUpper == "BLACKBERRY INBOX"
-                    ) {
+                    val isSupportedApp = HubNotificationListenerService.supportedApps.containsKey(notification.packageName)
+                    val isSystemFallback = channelUpper == "SMS" || channelUpper == "EMAIL" || channelUpper == "SYSTEM PHONE" || channelUpper == "PHONE" || channelUpper == "PHONE (GOOGLE DIALER)"
+                    
+                    if (isSupportedApp || isSystemFallback) {
                         AppIcon(notification.packageName, size = avatarSize)
                     } else {
                         Box(
@@ -607,18 +599,10 @@ fun NotificationItem(
                         contentAlignment = Alignment.Center
                     ) {
                         val channelUpper = notification.channel.uppercase(java.util.Locale.ROOT)
-                        if (channelUpper == "SMS" || channelUpper == "GOOGLE MESSAGES" ||
-                            channelUpper == "EMAIL" || channelUpper == "GMAIL" || channelUpper == "SPARK" || channelUpper == "OUTLOOK" ||
-                            channelUpper == "SNAPCHAT" ||
-                            channelUpper == "LINKEDIN" ||
-                            channelUpper == "INSTAGRAM" ||
-                            channelUpper == "PHONE" || channelUpper == "SYSTEM PHONE" || channelUpper == "PHONE (GOOGLE DIALER)" || channelUpper == "TRUECALLER" ||
-                            channelUpper == "TELEGRAM" || channelUpper == "TELEGRAM X" ||
-                            channelUpper == "REDDIT" ||
-                            channelUpper == "STEAM" || channelUpper == "STEAM CHAT" ||
-                            channelUpper == "FACEBOOK" || channelUpper == "MESSENGER" ||
-                            channelUpper == "TWITTER (X)" || channelUpper == "MICROSOFT TEAMS" || channelUpper == "AIRBNB" || channelUpper == "BLACKBERRY INBOX"
-                        ) {
+                        val isSupportedApp = HubNotificationListenerService.supportedApps.containsKey(notification.packageName)
+                        val isSystemFallback = channelUpper == "SMS" || channelUpper == "EMAIL" || channelUpper == "SYSTEM PHONE" || channelUpper == "PHONE" || channelUpper == "PHONE (GOOGLE DIALER)"
+                        
+                        if (isSupportedApp || isSystemFallback) {
                             AppIcon(notification.packageName, size = avatarSize)
                         } else {
                             Box(
