@@ -39,3 +39,21 @@ conduit_log.txt
 temp_service.kt
 debloat_backup.txt
 claude_writeup_context.txt
+
+# Scratch scripts & temporary utilities
+*.ps1
+*.py
+last_replacements.txt
+versions_list.txt
+CONDUIT_CODE_AUDIT.md
+versioning_rules.md
+migration_guide.md
+specs/
+
+# SQLite Databases & dumps
+*.sqlite
+db.b64
+build.log/dumpsys_notifs.txt
+
+# Certificates
+*.der
