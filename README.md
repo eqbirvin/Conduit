@@ -9,7 +9,7 @@ This repo stores the source code for the app. For the most recent pre-built apks
 If you have an issue or a feature request, utilize Conduit-Releases ["Issues" tab](https://github.com/eqbirvin/Conduit-Releases/issues). 
 
 
-I keep a running build log at in the caveman log which is very verbose to what I am doing for each version. I keep a much cleaner changelog on the Conduit-Release releases page. But if you want to see the caveman log [build.log/caveman.log](build.log/caveman.log)
+I keep a running build log in the caveman log which is very verbose to what I am doing for each version. I keep a much cleaner changelog on the Conduit-Release releases page. But if you want to see the caveman log [build.log/caveman.log](build.log/caveman.log)
 
 ## Building the Project
 
