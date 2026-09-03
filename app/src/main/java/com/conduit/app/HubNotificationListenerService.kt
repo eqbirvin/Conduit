@@ -70,7 +70,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             "com.airbnb.android" to Pair("channel_airbnb", "Airbnb"),
             "com.blackberry.hub" to Pair("channel_blackberry_inbox", "BlackBerry Inbox"),
             "com.whatsapp" to Pair("channel_whatsapp", "WhatsApp"),
-            "com.whatsapp.w4b" to Pair("channel_whatsapp_business", "WhatsApp Business")
+            "com.whatsapp.w4b" to Pair("channel_whatsapp_business", "WhatsApp Business"),
+            "com.beeper.chat" to Pair("channel_beeper", "Beeper"),
+            "com.beeper.ima" to Pair("channel_beeper", "Beeper")
         )
     }
 

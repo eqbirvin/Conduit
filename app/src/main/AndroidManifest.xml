@@ -45,6 +45,8 @@
         <package android:name="com.microsoft.office.outlook" />
         <package android:name="com.whatsapp" />
         <package android:name="com.whatsapp.w4b" />
+        <package android:name="com.beeper.chat" />
+        <package android:name="com.beeper.ima" />
     </queries>
 
     <application
