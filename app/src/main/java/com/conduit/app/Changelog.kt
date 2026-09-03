@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.05",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Smart Reply Detection Updated",
+                description = "When you reply to a message (via Conduit or the Android notification shade), Conduit will now correctly detect your response, append it to the notification with 'You:', and automatically mark the notification as read so it clears from your feed.",
+                iconName = "Icons.Filled.MarkChatRead"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.04",
         date = "September 3, 2026",
         highlights = listOf(

@@ -282,3 +282,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-03T10:25] [v2.17.02] adds whatsapp and whatsapp business to supported apps map and manifest queries.
 [2026-09-03T13:14] [v2.17.03] adds beeper to supported apps map and manifest queries.
 [2026-09-03T13:22] [v2.17.04] adds textra to supported apps map and manifest queries.
+[2026-09-03T13:39] [v2.17.05] updates smart reply detection to mark notifications as archived when a self-reply is intercepted, instead of unarchiving them.

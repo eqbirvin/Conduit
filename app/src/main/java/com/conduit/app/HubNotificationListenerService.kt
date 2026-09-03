@@ -855,7 +855,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                             if (textUpdated || titleUpdated) {
                                 val newText = if (textUpdated) currentText + suffix else currentText
                                 val newTitle = if (titleUpdated) "$currentTitle - Replied" else currentTitle
-                                database.notificationDao().updateAndUnarchive(existing.id, newTitle, newText, timestamp)
+                                database.notificationDao().updateAndArchive(existing.id, newTitle, newText, timestamp)
                                 com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
                             }
                         }
