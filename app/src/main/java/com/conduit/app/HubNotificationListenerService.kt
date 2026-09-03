@@ -72,7 +72,8 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             "com.whatsapp" to Pair("channel_whatsapp", "WhatsApp"),
             "com.whatsapp.w4b" to Pair("channel_whatsapp_business", "WhatsApp Business"),
             "com.beeper.chat" to Pair("channel_beeper", "Beeper"),
-            "com.beeper.ima" to Pair("channel_beeper", "Beeper")
+            "com.beeper.ima" to Pair("channel_beeper", "Beeper"),
+            "com.textra" to Pair("channel_textra", "Textra")
         )
     }
 

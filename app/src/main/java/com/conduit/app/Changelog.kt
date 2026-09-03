@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.04",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Added Textra Support",
+                description = "Conduit now officially supports Textra SMS!",
+                iconName = "Icons.Filled.ChatBubble"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.03",
         date = "September 3, 2026",
         highlights = listOf(
