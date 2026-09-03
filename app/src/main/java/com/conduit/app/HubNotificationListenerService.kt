@@ -810,12 +810,27 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 if (it.isOngoing) return@let
 
                 val extras = it.notification.extras
-                val title = extras.getString(Notification.EXTRA_TITLE) ?: ""
-                val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+                var title = extras.getString(Notification.EXTRA_TITLE) ?: ""
+                var text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+                val messagesArray = extras.getParcelableArray(Notification.EXTRA_MESSAGES)
+                
+                // Fallback for apps like Textra that only use MessagingStyle fields
+                if (title.isBlank() && text.isBlank() && messagesArray != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    try {
+                        val msgs = Notification.MessagingStyle.Message.getMessagesFromBundleArray(messagesArray)
+                        if (msgs.isNotEmpty()) {
+                            val lastMsg = msgs.last()
+                            val senderName = lastMsg.senderPerson?.name?.toString() ?: lastMsg.sender?.toString()
+                            title = extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)?.toString() ?: senderName ?: ""
+                            text = lastMsg.text?.toString() ?: ""
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("Conduit", "Failed to extract fallback text from MessagingStyle", e)
+                    }
+                }
                 val timestamp = it.postTime
 
                 // Intercept MessagingStyle self-replies
-                val messagesArray = extras.getParcelableArray(Notification.EXTRA_MESSAGES)
                 var isSelfReply = false
                 var replyText = ""
 

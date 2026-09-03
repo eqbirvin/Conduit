@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.07",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Textra Notifications Fixed",
+                description = "Resolved an issue where Textra messages were being ignored by Conduit. Conduit now properly parses their non-standard MessagingStyle formatting so they show up beautifully in your feed.",
+                iconName = "Icons.Filled.Sms"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.06",
         date = "September 3, 2026",
         highlights = listOf(
