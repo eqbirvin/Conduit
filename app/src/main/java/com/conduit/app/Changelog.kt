@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.01",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Outlook Icon Fix",
+                description = "Fixed an issue where the Outlook app icon was missing and shown as uninstalled for Android 11+ Work Profile users.",
+                iconName = "Icons.Filled.Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.00",
         date = "September 2, 2026",
         highlights = listOf(

@@ -42,6 +42,7 @@
         <package android:name="com.microsoft.teams" />
         <package android:name="com.airbnb.android" />
         <package android:name="com.blackberry.hub" />
+        <package android:name="com.microsoft.office.outlook" />
     </queries>
 
     <application
