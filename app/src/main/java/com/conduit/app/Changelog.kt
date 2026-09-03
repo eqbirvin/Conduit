@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.06",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Optimistic Reply Updates",
+                description = "Replying via Conduit's action chips is now instant! Conduit will immediately append your reply and mark the notification as read locally, preventing desyncs with apps (like WhatsApp) that are slow to update their native notifications.",
+                iconName = "Icons.Filled.FlashOn"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.05",
         date = "September 3, 2026",
         highlights = listOf(

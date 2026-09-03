@@ -920,6 +920,12 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                             return@withLock // Exact same message received within 60 seconds, ignore
                         }
 
+                        // Prevent native apps from resurrecting a notification we just locally archived with a smart reply
+                        val recentReplyMatch = database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
+                        if (recentReplyMatch != null && recentReplyMatch.text != null && recentReplyMatch.text.startsWith(text) && recentReplyMatch.text.contains("\n\u21aa You:")) {
+                            return@withLock
+                        }
+
                         val existingActive = database.notificationDao().getActiveNotificationByKey(notificationKey)
                         if (existingActive != null) {
                             if (existingActive.title == title && existingActive.text == text) {

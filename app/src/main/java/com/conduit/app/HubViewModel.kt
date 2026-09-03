@@ -178,6 +178,15 @@ class HubViewModel(
                         options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
                     }
                     action.actionIntent.send(context, 0, intent, null, null, null, options.toBundle())
+                    
+                    // Optimistically update Conduit locally so it works even if the app doesn't post a standard update
+                    repository.appendReplyAndArchive(
+                        id = notification.id, 
+                        currentText = notification.text ?: "", 
+                        replyText = text,
+                        currentTitle = notification.title ?: "",
+                        timestamp = System.currentTimeMillis()
+                    )
                 }
             } catch (e: android.app.PendingIntent.CanceledException) {
                 android.util.Log.e("HubViewModel", "Failed to send reply", e)

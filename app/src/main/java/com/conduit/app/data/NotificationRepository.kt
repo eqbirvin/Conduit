@@ -59,6 +59,17 @@ class NotificationRepository(
         triggerWidgetUpdate()
     }
 
+    suspend fun appendReplyAndArchive(id: Int, currentText: String, replyText: String, currentTitle: String, timestamp: Long) = withContext(Dispatchers.IO) {
+        val suffix = "\n\u21aa You: $replyText"
+        val textUpdated = !currentText.endsWith(suffix)
+        val titleUpdated = !currentTitle.endsWith(" - Replied")
+        val newText = if (textUpdated) currentText + suffix else currentText
+        val newTitle = if (titleUpdated) "$currentTitle - Replied" else currentTitle
+        
+        notificationDao.updateAndArchive(id, newTitle, newText, timestamp)
+        triggerWidgetUpdate()
+    }
+
     suspend fun snoozeNotification(id: Int, timestamp: Long, durationMs: Long) = withContext(Dispatchers.IO) {
         notificationDao.snoozeNotification(id, timestamp)
         val allNotifs = notificationDao.getAllNotificationsSync()
