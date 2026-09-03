@@ -110,7 +110,8 @@ fun getAppIcon(context: Context, packageName: String): Drawable? {
             val activities = launcherApps.getActivityList(packageName, user)
             if (activities.isNotEmpty()) {
                 // Returns the badged icon (with briefcase badge for work profile apps)
-                return activities[0].getBadgedIcon(0)
+                val density = context.resources.displayMetrics.densityDpi
+                return activities[0].getBadgedIcon(density)
             }
         } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
             android.util.Log.e("ProfileUtils", "Package not found", e)

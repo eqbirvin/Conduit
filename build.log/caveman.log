@@ -285,3 +285,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-03T13:39] [v2.17.05] updates smart reply detection to mark notifications as archived when a self-reply is intercepted, instead of unarchiving them.
 [2026-09-03T13:49] [v2.17.06] implements optimistic local updates for replies via action chips to instantly append and archive the notification, bypassing sloppy app updates.
 [2026-09-03T14:11] [v2.17.07] fixes textra notifications being ignored due to blank text/title by adding fallback parsing from messagingstyle fields.
+[2026-09-03T14:22] [v2.17.08] fixes blurry dock icons by fetching device-specific density icons instead of default density, and adds comprehensive title/text fallback parsing (EXTRA_BIG_TEXT, EXTRA_TITLE_BIG, EXTRA_TEXT_LINES, tickerText) to guarantee capture.

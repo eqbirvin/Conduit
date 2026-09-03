@@ -810,8 +810,23 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 if (it.isOngoing) return@let
 
                 val extras = it.notification.extras
-                var title = extras.getString(Notification.EXTRA_TITLE) ?: ""
+                var title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
+                if (title.isBlank()) {
+                    title = extras.getCharSequence(Notification.EXTRA_TITLE_BIG)?.toString() ?: ""
+                }
+                
                 var text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+                if (text.isBlank()) {
+                    text = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() 
+                        ?: extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
+                    if (text.isBlank()) {
+                        val lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
+                        if (lines != null && lines.isNotEmpty()) {
+                            text = lines.last()?.toString() ?: ""
+                        }
+                    }
+                }
+                
                 val messagesArray = extras.getParcelableArray(Notification.EXTRA_MESSAGES)
                 
                 // Fallback for apps like Textra that only use MessagingStyle fields
@@ -827,6 +842,10 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                     } catch (e: Exception) {
                         android.util.Log.e("Conduit", "Failed to extract fallback text from MessagingStyle", e)
                     }
+                }
+                
+                if (text.isBlank()) {
+                    text = it.notification.tickerText?.toString() ?: ""
                 }
                 val timestamp = it.postTime
 

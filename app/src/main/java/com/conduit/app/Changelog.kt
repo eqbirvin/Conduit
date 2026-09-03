@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.08",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Sharp Icons and Robust Parsing",
+                description = "Fixed an issue causing icons (like WhatsApp and Textra) to look blurry on the dock by fetching the high-resolution device-specific icon. Also added comprehensive parsing fallbacks to guarantee non-standard notifications (like Textra) are always captured.",
+                iconName = "Icons.Filled.HighQuality"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.07",
         date = "September 3, 2026",
         highlights = listOf(
