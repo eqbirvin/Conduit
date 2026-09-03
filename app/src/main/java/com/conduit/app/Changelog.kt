@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.00",
+        date = "September 2, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Uninstalled Apps Cleaner",
+                description = "Added a new wizard in Settings to help you clean up historical notifications from apps you no longer have installed.",
+                iconName = "Icons.Filled.Delete"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.16.02",
         date = "September 2, 2026",
         highlights = listOf(

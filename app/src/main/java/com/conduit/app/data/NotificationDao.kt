@@ -97,8 +97,18 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE packageName = :pkg AND title = :title AND text = :text AND isArchived = 0 LIMIT 1")
     suspend fun getUnarchivedExactMatch(pkg: String, title: String, text: String): HubNotification?
 
+    @Query("SELECT packageName, channel FROM notifications GROUP BY packageName")
+    suspend fun getDistinctPackagesWithChannel(): List<PackageChannel>
+
+    @Query("DELETE FROM notifications WHERE packageName IN (:packages)")
+    suspend fun deleteByPackageNames(packages: List<String>)
+
     companion object {
         const val RETENTION_DAYS = 90
     }
 }
 
+data class PackageChannel(
+    val packageName: String,
+    val channel: String
+)

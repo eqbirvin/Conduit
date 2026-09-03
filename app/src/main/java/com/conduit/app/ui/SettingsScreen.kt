@@ -123,6 +123,9 @@ fun SettingsScreen(
     val channelsToShow = remember { getInstalledChannels(context) }
     var showSupportedAppsDialog by remember { mutableStateOf(false) }
     val options = listOf("System Default", "Light Theme", "Dark Theme", "Jacob Mode (AMOLED)")
+    var showUninstalledAppsDialog by remember { mutableStateOf(false) }
+    var uninstalledAppsList by remember { mutableStateOf<List<com.conduit.app.data.PackageChannel>>(emptyList()) }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -562,6 +565,42 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { 
+                        performHapticClick(context)
+                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                            val db = com.conduit.app.data.AppDatabase.getDatabase(context)
+                            val allPackages = db.notificationDao().getDistinctPackagesWithChannel()
+                            val uninstalled = allPackages.filter { pkgInfo ->
+                                try {
+                                    pm.getPackageInfo(pkgInfo.packageName, 0)
+                                    false
+                                } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+                                    true
+                                }
+                            }
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                if (uninstalled.isEmpty()) {
+                                    android.widget.Toast.makeText(context, "No historical notifications from uninstalled apps found.", android.widget.Toast.LENGTH_SHORT).show()
+                                } else {
+                                    uninstalledAppsList = uninstalled
+                                    showUninstalledAppsDialog = true
+                                }
+                            }
+                        }
+                    }
+            ) {
+                ListItem(
+                    headlineContent = { Text("Clean Uninstalled Apps") },
+                    supportingContent = { Text("Remove historical notifications from apps you no longer have installed.") },
+                    leadingContent = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -1127,6 +1166,75 @@ fun SettingsScreen(
                     trailingContent = { Icon(Icons.Default.Lock, contentDescription = "Locked") }
                 )
             }
+        }
+
+        if (showUninstalledAppsDialog) {
+            var selectedPackages by remember { mutableStateOf(uninstalledAppsList.map { it.packageName }.toSet()) }
+
+            AlertDialog(
+                onDismissRequest = { showUninstalledAppsDialog = false },
+                title = { Text("Clean Uninstalled Apps") },
+                text = {
+                    Column {
+                        Text(
+                            "These apps were installed and Conduit captured their notifications. However, they are no longer installed. Select what apps you want to clean historic notifications from:",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
+                            items(uninstalledAppsList.size) { index ->
+                                val pkgInfo = uninstalledAppsList[index]
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            selectedPackages = if (selectedPackages.contains(pkgInfo.packageName)) {
+                                                selectedPackages - pkgInfo.packageName
+                                            } else {
+                                                selectedPackages + pkgInfo.packageName
+                                            }
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = selectedPackages.contains(pkgInfo.packageName),
+                                        onCheckedChange = null
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(pkgInfo.channel, style = MaterialTheme.typography.bodyLarge)
+                                        Text(pkgInfo.packageName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (selectedPackages.isNotEmpty()) {
+                                scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                    val db = com.conduit.app.data.AppDatabase.getDatabase(context)
+                                    db.notificationDao().deleteByPackageNames(selectedPackages.toList())
+                                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                        android.widget.Toast.makeText(context, "Cleaned notifications for ${selectedPackages.size} apps.", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            showUninstalledAppsDialog = false
+                        }
+                    ) {
+                        Text("Clean")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showUninstalledAppsDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
