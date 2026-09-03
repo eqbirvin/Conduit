@@ -43,6 +43,8 @@
         <package android:name="com.airbnb.android" />
         <package android:name="com.blackberry.hub" />
         <package android:name="com.microsoft.office.outlook" />
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
     </queries>
 
     <application

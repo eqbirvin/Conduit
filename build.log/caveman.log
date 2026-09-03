@@ -279,3 +279,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-02T13:14] [v2.16.02] removes proactive auto-archiving from action chips to prevent race conditions with apps that open activities.
 [2026-09-02T13:16] [v2.17.00] adds a new wizard in settings to delete historical notifications from uninstalled apps.
 [2026-09-03T08:49] [v2.17.01] adds outlook to androidmanifest package queries to fix missing icons and not-installed status on api 30+.
+[2026-09-03T10:25] [v2.17.02] adds whatsapp and whatsapp business to supported apps map and manifest queries.

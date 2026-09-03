@@ -68,7 +68,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             "com.twitter.android" to Pair("channel_twitter", "Twitter (X)"),
             "com.microsoft.teams" to Pair("channel_teams", "Microsoft Teams"),
             "com.airbnb.android" to Pair("channel_airbnb", "Airbnb"),
-            "com.blackberry.hub" to Pair("channel_blackberry_inbox", "BlackBerry Inbox")
+            "com.blackberry.hub" to Pair("channel_blackberry_inbox", "BlackBerry Inbox"),
+            "com.whatsapp" to Pair("channel_whatsapp", "WhatsApp"),
+            "com.whatsapp.w4b" to Pair("channel_whatsapp_business", "WhatsApp Business")
         )
     }
 

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.02",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Added WhatsApp Support",
+                description = "Conduit now officially supports WhatsApp and WhatsApp Business! Notifications from these apps will be fully integrated into your feed.",
+                iconName = "Icons.Filled.ChatBubble"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.01",
         date = "September 3, 2026",
         highlights = listOf(
