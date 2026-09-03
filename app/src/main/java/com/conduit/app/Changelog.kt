@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.09",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Further Textra and Icon Fixes",
+                description = "Bypassed standard grouping logic that was inadvertently filtering Textra notifications. Also updated icon fetching to use native Application Icons for maximum clarity across all devices.",
+                iconName = "Icons.Filled.Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.08",
         date = "September 3, 2026",
         highlights = listOf(

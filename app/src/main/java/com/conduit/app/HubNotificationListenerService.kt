@@ -778,8 +778,8 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
         sbn?.let {
-            // Ignore group summaries to prevent duplicates (Google Messages, WhatsApp, etc. post both a summary and child notifications)
-            if ((it.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) {
+            // Ignore group summaries to avoid duplicate notifications (since apps post both child and summary)
+            if ((it.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0 && it.packageName != "com.textra") {
                 return
             }
 
@@ -903,7 +903,15 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 // Ignore if it's a background work notification or empty
                 if (text.contains("doing work in the background", ignoreCase = true)) return@let
                 if (text.contains("updating messages", ignoreCase = true)) return@let
-                if (title.isBlank() && text.isBlank()) return@let
+                
+                if (title.isBlank() && text.isBlank()) {
+                    if (packageName == "com.textra") {
+                        title = "Textra"
+                        text = "New Message"
+                    } else {
+                        return@let
+                    }
+                }
 
                 val prefKey = appInfo?.first ?: if (isSystemPhoneFallback) "channel_phone" else null
                 val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
