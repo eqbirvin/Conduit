@@ -288,3 +288,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-03T14:22] [v2.17.08] fixes blurry dock icons by fetching device-specific density icons instead of default density, and adds comprehensive title/text fallback parsing (EXTRA_BIG_TEXT, EXTRA_TITLE_BIG, EXTRA_TEXT_LINES, tickerText) to guarantee capture.
 [2026-09-03T14:52] [v2.17.09] bypasses FLAG_GROUP_SUMMARY for Textra which was wrongly dropping single-message summaries, adds a hardcoded blank text fallback for Textra, and uses pm.getApplicationIcon() directly to fix non-work-profile blurry icons.
 [2026-09-03T18:45] [v2.17.10] fixed textra messages being swallowed by self-reply interception via allowlist. added ingestion diagnostics toggle for deep logcat telemetry.
+[2026-09-03T21:07] [v2.17.11] ignored broken selfdisplayname from textra to fix false positive self-reply interception on incoming messages.

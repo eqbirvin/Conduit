@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.11",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Textra False Positive Fix",
+                description = "Fixed an issue where Textra's incoming 1-on-1 messages were incorrectly classified as self-replies because the app mistakenly assigns the contact's name to your display name.",
+                iconName = "Icons.Filled.Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.10",
         date = "September 3, 2026",
         highlights = listOf(
