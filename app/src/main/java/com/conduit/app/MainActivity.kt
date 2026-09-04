@@ -186,6 +186,61 @@ class MainActivity : ComponentActivity() {
                 
                 val currentInterval = prefs.getString("update_interval", "DAILY") ?: "DAILY"
                 com.conduit.app.updater.UpdateManager.setupWorker(context, currentInterval)
+                
+                if (!prefs.getBoolean("defaults_seeded", false)) {
+                    val currentRules = prefs.getStringSet("blocked_rules", emptySet()) ?: emptySet()
+                    val defaultRules = setOf(
+                        "com.snapchat.android|TITLE|Running...",
+                        "com.snapchat.android|TITLE|Updating messages...",
+                        "com.snapchat.android|TEXT|is typing...",
+                        "com.google.android.apps.messaging|TITLE|Getting things ready...",
+                        "com.google.android.apps.messaging|TEXT|Your messages are available on the device you've paired",
+                        "com.textra|TEXT|Sent"
+                    )
+                    val updatedRules = currentRules + defaultRules
+                    prefs.edit()
+                        .putStringSet("blocked_rules", updatedRules)
+                        .putBoolean("defaults_seeded", true)
+                        .apply()
+                        
+                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                        val db = AppDatabase.getDatabase(context)
+                        val allNotifs = db.notificationDao().getAllNotificationsSync()
+                        val idsToDelete = mutableListOf<Int>()
+                        val keysToCancel = mutableListOf<String>()
+                        
+                        defaultRules.forEach { rule ->
+                            val parts = rule.split("|", limit = 3)
+                            if (parts.size == 3) {
+                                val pkg = parts[0]
+                                val type = parts[1]
+                                val pattern = parts[2]
+                                
+                                allNotifs.forEach { item ->
+                                    if (item.packageName == pkg) {
+                                        val match = if (type == "TITLE") {
+                                            item.title?.contains(pattern, ignoreCase = true) == true
+                                        } else {
+                                            item.text?.contains(pattern, ignoreCase = true) == true
+                                        }
+                                        if (match) {
+                                            idsToDelete.add(item.id)
+                                            keysToCancel.add(item.notificationKey)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (idsToDelete.isNotEmpty()) {
+                            keysToCancel.distinct().forEach { key ->
+                                HubNotificationListenerService.instance?.cancel(key)
+                            }
+                            db.notificationDao().deleteNotifications(idsToDelete.distinct())
+                            com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
+                        }
+                    }
+                }
             }
             val hubViewModel: HubViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                 factory = HubViewModel.Factory(

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.19.00",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Default Notification Filters",
+                description = "Conduit now ships with a default set of blocked notification rules to automatically filter out common spam and status updates from Snapchat, Messages, and Textra.",
+                iconName = "Icons.Filled.Block"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.13",
         date = "September 3, 2026",
         highlights = listOf(
