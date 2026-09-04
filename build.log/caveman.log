@@ -294,3 +294,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-03T22:19] [v2.17.14] refined whatsapp self-reply logic to check by notificationKey first, preventing a bug where the native self-reply update (titled "You") failed to find the archived conversation and spawned a new notification instead.
 [2026-09-03T22:29] [v2.18.00] minor version bump for completed whatsapp/textra fixes.
 [2026-09-03T23:06] [v2.19.00] added default blocked notification rules for snapchat, messages, and textra with automatic retroactive database cleanup.
+[2026-09-04T14:10] [v2.19.01] updated bracket hanger to properly support all new channels defined in supportedapps and completely refactored the group by channel logic to group by the channel keys instead of raw package names.

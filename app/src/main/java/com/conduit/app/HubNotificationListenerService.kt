@@ -104,17 +104,17 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     private var isDragging = false
     private var hoverIndex = -1
     sealed class HangerItem {
-        data class BundleItem(val packageName: String) : HangerItem()
+        data class BundleItem(val channelKey: String, val packageName: String) : HangerItem()
         data class NotificationItem(val pendingIntent: PendingIntent?, val packageName: String) : HangerItem()
     }
     private var pendingIntentList = mutableListOf<HangerItem>()
-    private var expandedBundlePackageName: String? = null
+    private var expandedBundleKey: String? = null
     private val expandBundleRunnable = Runnable {
         val index = hoverIndex
         if (index >= 0 && index < pendingIntentList.size) {
             val item = pendingIntentList[index]
             if (item is HangerItem.BundleItem) {
-                if (expandedBundlePackageName != item.packageName) {
+                if (expandedBundleKey != item.channelKey) {
                     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         val manager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
                         manager.defaultVibrator
@@ -126,7 +126,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                     } else {
                         vibrator.vibrate(50)
                     }
-                    expandedBundlePackageName = item.packageName
+                    expandedBundleKey = item.channelKey
                     populateHangerNotifications()
                 }
             }
@@ -1380,7 +1380,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         
         hangerLinearLayout?.removeAllViews()
         pendingIntentList.clear()
-        expandedBundlePackageName = null
+        expandedBundleKey = null
         handler.removeCallbacks(expandBundleRunnable)
     }
 
@@ -1403,7 +1403,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             handler.removeCallbacks(expandBundleRunnable)
             if (newHoverIndex != -1) {
                 val item = pendingIntentList.getOrNull(newHoverIndex)
-                if (item is HangerItem.BundleItem && expandedBundlePackageName != item.packageName) {
+                if (item is HangerItem.BundleItem && expandedBundleKey != item.channelKey) {
                     handler.postDelayed(expandBundleRunnable, 400)
                 }
 
@@ -1451,62 +1451,54 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         for (sbn in activeNotifs) {
             val packageName = sbn.packageName
             val notif = sbn.notification
-            val isSms = packageName == "com.google.android.apps.messaging"
-            val isEmail = notif.category == Notification.CATEGORY_EMAIL || 
-                          packageName == "com.readdle.spark" || 
-                          packageName == "com.google.android.gm"
-            val isSnapchat = packageName == "com.snapchat.android"
-            val isLinkedIn = packageName == "com.linkedin.android"
-            val isInstagram = packageName == "com.instagram.android"
-            val isPhone = packageName == "com.google.android.dialer" ||
-                          packageName == "com.android.dialer" ||
-                          packageName == "com.samsung.android.dialer" ||
-                          packageName == "com.android.phone" ||
-                          packageName == "com.android.server.telecom" ||
-                          packageName == "com.android.contacts" ||
-                          packageName == "com.truecaller"
-            val isTelegram = packageName == "org.telegram.messenger"
-            val isReddit = packageName == "com.reddit.frontpage"
-            val isSteam = packageName == "com.valvesoftware.android.steam.community"
-
-            if (!(isSms || 
-                  isEmail || 
-                  isSnapchat || 
-                  isLinkedIn || 
-                  (isInstagram && channelInstagram) || 
-                  (isPhone && channelPhone) ||
-                  (isTelegram && channelTelegram) ||
-                  (isReddit && channelReddit) ||
-                  (isSteam && channelSteam))) {
-                continue
+            
+            val appInfo = supportedApps[packageName]
+            val isSystemPhoneFallback = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && notif.category == Notification.CATEGORY_CALL) ||
+                                        packageName.contains(".dialer", ignoreCase = true) ||
+                                        packageName.endsWith(".phone", ignoreCase = true)
+            
+            val channelInfo = appInfo ?: if (isSystemPhoneFallback) Pair("channel_phone", "Phone (Google Dialer)") else null
+            if (channelInfo != null) {
+                val prefKey = channelInfo.first
+                if (prefs.getBoolean(prefKey, true)) {
+                    filteredNotifs.add(sbn)
+                }
             }
-            filteredNotifs.add(sbn)
         }
 
         if (groupByChannel) {
-            val grouped = filteredNotifs.groupBy { it.packageName }
-            for ((pkg, notifs) in grouped) {
+            val grouped = filteredNotifs.groupBy { sbn ->
+                val pkg = sbn.packageName
+                val appInfo = supportedApps[pkg]
+                val isSystemPhoneFallback = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && sbn.notification.category == Notification.CATEGORY_CALL) ||
+                                            pkg.contains(".dialer", ignoreCase = true) ||
+                                            pkg.endsWith(".phone", ignoreCase = true)
+                appInfo?.first ?: if (isSystemPhoneFallback) "channel_phone" else pkg
+            }
+            for ((channelKey, notifs) in grouped) {
                 if (notifs.size == 1) {
                     val card = createNotificationCard(notifs[0], density, false)
                     layout.addView(card)
-                    pendingIntentList.add(HangerItem.NotificationItem(notifs[0].notification.contentIntent, pkg))
+                    pendingIntentList.add(HangerItem.NotificationItem(notifs[0].notification.contentIntent, notifs[0].packageName))
                 } else {
-                    if (expandedBundlePackageName == pkg) {
+                    val representativePkg = notifs[0].packageName
+                    val channelName = supportedApps.values.firstOrNull { it.first == channelKey }?.second ?: getAppLabel(this, representativePkg)
+                    if (expandedBundleKey == channelKey) {
                         // Show bundle header
-                        val bundleHeader = createBundleCard(pkg, notifs.size, density, true)
+                        val bundleHeader = createBundleCard(channelKey, representativePkg, channelName, notifs.size, density, true)
                         layout.addView(bundleHeader)
-                        pendingIntentList.add(HangerItem.BundleItem(pkg))
+                        pendingIntentList.add(HangerItem.BundleItem(channelKey, representativePkg))
                         // Show all items under it
                         for (notif in notifs) {
                             val card = createNotificationCard(notif, density, true)
                             layout.addView(card)
-                            pendingIntentList.add(HangerItem.NotificationItem(notif.notification.contentIntent, pkg))
+                            pendingIntentList.add(HangerItem.NotificationItem(notif.notification.contentIntent, notif.packageName))
                         }
                     } else {
                         // Collapsed bundle
-                        val bundleCard = createBundleCard(pkg, notifs.size, density, false)
+                        val bundleCard = createBundleCard(channelKey, representativePkg, channelName, notifs.size, density, false)
                         layout.addView(bundleCard)
-                        pendingIntentList.add(HangerItem.BundleItem(pkg))
+                        pendingIntentList.add(HangerItem.BundleItem(channelKey, representativePkg))
                     }
                 }
             }
@@ -1624,7 +1616,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         return card
     }
 
-    private fun createBundleCard(packageName: String, count: Int, density: Float, isExpanded: Boolean): View {
+    private fun createBundleCard(channelKey: String, packageName: String, channelName: String, count: Int, density: Float, isExpanded: Boolean): View {
         val card = FrameLayout(this)
         val bg = GradientDrawable()
         val nightModeFlags = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
@@ -1649,9 +1641,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         appIconView.layoutParams = android.widget.LinearLayout.LayoutParams((32 * density).toInt(), (32 * density).toInt()).apply {
             rightMargin = (16 * density).toInt()
         }
-        var appName = "App"
         try {
-            appName = getAppLabel(this, packageName)
             val icon = getAppIcon(this, packageName)
             if (icon != null) {
                 appIconView.setImageDrawable(icon)
@@ -1660,7 +1650,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         innerLayout.addView(appIconView)
         
         val titleView = android.widget.TextView(this)
-        titleView.text = "$count Notifications from $appName"
+        titleView.text = "$count Notifications from $channelName"
         titleView.textSize = 16f
         titleView.setTextColor(if (isNight) Color.WHITE else Color.BLACK)
         titleView.setTypeface(null, android.graphics.Typeface.BOLD)
@@ -1677,9 +1667,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
 
         card.setOnClickListener {
             if (isExpanded) {
-                expandedBundlePackageName = null
+                expandedBundleKey = null
             } else {
-                expandedBundlePackageName = packageName
+                expandedBundleKey = channelKey
             }
             populateHangerNotifications()
         }

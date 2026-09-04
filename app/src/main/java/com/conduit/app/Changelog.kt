@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.19.01",
+        date = "September 4, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Bracket Hanger Improvements",
+                description = "The Bracket Hanger now dynamically supports all enabled notification channels. Additionally, the 'Group by channel' setting now correctly groups notifications by their actual channel, rather than creating separate groups for every app variation.",
+                iconName = "Icons.Filled.DynamicFeed"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.19.00",
         date = "September 3, 2026",
         highlights = listOf(
