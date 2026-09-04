@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.13",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "WhatsApp Conversation Fix",
+                description = "Fixed a bug where incoming WhatsApp messages could mistakenly be treated as your own replies, causing them to append to an archived notification instead of appearing as a new message.",
+                iconName = "Icons.Filled.Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.12",
         date = "September 3, 2026",
         highlights = listOf(
