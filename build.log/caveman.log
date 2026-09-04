@@ -296,3 +296,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-03T23:06] [v2.19.00] added default blocked notification rules for snapchat, messages, and textra with automatic retroactive database cleanup.
 [2026-09-04T14:10] [v2.19.01] updated bracket hanger to properly support all new channels defined in supportedapps and completely refactored the group by channel logic to group by the channel keys instead of raw package names.
 [2026-09-04T14:17] [v2.19.02] replaced legacy android up and down arrows in bracket hanger group cards with modern material 3 vector drawables.
+[2026-09-04T14:37] [v2.19.03] filtered out group summary notifications in populatehangernotifications and updatepersistentnotification to fix duplicate notifications for apps like whatsapp.

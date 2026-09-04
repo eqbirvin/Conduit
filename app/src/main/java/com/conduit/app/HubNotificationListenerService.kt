@@ -1461,7 +1461,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             if (channelInfo != null) {
                 val prefKey = channelInfo.first
                 if (prefs.getBoolean(prefKey, true)) {
-                    filteredNotifs.add(sbn)
+                    if ((notif.flags and Notification.FLAG_GROUP_SUMMARY) == 0) {
+                        filteredNotifs.add(sbn)
+                    }
                 }
             }
         }
@@ -1700,7 +1702,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             if (channelInfo != null) {
                 val prefKey = channelInfo.first
                 if (prefs.getBoolean(prefKey, true)) {
-                    filteredNotifs.add(sbn)
+                    if ((notif.flags and Notification.FLAG_GROUP_SUMMARY) == 0) {
+                        filteredNotifs.add(sbn)
+                    }
                 }
             }
         }
