@@ -58,6 +58,9 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE packageName = :pkg AND (title = :title OR title = :title || ' - Replied') ORDER BY timestamp DESC LIMIT 1")
     suspend fun getMostRecentByTitleAndPackage(pkg: String, title: String): HubNotification?
 
+    @Query("SELECT * FROM notifications WHERE notificationKey = :key ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getMostRecentByKey(key: String): HubNotification?
+
     @Query("SELECT * FROM notifications WHERE packageName = :pkg AND title = :title AND text = :text ORDER BY timestamp DESC LIMIT 1")
     suspend fun getMostRecentExactMatch(pkg: String, title: String, text: String): HubNotification?
 

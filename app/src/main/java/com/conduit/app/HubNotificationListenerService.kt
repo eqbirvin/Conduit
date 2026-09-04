@@ -911,7 +911,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                             val selfDisplayName = extras.getCharSequence(Notification.EXTRA_SELF_DISPLAY_NAME)?.toString()
                             val senderName = lastMsg.senderPerson?.name?.toString() ?: lastMsg.sender?.toString()
 
-                            val isSenderSameAsTitle = senderName != null && senderName.equals(title, ignoreCase = true)
+                            val isSenderSameAsTitle = senderName != null && senderName.equals(title, ignoreCase = true) && !senderName.equals("You", ignoreCase = true)
                             val isSelfDisplayNameBroken = packageName == "com.textra" && selfDisplayName != null && selfDisplayName.equals(title, ignoreCase = true)
 
                             val isNullSenderSelf = senderName == null && NULL_SENDER_IS_SELF_PACKAGES.contains(packageName)
@@ -933,7 +933,8 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 if (isSelfReply && replyText.isNotEmpty()) {
                     var hasExisting = false
                     kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
-                        val existing = database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
+                        val existingByKey = database.notificationDao().getMostRecentByKey(notificationKey)
+                        val existing = existingByKey ?: database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
                         if (existing != null) {
                             hasExisting = true
                             val suffix = "\n\u21aa You: $replyText"
