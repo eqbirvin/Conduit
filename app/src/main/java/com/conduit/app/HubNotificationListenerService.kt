@@ -1659,7 +1659,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
 
         val chevron = android.widget.ImageView(this)
         chevron.layoutParams = android.widget.LinearLayout.LayoutParams((24 * density).toInt(), (24 * density).toInt())
-        chevron.setImageResource(if (isExpanded) android.R.drawable.arrow_up_float else android.R.drawable.arrow_down_float)
+        chevron.setImageResource(if (isExpanded) R.drawable.ic_expand_less else R.drawable.ic_expand_more)
         chevron.setColorFilter(if (isNight) Color.WHITE else Color.BLACK)
         innerLayout.addView(chevron)
         
