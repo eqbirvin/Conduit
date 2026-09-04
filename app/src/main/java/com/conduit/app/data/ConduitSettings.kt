@@ -40,6 +40,7 @@ data class ConduitSettings(
     val hasUpdateAvailable: Boolean = false,
     val latestVersionAvailable: String = "",
     val defaultToTodoMode: Boolean = false,
-    val demoModeEnabled: Boolean = false
+    val demoModeEnabled: Boolean = false,
+    val ingestionDiagnosticsEnabled: Boolean = false
 )
 

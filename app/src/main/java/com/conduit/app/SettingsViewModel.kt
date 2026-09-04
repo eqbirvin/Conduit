@@ -50,6 +50,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateUpdateAvailableState(hasUpdate: Boolean, latestVersion: String) = viewModelScope.launch { repository.updateUpdateAvailableState(hasUpdate, latestVersion) }
     fun updateDefaultToTodoMode(enabled: Boolean) = viewModelScope.launch { repository.updateDefaultToTodoMode(enabled) }
     fun updateDemoModeEnabled(enabled: Boolean) = viewModelScope.launch { repository.updateDemoModeEnabled(enabled) }
+    fun updateIngestionDiagnosticsEnabled(enabled: Boolean) = viewModelScope.launch { repository.updateIngestionDiagnosticsEnabled(enabled) }
 
     class Factory(private val repository: SettingsRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

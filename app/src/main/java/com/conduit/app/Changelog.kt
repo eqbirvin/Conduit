@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.10",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Textra and WhatsApp Reply Fixes",
+                description = "Fixed an issue where Textra messages were sometimes swallowed during self-reply checks, and added Ingestion Diagnostics to Dev Settings to aid future troubleshooting.",
+                iconName = "Icons.Filled.Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.09",
         date = "September 3, 2026",
         highlights = listOf(

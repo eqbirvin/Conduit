@@ -75,6 +75,8 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             "com.beeper.ima" to Pair("channel_beeper", "Beeper"),
             "com.textra" to Pair("channel_textra", "Textra")
         )
+
+        val NULL_SENDER_IS_SELF_PACKAGES = setOf("com.google.android.apps.messaging")
     }
 
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -775,15 +777,63 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         }
     }
 
+    private fun logIngestionDiagnostic(sbn: StatusBarNotification, decision: String) {
+        val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("ingestion_diagnostics", false)) return
+        
+        val packageName = sbn.packageName
+        val extras = sbn.notification.extras
+        val flags = sbn.notification.flags
+        val hasGroupSummary = (flags and Notification.FLAG_GROUP_SUMMARY) != 0
+        val category = sbn.notification.category
+        val isOngoing = sbn.isOngoing
+        val eTitle = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: "null"
+        val eText = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()?.take(60) ?: "null"
+        val selfDisplayName = extras.getCharSequence(Notification.EXTRA_SELF_DISPLAY_NAME)?.toString() ?: "null"
+        val convoTitle = extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)?.toString() ?: "null"
+        
+        val messagesArray = extras.getParcelableArray(Notification.EXTRA_MESSAGES)
+        val msgCount = messagesArray?.size ?: 0
+        var lastSenderPerson = "null"
+        var lastLegacySender = "null"
+        var lastText = "null"
+        
+        if (messagesArray != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val msgs = Notification.MessagingStyle.Message.getMessagesFromBundleArray(messagesArray)
+                if (msgs.isNotEmpty()) {
+                    val lastMsg = msgs.last()
+                    lastSenderPerson = lastMsg.senderPerson?.name?.toString() ?: "null"
+                    lastLegacySender = lastMsg.sender?.toString() ?: "null"
+                    lastText = lastMsg.text?.toString()?.take(40) ?: "null"
+                }
+            } catch (e: Exception) {}
+        }
+        
+        val logLine = "pkg=$packageName key=${sbn.key} flags=$flags(summary=$hasGroupSummary) category=$category ongoing=$isOngoing " +
+                      "EXTRA_TITLE=[$eTitle] EXTRA_TEXT=[$eText] EXTRA_SELF_DISPLAY_NAME=[$selfDisplayName] " +
+                      "EXTRA_CONVERSATION_TITLE=[$convoTitle] msgCount=$msgCount lastSenderPerson=[$lastSenderPerson] " +
+                      "lastLegacySender=[$lastLegacySender] lastText=[$lastText] -> DECISION: $decision"
+        android.util.Log.d("ConduitIngest", logLine)
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
         sbn?.let {
+            val packageName = it.packageName
+            val isSystemPhoneFallback = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && it.notification.category == Notification.CATEGORY_CALL) ||
+                                        packageName.contains(".dialer", ignoreCase = true) ||
+                                        packageName.endsWith(".phone", ignoreCase = true)
+            
+            val isSupported = supportedApps.containsKey(packageName) || isSystemPhoneFallback
+            if (!isSupported) return@let
+
             // Ignore group summaries to avoid duplicate notifications (since apps post both child and summary)
-            if ((it.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0 && it.packageName != "com.textra") {
-                return
+            if ((it.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0 && packageName != "com.textra") {
+                logIngestionDiagnostic(it, "discarded-summary")
+                return@let
             }
 
-            val packageName = it.packageName
             val notificationKey = it.key
             
             val postedActions = mutableListOf<Notification.Action>()
@@ -799,15 +849,15 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
 
             
             val appInfo = supportedApps[packageName]
-            val isSystemPhoneFallback = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && it.notification.category == Notification.CATEGORY_CALL) ||
-                                        packageName.contains(".dialer", ignoreCase = true) ||
-                                        packageName.endsWith(".phone", ignoreCase = true)
             
             val channel = appInfo?.second ?: if (isSystemPhoneFallback) "Phone (Google Dialer)" else null
             
             if (channel != null) {
                 // Ignore ongoing notifications (like background services)
-                if (it.isOngoing) return@let
+                if (it.isOngoing) {
+                    logIngestionDiagnostic(it, "discarded-ongoing")
+                    return@let
+                }
 
                 val extras = it.notification.extras
                 var title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
@@ -861,9 +911,11 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                             val selfDisplayName = extras.getCharSequence(Notification.EXTRA_SELF_DISPLAY_NAME)?.toString()
                             val senderName = lastMsg.senderPerson?.name?.toString() ?: lastMsg.sender?.toString()
 
-                            if (senderName == null || 
-                                (selfDisplayName != null && senderName.equals(selfDisplayName, ignoreCase = true)) || 
-                                senderName.equals("You", ignoreCase = true)) {
+                            val isNullSenderSelf = senderName == null && NULL_SENDER_IS_SELF_PACKAGES.contains(packageName)
+
+                            if (isNullSenderSelf || 
+                                (senderName != null && selfDisplayName != null && senderName.equals(selfDisplayName, ignoreCase = true)) || 
+                                (senderName != null && senderName.equals("You", ignoreCase = true))) {
                                 isSelfReply = true
                                 replyText = lastMsg.text?.toString() ?: ""
                             }
@@ -875,10 +927,12 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                     }
                 }
 
-                        if (isSelfReply && replyText.isNotEmpty()) {
-                    scope.launch {
+                if (isSelfReply && replyText.isNotEmpty()) {
+                    var hasExisting = false
+                    kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
                         val existing = database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
                         if (existing != null) {
+                            hasExisting = true
                             val suffix = "\n\u21aa You: $replyText"
                             val currentText = existing.text ?: ""
                             val currentTitle = existing.title ?: ""
@@ -894,29 +948,40 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                             }
                         }
                     }
-                    return@let // Discard this duplicate system tray post since it's just our own reply!
+                    if (hasExisting) {
+                        logIngestionDiagnostic(it, "discarded-self-reply")
+                        return@let // Discard this duplicate system tray post since it's just our own reply!
+                    }
                 }
 
                 // Check custom block rules
-                if (shouldBlockNotification(applicationContext, packageName, title, text)) return@let
+                if (shouldBlockNotification(applicationContext, packageName, title, text)) {
+                    logIngestionDiagnostic(it, "blocked")
+                    return@let
+                }
 
                 // Ignore if it's a background work notification or empty
-                if (text.contains("doing work in the background", ignoreCase = true)) return@let
-                if (text.contains("updating messages", ignoreCase = true)) return@let
+                if (text.contains("doing work in the background", ignoreCase = true)) {
+                    logIngestionDiagnostic(it, "blocked")
+                    return@let
+                }
+                if (text.contains("updating messages", ignoreCase = true)) {
+                    logIngestionDiagnostic(it, "blocked")
+                    return@let
+                }
                 
                 if (title.isBlank() && text.isBlank()) {
-                    if (packageName == "com.textra") {
-                        title = "Textra"
-                        text = "New Message"
-                    } else {
-                        return@let
-                    }
+                    logIngestionDiagnostic(it, "discarded-blank")
+                    return@let
                 }
 
                 val prefKey = appInfo?.first ?: if (isSystemPhoneFallback) "channel_phone" else null
                 val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
                 val enabled = if (prefKey != null) prefs.getBoolean(prefKey, true) else true
-                if (!enabled) return@let
+                if (!enabled) {
+                    logIngestionDiagnostic(it, "disabled-channel")
+                    return@let
+                }
 
                 Log.d("HubService", "Intercepted MSG [$channel]: $title - $text")
 
@@ -953,18 +1018,21 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                         if (unarchivedMatch != null) {
                             database.notificationDao().adoptRow(unarchivedMatch.id, notificationKey, timestamp, kind)
                             com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
+                            logIngestionDiagnostic(it, "duplicate")
                             return@withLock
                         }
 
                         // Prevent aggressive duplicates when Google Messages changes the notification key
                         val exactMatch = database.notificationDao().getMostRecentExactMatch(packageName, title, text)
                         if (exactMatch != null && (timestamp - exactMatch.timestamp) < 60000) {
+                            logIngestionDiagnostic(it, "duplicate")
                             return@withLock // Exact same message received within 60 seconds, ignore
                         }
 
                         // Prevent native apps from resurrecting a notification we just locally archived with a smart reply
                         val recentReplyMatch = database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
                         if (recentReplyMatch != null && recentReplyMatch.text != null && recentReplyMatch.text.startsWith(text) && recentReplyMatch.text.contains("\n\u21aa You:")) {
+                            logIngestionDiagnostic(it, "duplicate")
                             return@withLock
                         }
 
@@ -973,13 +1041,16 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                             if (existingActive.title == title && existingActive.text == text) {
                                 // Exact duplicate update, ignore
                                 database.notificationDao().updateNotificationContentDetailed(existingActive.id, title, text, timestamp, kind)
+                                logIngestionDiagnostic(it, "duplicate")
                                 return@withLock
                             } else {
                                 // Update existing active notification
                                 database.notificationDao().updateNotificationContentDetailed(existingActive.id, title, text, timestamp, kind)
+                                logIngestionDiagnostic(it, "ingested-update")
                             }
                         } else {
                             database.notificationDao().insert(hubNotification)
+                            logIngestionDiagnostic(it, "ingested")
                         }
                         
                         com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)

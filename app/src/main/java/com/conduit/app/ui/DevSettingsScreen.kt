@@ -78,6 +78,7 @@ interface DevSettingsScreenCallbacks {
     fun onPersistentTrayEnabledChanged(enabled: Boolean)
     fun onEnableBubblesChanged(enabled: Boolean)
     fun onDemoModeEnabledChanged(enabled: Boolean)
+    fun onIngestionDiagnosticsEnabledChanged(enabled: Boolean)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -254,6 +255,25 @@ fun DevSettingsScreen(
                                     com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
                                 }
                             }
+                        )
+                    }
+                }
+            }
+
+            OutlinedCard(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Ingestion Diagnostics", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                            Text("Logs deep ingestion telemetry for all supported incoming notifications to logcat (tag 'ConduitIngest').", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(
+                            checked = settings.ingestionDiagnosticsEnabled,
+                            onCheckedChange = callbacks::onIngestionDiagnosticsEnabledChanged
                         )
                     }
                 }

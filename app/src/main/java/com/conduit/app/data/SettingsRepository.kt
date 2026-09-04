@@ -86,7 +86,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             hasUpdateAvailable = storedHasUpdate,
             latestVersionAvailable = storedLatestVersion,
             defaultToTodoMode = prefs.getBoolean("default_to_todo_mode", false),
-            demoModeEnabled = prefs.getBoolean("demo_mode_enabled", false)
+            demoModeEnabled = prefs.getBoolean("demo_mode_enabled", false),
+            ingestionDiagnosticsEnabled = prefs.getBoolean("ingestion_diagnostics", false)
         )
     }
 
@@ -286,6 +287,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateDemoModeEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("demo_mode_enabled", enabled).apply()
         _settings.update { it.copy(demoModeEnabled = enabled) }
+    }
+
+    fun updateIngestionDiagnosticsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean("ingestion_diagnostics", enabled).apply()
+        _settings.update { it.copy(ingestionDiagnosticsEnabled = enabled) }
     }
 }
 

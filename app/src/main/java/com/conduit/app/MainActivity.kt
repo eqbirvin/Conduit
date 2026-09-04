@@ -441,6 +441,7 @@ class MainActivity : ComponentActivity() {
                                     override fun onPersistentTrayEnabledChanged(enabled: Boolean) { settingsViewModel.updatePersistentTrayEnabled(enabled) }
                                     override fun onEnableBubblesChanged(enabled: Boolean) { settingsViewModel.updateEnableBubbles(enabled) }
                                     override fun onDemoModeEnabledChanged(enabled: Boolean) { settingsViewModel.updateDemoModeEnabled(enabled) }
+                                    override fun onIngestionDiagnosticsEnabledChanged(enabled: Boolean) { settingsViewModel.updateIngestionDiagnosticsEnabled(enabled) }
                                 },
                                 onNavigateBack = { currentScreen = Screen.SETTINGS }
                             )
