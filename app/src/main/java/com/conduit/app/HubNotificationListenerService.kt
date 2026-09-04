@@ -829,7 +829,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             if (!isSupported) return@let
 
             // Ignore group summaries to avoid duplicate notifications (since apps post both child and summary)
-            if ((it.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0 && packageName != "com.textra") {
+            if ((it.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) {
                 logIngestionDiagnostic(it, "discarded-summary")
                 return@let
             }
@@ -1033,9 +1033,12 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
 
                         // Prevent native apps from resurrecting a notification we just locally archived with a smart reply
                         val recentReplyMatch = database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
-                        if (recentReplyMatch != null && recentReplyMatch.text != null && recentReplyMatch.text.startsWith(text) && recentReplyMatch.text.contains("\n\u21aa You:")) {
-                            logIngestionDiagnostic(it, "duplicate")
-                            return@withLock
+                        if (recentReplyMatch != null && recentReplyMatch.text != null && recentReplyMatch.text.contains("\n\u21aa You:")) {
+                            val originalText = recentReplyMatch.text.substringBefore("\n\u21aa You:")
+                            if (originalText == text) {
+                                logIngestionDiagnostic(it, "duplicate")
+                                return@withLock
+                            }
                         }
 
                         val existingActive = database.notificationDao().getActiveNotificationByKey(notificationKey)

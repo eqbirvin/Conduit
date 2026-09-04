@@ -694,19 +694,20 @@ fun formatTimestampWithDate(timestamp: Long): String {
 fun AppIcon(packageName: String, size: androidx.compose.ui.unit.Dp = 50.dp) {
     val context = LocalContext.current
     val repPkg = remember(packageName) { getRepresentativePackage(context, packageName) }
-    var iconBitmap by remember(repPkg) { mutableStateOf(appIconCache[repPkg]) }
-
     val density = androidx.compose.ui.platform.LocalDensity.current
     val sizePx = remember(size, density) { with(density) { size.roundToPx() } }
 
-    LaunchedEffect(repPkg) {
+    val cacheKey = "${repPkg}_${sizePx}"
+    var iconBitmap by remember(cacheKey) { mutableStateOf(appIconCache.get(cacheKey)) }
+
+    LaunchedEffect(cacheKey) {
         if (iconBitmap == null) {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 try {
                     val drawable = getAppIcon(context, repPkg)
                     if (drawable != null) {
                         val bmp = drawable.toBitmap(sizePx, sizePx).asImageBitmap()
-                        appIconCache.put(repPkg, bmp)
+                        appIconCache.put(cacheKey, bmp)
                         iconBitmap = bmp
                     }
                 } catch (e: android.content.pm.PackageManager.NameNotFoundException) {

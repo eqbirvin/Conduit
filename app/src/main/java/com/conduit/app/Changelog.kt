@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.17.12",
+        date = "September 3, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "WhatsApp Reply & Dock Fixes",
+                description = "Fixed an issue where new WhatsApp messages could be dropped if they shared a prefix with a previous message you replied to. Also fixed a visual issue where small app icons (like WhatsApp and Textra) would appear blurry on the dock by properly caching high-res versions.",
+                iconName = "Icons.Filled.Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.17.11",
         date = "September 3, 2026",
         highlights = listOf(
