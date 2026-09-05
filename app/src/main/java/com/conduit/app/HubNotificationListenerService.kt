@@ -359,6 +359,25 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 setBackgroundColor(Color.parseColor("#E6000000"))
             }
             setOnClickListener { closeHanger() }
+
+            val navBg = android.view.View(this@HubNotificationListenerService)
+            navBg.setBackgroundColor(Color.BLACK)
+            addView(navBg, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.BOTTOM))
+            
+            setOnApplyWindowInsetsListener { _, insets ->
+                val navHeight = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    insets.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom
+                } else {
+                    @Suppress("DEPRECATION")
+                    insets.systemWindowInsetBottom
+                }
+                val lp = navBg.layoutParams
+                if (lp.height != navHeight) {
+                    lp.height = navHeight
+                    navBg.layoutParams = lp
+                }
+                insets
+            }
         }
         
         val scrollParams = FrameLayout.LayoutParams(
