@@ -215,6 +215,16 @@ fun HubScreen(
                             }) {
                                 Icon(Icons.Filled.Block, contentDescription = "Block notification")
                             }
+
+                            IconButton(onClick = {
+                                val notifId = selectedIds.first()
+                                val notif = notifications.find { it.id == notifId } ?: archivedNotifications.find { it.id == notifId }
+                                if (notif != null) {
+                                    notificationToSnooze = notif
+                                }
+                            }) {
+                                Icon(Icons.Filled.Snooze, contentDescription = "Snooze notification")
+                            }
                             
                             Box(
                                 modifier = Modifier
@@ -1368,6 +1378,7 @@ fun HubScreen(
                                 HubNotificationListenerService.instance?.snooze(notif.notificationKey, durationMs)
                                 onSnoozeNotification(notif.id, System.currentTimeMillis())
                                 notificationToSnooze = null
+                                selectedIds = emptySet()
                             }
                         )
                     }

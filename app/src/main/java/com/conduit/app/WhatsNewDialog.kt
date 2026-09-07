@@ -105,6 +105,7 @@ fun getChangelogIcon(iconName: String): ImageVector {
         "Storage" -> Icons.Default.Storage
         "Build" -> Icons.Default.Build
         "Check" -> Icons.Default.Check
+        "Snooze" -> Icons.Default.Snooze
         else -> Icons.Default.Info
     }
 }

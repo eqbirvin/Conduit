@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.19.06",
+        date = "September 7, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Snooze in Selection Mode",
+                description = "Added a snooze action button to the selection mode top bar when a single notification is selected, allowing you to quickly snooze notifications via the native snooze sheet.",
+                iconName = "Snooze"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.19.01",
         date = "September 4, 2026",
         highlights = listOf(
