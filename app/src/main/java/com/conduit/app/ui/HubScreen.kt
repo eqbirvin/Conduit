@@ -205,6 +205,26 @@ fun HubScreen(
                         }
                     },
                     actions = {
+                        if (selectedIds.size == 1) {
+                            IconButton(onClick = {
+                                val notifId = selectedIds.first()
+                                val notif = notifications.find { it.id == notifId } ?: archivedNotifications.find { it.id == notifId }
+                                if (notif != null) {
+                                    notificationToBlock = notif
+                                }
+                            }) {
+                                Icon(Icons.Filled.Block, contentDescription = "Block notification")
+                            }
+                            
+                            Box(
+                                modifier = Modifier
+                                    .height(24.dp)
+                                    .width(1.dp)
+                                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+
 
                         IconButton(onClick = {
                             val idsToPin = selectedIds.toList()
