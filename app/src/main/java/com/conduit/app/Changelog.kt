@@ -25,6 +25,17 @@ val CHANGELOG: List<ChangelogRelease> = listOf(
         )
     ),
     ChangelogRelease(
+        versionName = "2.19.05",
+        date = "September 7, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Block in Selection Mode",
+                description = "Added a block action button to the selection mode top bar when a single notification is selected, allowing you to quickly create filter rules for matching notifications.",
+                iconName = "Block"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.19.01",
         date = "September 4, 2026",
         highlights = listOf(
