@@ -833,7 +833,7 @@ fun HubScreen(
         }
         
         Column(modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize()) {
-            if (views.isNotEmpty()) {
+            if (views.isNotEmpty() && !isSearchMode) {
                 @OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
                 androidx.compose.runtime.CompositionLocalProvider(
                     androidx.compose.material3.LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
