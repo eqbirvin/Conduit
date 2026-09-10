@@ -28,6 +28,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 
+data class SearchCorrection(
+    val originalQuery: String,
+    val correctedQuery: String
+)
+
 class HubViewModel(
     application: Application,
     private val repository: NotificationRepository,
@@ -37,22 +42,53 @@ class HubViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
+    private val _forcedQuery = MutableStateFlow<String?>(null)
+
+    private val _searchCorrectionState = MutableStateFlow<SearchCorrection?>(null)
+    val searchCorrectionState: StateFlow<SearchCorrection?> = _searchCorrectionState
+
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
+        _forcedQuery.value = null
+        _searchCorrectionState.value = null
+    }
+
+    fun forceOriginalQuery(query: String) {
+        _forcedQuery.value = query
+        _searchCorrectionState.value = null
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val searchResults: Flow<PagingData<HubNotification>> = _searchQuery
-        .debounce(250)
-        .distinctUntilChanged()
-        .flatMapLatest { query ->
-            if (query.isBlank()) {
-                flowOf(PagingData.empty())
-            } else {
+    val searchResults: Flow<PagingData<HubNotification>> = combine(
+        _searchQuery.debounce(250).distinctUntilChanged(),
+        _forcedQuery
+    ) { query, forced ->
+        query to forced
+    }.flatMapLatest { (query, forced) ->
+        if (query.isBlank()) {
+            _searchCorrectionState.value = null
+            flowOf(PagingData.empty())
+        } else if (forced == query) {
+            _searchCorrectionState.value = null
+            repository.searchNotificationsPaged(query)
+        } else {
+            val count = repository.countSearchResults(query)
+            if (count > 0) {
+                _searchCorrectionState.value = null
                 repository.searchNotificationsPaged(query)
+            } else {
+                val vocabulary = repository.getSearchVocabulary()
+                val correction = com.conduit.app.data.FuzzySearchEngine.findCorrection(query, vocabulary)
+                if (correction != null && !correction.equals(query, ignoreCase = true)) {
+                    _searchCorrectionState.value = SearchCorrection(originalQuery = query, correctedQuery = correction)
+                    repository.searchNotificationsPaged(correction)
+                } else {
+                    _searchCorrectionState.value = null
+                    repository.searchNotificationsPaged(query)
+                }
             }
         }
-        .cachedIn(viewModelScope)
+    }.cachedIn(viewModelScope)
 
     private val rawNotifications: StateFlow<List<HubNotification>> = repository.activeNotifications
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())

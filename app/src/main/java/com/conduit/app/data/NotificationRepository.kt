@@ -9,10 +9,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 
 class NotificationRepository(
     private val context: Context,
@@ -20,6 +23,8 @@ class NotificationRepository(
     private val settingsRepository: SettingsRepository
 ) {
     private val notificationDao = database.notificationDao()
+    private var cachedVocabulary: Set<String>? = null
+    private var lastVocabFetchTime: Long = 0L
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val activeNotifications: Flow<List<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
@@ -31,15 +36,77 @@ class NotificationRepository(
         notificationDao.getArchivedNotifications(settings.demoModeEnabled)
     }
 
+    private fun buildSearchQuery(tokens: List<String>, isDemo: Boolean, countOnly: Boolean): SupportSQLiteQuery {
+        val selectClause = if (countOnly) "SELECT COUNT(*) FROM notifications" else "SELECT * FROM notifications"
+        val whereClauses = mutableListOf("isDemo = ?")
+        val bindArgs = mutableListOf<Any>(if (isDemo) 1 else 0)
+
+        for (token in tokens) {
+            whereClauses.add("(title LIKE '%' || ? || '%' OR text LIKE '%' || ? || '%' OR packageName LIKE '%' || ? || '%')")
+            bindArgs.add(token)
+            bindArgs.add(token)
+            bindArgs.add(token)
+        }
+
+        val sql = buildString {
+            append(selectClause)
+            append(" WHERE ")
+            append(whereClauses.joinToString(" AND "))
+            if (!countOnly) {
+                append(" ORDER BY timestamp DESC")
+            }
+        }
+
+        return SimpleSQLiteQuery(sql, bindArgs.toTypedArray())
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     fun searchNotificationsPaged(query: String): Flow<PagingData<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
+        val tokens = query.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
         Pager(
             config = PagingConfig(
                 pageSize = 30,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { notificationDao.searchNotificationsPaged(query, settings.demoModeEnabled) }
+            pagingSourceFactory = {
+                if (tokens.isEmpty()) {
+                    notificationDao.searchNotificationsPaged("", settings.demoModeEnabled)
+                } else {
+                    val sqliteQuery = buildSearchQuery(tokens, settings.demoModeEnabled, countOnly = false)
+                    notificationDao.searchNotificationsRaw(sqliteQuery)
+                }
+            }
         ).flow
+    }
+
+    suspend fun countSearchResults(query: String): Int = withContext(Dispatchers.IO) {
+        val settings = settingsRepository.settings.first()
+        val tokens = query.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        if (tokens.isEmpty()) return@withContext 0
+        val countQuery = buildSearchQuery(tokens, settings.demoModeEnabled, countOnly = true)
+        try {
+            notificationDao.countNotificationsRaw(countQuery)
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationRepository", "Failed to count search results", e)
+            0
+        }
+    }
+
+    suspend fun getSearchVocabulary(): Set<String> = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        val cached = cachedVocabulary
+        if (cached != null && now - lastVocabFetchTime < 60_000L) {
+            return@withContext cached
+        }
+        val settings = settingsRepository.settings.first()
+        val snippets = notificationDao.getRecentNotificationTexts(settings.demoModeEnabled)
+        val words = mutableSetOf<String>()
+        for (snippet in snippets) {
+            words.addAll(FuzzySearchEngine.extractWords(snippet.title, snippet.text, snippet.packageName))
+        }
+        cachedVocabulary = words
+        lastVocabFetchTime = now
+        words
     }
 
     suspend fun archiveNotification(id: Int, timestamp: Long) = withContext(Dispatchers.IO) {

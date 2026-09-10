@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.20.01",
+        date = "September 10, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Multi-Word & Typo-Tolerant Search",
+                description = "Global search now matches multi-word queries in any order and features automatic typo tolerance. If no exact matches are found, it automatically locates and displays results for close matches with an interactive banner.",
+                iconName = "Search"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.20.00",
         date = "September 10, 2026",
         highlights = listOf(

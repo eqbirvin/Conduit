@@ -165,6 +165,7 @@ fun HubScreen(
     var searchQuery by remember { mutableStateOf("") }
     var isSearchMode by remember { mutableStateOf(false) }
     val searchItems = viewModel.searchResults.collectAsLazyPagingItems()
+    val searchCorrection by viewModel.searchCorrectionState.collectAsStateWithLifecycle()
 
     // Clear selection or exit search on back press
     BackHandler(enabled = isSelectionMode || isSearchMode) {
@@ -897,15 +898,61 @@ fun HubScreen(
 
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             if (isSearchMode) {
-                if (searchQuery.isBlank()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Type to search notifications...", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(modifier = Modifier.fillMaxSize()) {
+                    if (searchCorrection != null) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "No exact matches for \"${searchCorrection?.originalQuery}\"",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                                    )
+                                    Text(
+                                        text = "Showing results for \"${searchCorrection?.correctedQuery}\"",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                                TextButton(
+                                    onClick = {
+                                        searchCorrection?.let { correction ->
+                                            viewModel.forceOriginalQuery(correction.originalQuery)
+                                        }
+                                    }
+                                ) {
+                                    Text(
+                                        text = "Search original",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                            }
+                        }
                     }
-                } else if (searchItems.itemCount == 0 && searchItems.loadState.refresh !is LoadState.Loading) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No notifications found", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                } else {
+
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                        if (searchQuery.isBlank()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("Type to search notifications...", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        } else if (searchItems.itemCount == 0 && searchItems.loadState.refresh !is LoadState.Loading) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("No notifications found", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        } else {
                     val currentViewConfig = LocalViewConfiguration.current
                     val customViewConfig = remember(currentViewConfig) {
                         object : ViewConfiguration by currentViewConfig {
@@ -1071,6 +1118,8 @@ fun HubScreen(
                             }
                         }
                     }
+                    }
+                }
                 }
             } else if (displayNotifications.isEmpty() && selectedDockPackage == null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

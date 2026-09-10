@@ -4,6 +4,8 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -25,6 +27,15 @@ interface NotificationDao {
         ORDER BY timestamp DESC
     """)
     fun searchNotificationsPaged(query: String, isDemo: Boolean): PagingSource<Int, HubNotification>
+
+    @RawQuery(observedEntities = [HubNotification::class])
+    fun searchNotificationsRaw(query: SupportSQLiteQuery): PagingSource<Int, HubNotification>
+
+    @RawQuery
+    suspend fun countNotificationsRaw(query: SupportSQLiteQuery): Int
+
+    @Query("SELECT title, text, packageName FROM notifications WHERE isDemo = :isDemo ORDER BY timestamp DESC LIMIT 300")
+    suspend fun getRecentNotificationTexts(isDemo: Boolean): List<NotificationSearchSnippet>
 
     @Insert
     suspend fun insert(notification: HubNotification)
@@ -130,4 +141,10 @@ interface NotificationDao {
 data class PackageChannel(
     val packageName: String,
     val channel: String
+)
+
+data class NotificationSearchSnippet(
+    val title: String?,
+    val text: String?,
+    val packageName: String
 )
