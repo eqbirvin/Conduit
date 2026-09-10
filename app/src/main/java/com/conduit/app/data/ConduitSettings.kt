@@ -24,6 +24,7 @@ data class ConduitSettings(
     val activeAppIcon: String = "MANILA",
     val smartMarkRead: Boolean = true,
     val smartMarkReadTarget: String = "widget_and_app",
+    val triggerNativeMarkRead: Boolean = false,
     val minimizeIcons: Boolean = false,
     val masterExpandedState: Boolean = true,
     val fabConfigs: List<FabAction> = emptyList(),

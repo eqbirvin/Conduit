@@ -455,6 +455,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                     override fun onSmartMarkReadChanged(enabled: Boolean) { settingsViewModel.updateSmartMarkRead(enabled) }
                                     override fun onSmartMarkReadTargetChanged(target: String) { settingsViewModel.updateSmartMarkReadTarget(target) }
+                                    override fun onTriggerNativeMarkReadChanged(enabled: Boolean) { settingsViewModel.updateTriggerNativeMarkRead(enabled) }
                                     override fun onRetentionDaysChanged(days: Int) { settingsViewModel.updateRetentionDays(days) }
                                     override fun onEnableAppBundlesChanged(enabled: Boolean) { settingsViewModel.updateEnableAppBundles(enabled) }
                                     override fun onMinimizeIconsChanged(enabled: Boolean) {

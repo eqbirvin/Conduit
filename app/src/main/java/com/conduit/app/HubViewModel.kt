@@ -212,6 +212,12 @@ class HubViewModel(
         }
     }
 
+    fun markNotificationsAsRead(notifications: List<HubNotification>) {
+        viewModelScope.launch {
+            repository.markNotificationsAsRead(notifications)
+        }
+    }
+
     fun triggerAction(context: android.content.Context, notification: HubNotification, action: Notification.Action) {
         viewModelScope.launch {
             try {

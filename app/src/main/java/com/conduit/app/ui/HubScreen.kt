@@ -251,35 +251,9 @@ fun HubScreen(
                         }
 
                         IconButton(onClick = {
-                            val idsToProcess = selectedIds.toList()
-                            val service = HubNotificationListenerService.instance
-                            kotlinx.coroutines.GlobalScope.launch {
-                                val database = AppDatabase.getDatabase(context)
-                                idsToProcess.forEach { id ->
-                                    val notif = notifications.find { it.id == id }
-                                    if (notif != null && service != null) {
-                                        val sbn = service.activeNotifications.find { it.key == notif.notificationKey }
-                                        if (sbn != null) {
-                                            val actions = sbn.notification.actions
-                                            if (actions != null) {
-                                                val readAction = actions.find { 
-                                                    it.title.toString().contains("read", ignoreCase = true) ||
-                                                    it.title.toString().contains("done", ignoreCase = true) ||
-                                                    it.title.toString().contains("seen", ignoreCase = true)
-                                                }
-                                                if (readAction != null) {
-                                                    try {
-                                                        readAction.actionIntent.send()
-                                                    } catch (e: Exception) {
-                                                        e.printStackTrace()
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        database.notificationDao().archiveNotification(id, System.currentTimeMillis())
-                                    }
-                                }
-                                com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
+                            val selectedNotifs = notifications.filter { it.id in selectedIds }
+                            if (selectedNotifs.isNotEmpty()) {
+                                viewModel.markNotificationsAsRead(selectedNotifs)
                             }
                             performHapticClick(context)
                             selectedIds = emptySet()
@@ -989,10 +963,7 @@ fun HubScreen(
                                             val action = if (value == SwipeToDismissBoxValue.StartToEnd) swipeRightAction else swipeLeftAction
                                             when (action) {
                                                 "ARCHIVE" -> {
-                                                    if (prefs.getBoolean("sync_dismissal", true)) {
-                                                        HubNotificationListenerService.instance?.cancel(notification.notificationKey)
-                                                    }
-                                                    onArchiveNotification(notification.id, System.currentTimeMillis())
+                                                    viewModel.markNotificationsAsRead(listOf(notification))
                                                     !unifiedView
                                                 }
                                                 "SNOOZE" -> {
@@ -1283,10 +1254,9 @@ fun HubScreen(
                                                         .clip(rightShape)
                                                         .clickable {
                                                             performHapticClick(context)
-                                                            val now = System.currentTimeMillis()
-                                                            val idsToArchive = itemsList.filter { notifications.contains(it) }.map { it.id }
-                                                            if (idsToArchive.isNotEmpty()) {
-                                                                viewModel.archiveMany(idsToArchive)
+                                                            val itemsToArchive = itemsList.filter { notifications.contains(it) }
+                                                            if (itemsToArchive.isNotEmpty()) {
+                                                                viewModel.markNotificationsAsRead(itemsToArchive)
                                                             }
                                                         }
                                                 ) {
@@ -1324,10 +1294,7 @@ fun HubScreen(
                                     val action = if (value == SwipeToDismissBoxValue.StartToEnd) swipeRightAction else swipeLeftAction
                                     when (action) {
                                         "ARCHIVE" -> {
-                                            if (prefs.getBoolean("sync_dismissal", true)) {
-                                                HubNotificationListenerService.instance?.cancel(notification.notificationKey)
-                                            }
-                                            onArchiveNotification(notification.id, System.currentTimeMillis())
+                                            viewModel.markNotificationsAsRead(listOf(notification))
                                             !unifiedView
                                         }
                                         "SNOOZE" -> {

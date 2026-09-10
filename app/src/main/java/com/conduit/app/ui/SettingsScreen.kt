@@ -99,6 +99,7 @@ interface SettingsScreenCallbacks {
     fun onActiveAppIconChanged(icon: String)
     fun onSmartMarkReadChanged(enabled: Boolean)
     fun onSmartMarkReadTargetChanged(target: String)
+    fun onTriggerNativeMarkReadChanged(enabled: Boolean)
     fun onRetentionDaysChanged(days: Int)
     fun onEnableAppBundlesChanged(enabled: Boolean)
     fun onMinimizeIconsChanged(enabled: Boolean)
@@ -361,6 +362,14 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
+
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Trigger Native Mark as Read", style = MaterialTheme.typography.bodyLarge)
+                    Text("When marking notifications as read via swipe, date header, or bulk selection, automatically trigger the app's native 'Mark as Read' or 'Done' action if available; otherwise falls back to normal dismissal.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = settings.triggerNativeMarkRead, onCheckedChange = callbacks::onTriggerNativeMarkReadChanged)
             }
 
             Spacer(modifier = Modifier.height(24.dp))

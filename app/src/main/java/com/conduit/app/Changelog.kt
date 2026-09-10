@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.21.00",
+        date = "September 10, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Trigger Native Mark as Read",
+                description = "New setting to trigger third-party apps' native 'Mark as Read' or 'Done' actions when marking notifications as read via swipe, date header, or bulk selection. Unsupported notifications automatically fall back to standard dismissal.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.20.02",
         date = "September 10, 2026",
         highlights = listOf(

@@ -243,6 +243,60 @@ class NotificationRepository(
         notificationDao.getActiveNotificationByKey(key)
     }
 
+    fun findNativeReadAction(key: String): Notification.Action? {
+        val actions = getNotificationActions(key) ?: return null
+        return actions.find { action ->
+            val title = action.title?.toString()?.trim()?.lowercase() ?: return@find false
+            if (title.contains("unread")) return@find false
+            title == "read" || title == "done" ||
+            title.contains("mark read") || title.contains("mark as read") ||
+            title.startsWith("read ") || title.endsWith(" read") ||
+            title == "mark done" || title == "mark as done"
+        }
+    }
+
+    fun triggerNotificationAction(action: Notification.Action) {
+        try {
+            val options = android.app.ActivityOptions.makeBasic()
+            if (android.os.Build.VERSION.SDK_INT >= 34) {
+                options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+            }
+            action.actionIntent.send(context, 0, null, null, null, null, options.toBundle())
+        } catch (e: android.app.PendingIntent.CanceledException) {
+            android.util.Log.e("NotificationRepository", "Failed to send notification action intent (canceled)", e)
+        } catch (e: SecurityException) {
+            android.util.Log.e("NotificationRepository", "SecurityException when sending notification action intent", e)
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationRepository", "Unexpected error triggering notification action", e)
+        }
+    }
+
+    suspend fun markNotificationsAsRead(
+        notifications: List<HubNotification>,
+        triggerNative: Boolean = settingsRepository.settings.value.triggerNativeMarkRead,
+        syncDismissal: Boolean = settingsRepository.settings.value.syncDismissal
+    ) = withContext(Dispatchers.IO) {
+        if (notifications.isEmpty()) return@withContext
+        val idsToArchive = mutableListOf<Int>()
+
+        for (notif in notifications) {
+            idsToArchive.add(notif.id)
+            if (triggerNative) {
+                val nativeAction = findNativeReadAction(notif.notificationKey)
+                if (nativeAction != null) {
+                    triggerNotificationAction(nativeAction)
+                }
+            }
+            if (syncDismissal) {
+                cancelServiceNotification(notif.notificationKey)
+            }
+        }
+
+        val now = System.currentTimeMillis()
+        notificationDao.archiveNotifications(idsToArchive, now)
+        triggerWidgetUpdate()
+    }
+
     private fun triggerWidgetUpdate() {
         ConduitWidgetProvider.updateAllWidgets(context)
     }

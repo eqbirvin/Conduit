@@ -303,3 +303,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-10T10:26] [v2.20.00] migrated global search to jetpack paging 3 and room pagingsource with 250ms debounced queries.
 [2026-09-10T10:50] [v2.20.01] implemented multi-word and-logic search, damerau-levenshtein typo tolerance engine, and automatic search correction fallback banner.
 [2026-09-10T11:03] [v2.20.02] hide custom view chips during search mode for a cleaner search page ui.
+[2026-09-10T11:52] [v2.21.00] added trigger native mark as read setting for swipe gestures, date header, and selection mode bulk actions with automatic dismissal fallback.

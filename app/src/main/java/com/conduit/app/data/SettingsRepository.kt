@@ -70,6 +70,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             activeAppIcon = prefs.getString("active_app_icon", "MANILA") ?: "MANILA",
             smartMarkRead = prefs.getBoolean("smart_mark_read", true),
             smartMarkReadTarget = prefs.getString("smart_mark_read_target", "widget_only") ?: "widget_only",
+            triggerNativeMarkRead = prefs.getBoolean("trigger_native_mark_read", false),
             fabConfigs = fabConfigs,
             aiBundle = getBundle("ai_bundle", "com.anthropic.claude,com.google.android.apps.bard"),
             notesBundle = getBundle("notes_bundle", "com.google.android.keep,com.notion.id"),
@@ -199,6 +200,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateSmartMarkReadTarget(target: String) {
         prefs.edit().putString("smart_mark_read_target", target).apply()
         _settings.update { it.copy(smartMarkReadTarget = target) }
+    }
+
+    fun updateTriggerNativeMarkRead(enabled: Boolean) {
+        prefs.edit().putBoolean("trigger_native_mark_read", enabled).apply()
+        _settings.update { it.copy(triggerNativeMarkRead = enabled) }
     }
 
     fun updateFabConfigs(configs: List<FabAction>) {

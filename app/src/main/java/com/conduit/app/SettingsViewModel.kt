@@ -35,6 +35,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateActiveAppIcon(icon: String) = viewModelScope.launch { repository.updateActiveAppIcon(icon) }
     fun updateSmartMarkRead(enabled: Boolean) = viewModelScope.launch { repository.updateSmartMarkRead(enabled) }
     fun updateSmartMarkReadTarget(target: String) = viewModelScope.launch { repository.updateSmartMarkReadTarget(target) }
+    fun updateTriggerNativeMarkRead(enabled: Boolean) = viewModelScope.launch { repository.updateTriggerNativeMarkRead(enabled) }
     fun updateFabConfigs(configs: List<FabAction>) = viewModelScope.launch { repository.updateFabConfigs(configs) }
     fun updateAiBundle(bundle: List<String>) = viewModelScope.launch { repository.updateAiBundle(bundle) }
     fun updateNotesBundle(bundle: List<String>) = viewModelScope.launch { repository.updateNotesBundle(bundle) }
