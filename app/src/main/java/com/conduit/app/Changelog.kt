@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.20.00",
+        date = "September 10, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "High-Performance Paginated Search",
+                description = "Global search is now powered by Jetpack Paging 3 and Room database queries with a 250ms typing debounce. Results load asynchronously with lower memory usage and buttery smooth scrolling through large archives.",
+                iconName = "Search"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.19.06",
         date = "September 7, 2026",
         highlights = listOf(

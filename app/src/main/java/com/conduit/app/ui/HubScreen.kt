@@ -38,9 +38,13 @@ import androidx.compose.animation.*
 import android.app.Notification
 import android.app.RemoteInput
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import androidx.paging.LoadState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -160,6 +164,7 @@ fun HubScreen(
     val isSelectionMode = selectedIds.isNotEmpty()
     var searchQuery by remember { mutableStateOf("") }
     var isSearchMode by remember { mutableStateOf(false) }
+    val searchItems = viewModel.searchResults.collectAsLazyPagingItems()
 
     // Clear selection or exit search on back press
     BackHandler(enabled = isSelectionMode || isSearchMode) {
@@ -168,17 +173,11 @@ fun HubScreen(
         } else {
             isSearchMode = false
             searchQuery = ""
+            viewModel.setSearchQuery("")
         }
     }
-    val displayNotifications = remember(notifications, archivedNotifications, searchQuery, isSearchMode, selectedDockPackage, unifiedView) {
-        if (isSearchMode && searchQuery.isNotEmpty()) {
-            val combined = notifications + archivedNotifications
-            combined.filter { notif ->
-                notif.title.toString().contains(searchQuery, ignoreCase = true) ||
-                notif.text.toString().contains(searchQuery, ignoreCase = true) ||
-                notif.packageName.contains(searchQuery, ignoreCase = true)
-            }.sortedByDescending { it.timestamp }
-        } else if (selectedDockPackage != null) {
+    val displayNotifications = remember(notifications, archivedNotifications, selectedDockPackage, unifiedView) {
+        if (selectedDockPackage != null) {
             val list = if (unifiedView) {
                 (notifications + archivedNotifications).sortedByDescending { it.timestamp }
             } else {
@@ -296,7 +295,10 @@ fun HubScreen(
                     title = {
                         TextField(
                             value = searchQuery,
-                            onValueChange = { searchQuery = it },
+                            onValueChange = {
+                                searchQuery = it
+                                viewModel.setSearchQuery(it)
+                            },
                             placeholder = { Text("Search notifications...") },
                             modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.colors(
@@ -312,13 +314,17 @@ fun HubScreen(
                                     performHapticTick(context)
                                     isSearchMode = false
                                     searchQuery = ""
+                                    viewModel.setSearchQuery("")
                                 }) {
-                                    Icon(Icons.Filled.ArrowBack, contentDescription = "Exit search")
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Exit search")
                                 }
                             },
                             trailingIcon = {
                                 if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = { searchQuery = "" }) {
+                                    IconButton(onClick = {
+                                        searchQuery = ""
+                                        viewModel.setSearchQuery("")
+                                    }) {
                                         Icon(Icons.Filled.Close, contentDescription = "Clear search")
                                     }
                                 }
@@ -402,6 +408,8 @@ fun HubScreen(
                         IconButton(onClick = {
                             performHapticTick(context)
                             isSearchMode = true
+                            searchQuery = ""
+                            viewModel.setSearchQuery("")
                         }) {
                             Icon(Icons.Filled.Search, contentDescription = "Search")
                         }
@@ -746,6 +754,8 @@ fun HubScreen(
                                                         }
                                                         "SEARCH" -> {
                                                             isSearchMode = true
+                                                            searchQuery = ""
+                                                            viewModel.setSearchQuery("")
                                                         }
                                                     }
                                                 }
@@ -886,7 +896,183 @@ fun HubScreen(
             }
 
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            if (displayNotifications.isEmpty() && selectedDockPackage == null) {
+            if (isSearchMode) {
+                if (searchQuery.isBlank()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Type to search notifications...", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else if (searchItems.itemCount == 0 && searchItems.loadState.refresh !is LoadState.Loading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("No notifications found", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else {
+                    val currentViewConfig = LocalViewConfiguration.current
+                    val customViewConfig = remember(currentViewConfig) {
+                        object : ViewConfiguration by currentViewConfig {
+                            override val longPressTimeoutMillis: Long
+                                get() = 700L
+                        }
+                    }
+                    CompositionLocalProvider(LocalViewConfiguration provides customViewConfig) {
+                        val screenWidthPx = with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)
+                        ) {
+                            items(
+                                count = searchItems.itemCount,
+                                key = searchItems.itemKey { it.id }
+                            ) { index ->
+                                val notification = searchItems[index]
+                                if (notification != null) {
+                                    class StateHolder(var state: SwipeToDismissBoxState? = null)
+                                    val stateHolder = remember { StateHolder() }
+                                    val dismissState = rememberSwipeToDismissBoxState(
+                                        confirmValueChange = { value ->
+                                            if (value == SwipeToDismissBoxValue.Settled) {
+                                                return@rememberSwipeToDismissBoxState true
+                                            }
+                                            val currentState = stateHolder.state
+                                            if (currentState != null) {
+                                                val offset = kotlin.math.abs(currentState.requireOffset())
+                                                if (offset < screenWidthPx * 0.3f) {
+                                                    return@rememberSwipeToDismissBoxState false
+                                                }
+                                            }
+                                            val action = if (value == SwipeToDismissBoxValue.StartToEnd) swipeRightAction else swipeLeftAction
+                                            when (action) {
+                                                "ARCHIVE" -> {
+                                                    if (prefs.getBoolean("sync_dismissal", true)) {
+                                                        HubNotificationListenerService.instance?.cancel(notification.notificationKey)
+                                                    }
+                                                    onArchiveNotification(notification.id, System.currentTimeMillis())
+                                                    !unifiedView
+                                                }
+                                                "SNOOZE" -> {
+                                                    notificationToSnooze = notification
+                                                    false
+                                                }
+                                                "PIN" -> {
+                                                    onPinNotification(notification)
+                                                    false
+                                                }
+                                                "BLOCK" -> {
+                                                    notificationToBlock = notification
+                                                    false
+                                                }
+                                                else -> false
+                                            }
+                                        },
+                                        positionalThreshold = { distance -> distance * 0.4f }
+                                    )
+                                    stateHolder.state = dismissState
+                                    LaunchedEffect(dismissState.targetValue) {
+                                        if (dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
+                                            performHapticTick(context)
+                                        }
+                                    }
+                                    val currentViewConfiguration = LocalViewConfiguration.current
+                                    val customViewConfiguration = remember(currentViewConfiguration) {
+                                        object : ViewConfiguration by currentViewConfiguration {
+                                            override val touchSlop: Float
+                                                get() = currentViewConfiguration.touchSlop * 2.5f
+                                        }
+                                    }
+                                    CompositionLocalProvider(LocalViewConfiguration provides customViewConfiguration) {
+                                        SwipeToDismissBox(
+                                            state = dismissState,
+                                            modifier = Modifier.animateItem(
+                                                placementSpec = tween(durationMillis = 300)
+                                            ),
+                                            backgroundContent = {
+                                                val direction = dismissState.dismissDirection
+                                                if (direction == SwipeToDismissBoxValue.Settled) return@SwipeToDismissBox
+                                                val action = if (direction == SwipeToDismissBoxValue.StartToEnd) swipeRightAction else swipeLeftAction
+                                                val color = when (action) {
+                                                    "ARCHIVE" -> MaterialTheme.colorScheme.primaryContainer
+                                                    "SNOOZE" -> Color(0xFFFF9800)
+                                                    "PIN" -> MaterialTheme.colorScheme.secondaryContainer
+                                                    "BLOCK" -> MaterialTheme.colorScheme.errorContainer
+                                                    else -> Color.Gray
+                                                }
+                                                val alignment = if (direction == SwipeToDismissBoxValue.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
+                                                val icon = when (action) {
+                                                    "ARCHIVE" -> if (unifiedView) Icons.Filled.Check else Icons.Filled.Archive
+                                                    "SNOOZE" -> Icons.Filled.Schedule
+                                                    "PIN" -> Icons.Filled.PushPin
+                                                    "BLOCK" -> Icons.Filled.Block
+                                                    else -> Icons.Filled.Delete
+                                                }
+                                                val label = when (action) {
+                                                    "ARCHIVE" -> if (notification.kind == "MESSAGE") "Mark Read" else "Dismiss"
+                                                    "SNOOZE" -> "Snooze"
+                                                    "PIN" -> if (notification.isPinned) "Unpin" else "Pin"
+                                                    "BLOCK" -> "Block"
+                                                    else -> ""
+                                                }
+                                                val textColor = when (action) {
+                                                    "ARCHIVE" -> MaterialTheme.colorScheme.onPrimaryContainer
+                                                    "SNOOZE" -> Color.White
+                                                    "PIN" -> MaterialTheme.colorScheme.onSecondaryContainer
+                                                    "BLOCK" -> MaterialTheme.colorScheme.onErrorContainer
+                                                    else -> Color.White
+                                                }
+                                                val scale by animateFloatAsState(
+                                                    if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0.75f else 1.25f
+                                                )
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .background(color)
+                                                        .padding(horizontal = 24.dp),
+                                                    contentAlignment = alignment
+                                                ) {
+                                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                        Icon(icon, contentDescription = null, tint = textColor, modifier = Modifier.scale(scale).size(28.dp))
+                                                        Text(label, color = textColor, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.scale(scale))
+                                                    }
+                                                }
+                                            },
+                                            content = {
+                                                Column {
+                                                    NotificationItem(
+                                                        notification = notification,
+                                                        isArchivedView = false,
+                                                        isUnifiedView = unifiedView,
+                                                        onArchiveNotification = onArchiveNotification,
+                                                        onPinNotification = onPinNotification,
+                                                        isSelected = selectedIds.contains(notification.id),
+                                                        isSelectionMode = isSelectionMode,
+                                                        onSelectToggle = {
+                                                            val becomingSelected = !selectedIds.contains(notification.id)
+                                                            if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                                            selectedIds = if (becomingSelected) selectedIds + notification.id else selectedIds - notification.id
+                                                        },
+                                                        showActionChips = showActionChips,
+                                                        minimizeIcons = settings.minimizeIcons,
+                                                        allActions = actionsByKey[notification.notificationKey],
+                                                        isExpanded = individualToggles[notification.id]
+                                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
+                                                        onExpandToggle = {
+                                                            val currentState = individualToggles[notification.id]
+                                                                ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                                            individualToggles[notification.id] = !currentState
+                                                            performHapticTick(context)
+                                                        },
+                                                        onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
+                                                        onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
+                                                    )
+                                                    Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (displayNotifications.isEmpty() && selectedDockPackage == null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("No notifications to show", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -900,11 +1086,11 @@ fun HubScreen(
                     }
                 }
             } else {
-                val pinnedNotifications = remember(displayNotifications, isSearchMode) {
-                    if (isSearchMode) emptyList() else displayNotifications.filter { it.isPinned }
+                val pinnedNotifications = remember(displayNotifications) {
+                    displayNotifications.filter { it.isPinned }
                 }
-                val unpinnedNotifications = remember(displayNotifications, isSearchMode) {
-                    if (isSearchMode) displayNotifications else displayNotifications.filter { !it.isPinned }
+                val unpinnedNotifications = remember(displayNotifications) {
+                    displayNotifications.filter { !it.isPinned }
                 }
                 val groupedNotifications = remember(unpinnedNotifications) {
                     unpinnedNotifications.groupBy { formatDateHeader(it.timestamp) }

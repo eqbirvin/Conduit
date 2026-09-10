@@ -14,16 +14,45 @@ import com.conduit.app.data.ViewsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 
 class HubViewModel(
     application: Application,
     private val repository: NotificationRepository,
     val viewsRepository: ViewsRepository
 ) : AndroidViewModel(application) {
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val searchResults: Flow<PagingData<HubNotification>> = _searchQuery
+        .debounce(250)
+        .distinctUntilChanged()
+        .flatMapLatest { query ->
+            if (query.isBlank()) {
+                flowOf(PagingData.empty())
+            } else {
+                repository.searchNotificationsPaged(query)
+            }
+        }
+        .cachedIn(viewModelScope)
 
     private val rawNotifications: StateFlow<List<HubNotification>> = repository.activeNotifications
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())

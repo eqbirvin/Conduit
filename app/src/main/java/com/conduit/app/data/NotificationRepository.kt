@@ -10,6 +10,9 @@ import kotlinx.coroutines.withContext
 
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 
 class NotificationRepository(
     private val context: Context,
@@ -26,6 +29,17 @@ class NotificationRepository(
     @OptIn(ExperimentalCoroutinesApi::class)
     val archivedNotifications: Flow<List<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
         notificationDao.getArchivedNotifications(settings.demoModeEnabled)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun searchNotificationsPaged(query: String): Flow<PagingData<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
+        Pager(
+            config = PagingConfig(
+                pageSize = 30,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { notificationDao.searchNotificationsPaged(query, settings.demoModeEnabled) }
+        ).flow
     }
 
     suspend fun archiveNotification(id: Int, timestamp: Long) = withContext(Dispatchers.IO) {

@@ -1,5 +1,6 @@
 package com.conduit.app.data
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -12,6 +13,18 @@ interface NotificationDao {
 
     @Query("SELECT * FROM notifications WHERE isArchived = 1 AND isDemo = :isDemo ORDER BY archivedTimestamp DESC")
     fun getArchivedNotifications(isDemo: Boolean): Flow<List<HubNotification>>
+
+    @Query("""
+        SELECT * FROM notifications 
+        WHERE isDemo = :isDemo 
+          AND (
+            title LIKE '%' || :query || '%' 
+            OR text LIKE '%' || :query || '%' 
+            OR packageName LIKE '%' || :query || '%'
+          )
+        ORDER BY timestamp DESC
+    """)
+    fun searchNotificationsPaged(query: String, isDemo: Boolean): PagingSource<Int, HubNotification>
 
     @Insert
     suspend fun insert(notification: HubNotification)
