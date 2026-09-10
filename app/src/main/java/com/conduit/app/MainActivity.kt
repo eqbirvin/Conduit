@@ -333,6 +333,7 @@ class MainActivity : ComponentActivity() {
             
             var currentScreen by remember { mutableStateOf(Screen.HOME) }
             var isPermissionGranted by remember { mutableStateOf(isNotificationServiceEnabled()) }
+            var isRestricted by remember { mutableStateOf(isRestrictedSettingsGuarded(context)) }
             var showSuccessState by remember { mutableStateOf(false) }
 
             val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -340,6 +341,7 @@ class MainActivity : ComponentActivity() {
                 val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
                     if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
                         val currentlyEnabled = isNotificationServiceEnabled()
+                        isRestricted = isRestrictedSettingsGuarded(context)
                         if (!isPermissionGranted && currentlyEnabled) {
                             showSuccessState = true
                         } else if (!currentlyEnabled) {
@@ -395,6 +397,13 @@ class MainActivity : ComponentActivity() {
                     if (!isPermissionGranted && !showSuccessState) {
                         PermissionScreen(
                             showSuccess = false,
+                            isRestricted = isRestricted,
+                            onOpenAppSettings = {
+                                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                    data = android.net.Uri.fromParts("package", context.packageName, null)
+                                }
+                                context.startActivity(intent)
+                            },
                             onGrantClick = {
                                 val intent = Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                                 context.startActivity(intent)
@@ -615,6 +624,29 @@ class MainActivity : ComponentActivity() {
         val cn = ComponentName(this, HubNotificationListenerService::class.java)
         val flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
         return flat != null && flat.contains(cn.flattenToString())
+    }
+
+    private fun isRestrictedSettingsGuarded(context: Context = this): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false
+        return try {
+            val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? android.app.AppOpsManager
+                ?: return false
+            val mode = appOps.unsafeCheckOpNoThrow(
+                "android:access_restricted_settings",
+                context.applicationInfo.uid,
+                context.packageName
+            )
+            mode != android.app.AppOpsManager.MODE_ALLOWED
+        } catch (e: SecurityException) {
+            android.util.Log.w("MainActivity", "SecurityException checking restricted settings op", e)
+            false
+        } catch (e: IllegalArgumentException) {
+            android.util.Log.w("MainActivity", "Op not recognized on device", e)
+            false
+        } catch (e: Exception) {
+            android.util.Log.w("MainActivity", "Failed to check restricted settings op", e)
+            false
+        }
     }
 }
 

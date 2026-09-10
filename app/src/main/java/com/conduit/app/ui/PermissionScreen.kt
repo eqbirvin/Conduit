@@ -74,7 +74,12 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.activity.enableEdgeToEdge
 
 @Composable
-fun PermissionScreen(showSuccess: Boolean, onGrantClick: () -> Unit) {
+fun PermissionScreen(
+    showSuccess: Boolean,
+    isRestricted: Boolean = false,
+    onOpenAppSettings: () -> Unit = {},
+    onGrantClick: () -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = androidx.compose.ui.graphics.Color(0xFF161616),
@@ -83,7 +88,8 @@ fun PermissionScreen(showSuccess: Boolean, onGrantClick: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(28.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -107,6 +113,97 @@ fun PermissionScreen(showSuccess: Boolean, onGrantClick: () -> Unit) {
                     color = androidx.compose.ui.graphics.Color(0xFFAAAAAA),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
+            } else if (isRestricted) {
+                Surface(
+                    modifier = Modifier.size(80.dp),
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = androidx.compose.ui.graphics.Color(0xFF2C2C2C)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Filled.Security,
+                            contentDescription = "Restricted Settings",
+                            modifier = Modifier.size(40.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    "Allow Restricted Settings",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    "Android restricts notification access for sideloaded apps until enabled in App Info.",
+                    fontSize = 14.sp,
+                    color = androidx.compose.ui.graphics.Color(0xFFAAAAAA),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    lineHeight = 20.sp
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    color = androidx.compose.ui.graphics.Color(0xFF222222),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.ui.graphics.Color(0xFF333333))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Setup Instructions:",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text("1. ", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = androidx.compose.ui.graphics.Color.White)
+                            Text("Tap 'Open App Settings' below to jump straight to Conduit's App Info.", fontSize = 13.sp, color = androidx.compose.ui.graphics.Color(0xFFCCCCCC))
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text("2. ", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = androidx.compose.ui.graphics.Color.White)
+                            Text("Tap the three-dot menu (⋮) in the top-right corner.", fontSize = 13.sp, color = androidx.compose.ui.graphics.Color(0xFFCCCCCC))
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text("3. ", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = androidx.compose.ui.graphics.Color.White)
+                            Text("Select 'Allow restricted settings' and confirm with your PIN or fingerprint.", fontSize = 13.sp, color = androidx.compose.ui.graphics.Color(0xFFCCCCCC))
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(28.dp))
+                
+                Button(
+                    onClick = onOpenAppSettings,
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color(0xFF4285F4),
+                        contentColor = androidx.compose.ui.graphics.Color.White
+                    )
+                ) {
+                    Icon(Icons.Filled.SettingsIcon, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("1. Open App Settings", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                TextButton(
+                    onClick = onGrantClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Already allowed? Continue to Notification Access",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             } else {
                 Surface(
                     modifier = Modifier.size(80.dp),
@@ -147,7 +244,7 @@ fun PermissionScreen(showSuccess: Boolean, onGrantClick: () -> Unit) {
                         contentColor = androidx.compose.ui.graphics.Color.White
                     )
                 ) {
-                    Text("Grant Permission", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Grant Notification Access", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

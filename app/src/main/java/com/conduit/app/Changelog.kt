@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.21.01",
+        date = "September 10, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Restricted Settings Helper",
+                description = "Intelligent detection for sideloaded installs on Android 13+. Provides a direct 1-tap shortcut to App Info with clear instructions to enable restricted settings, then seamlessly returns to notification listener setup.",
+                iconName = "Security"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.21.00",
         date = "September 10, 2026",
         highlights = listOf(
