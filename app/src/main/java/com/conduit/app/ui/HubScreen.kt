@@ -1150,6 +1150,7 @@ fun HubScreen(
                                     Text(
                                         text = "PINNED",
                                         style = MaterialTheme.typography.labelMedium,
+                                        fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -1216,6 +1217,7 @@ fun HubScreen(
                                     Text(
                                         text = dateHeader,
                                         style = MaterialTheme.typography.labelMedium,
+                                        fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
                                     )

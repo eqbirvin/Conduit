@@ -122,6 +122,7 @@ fun ArchiveScreen(
                                 Text(
                                     text = dateHeader,
                                     style = MaterialTheme.typography.labelMedium,
+                                    fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
                                 )
