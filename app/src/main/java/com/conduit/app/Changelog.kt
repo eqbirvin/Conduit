@@ -19,7 +19,7 @@ val CHANGELOG: List<ChangelogRelease> = listOf(
         highlights = listOf(
             ChangelogItem(
                 title = "MessagingStyle Multi-Message Support",
-                description = "Fixed an issue where receiving multiple messages in apps like Discord would only show the latest message. Conduit now parses all unread conversation messages from MessagingStyle notifications and ingests each message into your feed while preserving conversation action chips.",
+                description = "Fixed an issue where receiving multiple messages in apps like Discord would only show the latest message. Conduit now parses all unread conversation messages from MessagingStyle notifications and ingests each message into your feed while preserving conversation action chips. In a future improvement, I will be finding a way to combine them more elegantly; just didn't want messages missing right now.",
                 iconName = "Chat"
             )
         )
