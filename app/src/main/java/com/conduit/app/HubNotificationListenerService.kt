@@ -73,7 +73,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             "com.whatsapp.w4b" to Pair("channel_whatsapp_business", "WhatsApp Business"),
             "com.beeper.chat" to Pair("channel_beeper", "Beeper"),
             "com.beeper.ima" to Pair("channel_beeper", "Beeper"),
-            "com.textra" to Pair("channel_textra", "Textra")
+            "com.textra" to Pair("channel_textra", "Textra"),
+            "com.discord" to Pair("channel_discord", "Discord"),
+            "com.discord.canary" to Pair("channel_discord", "Discord")
         )
 
         val NULL_SENDER_IS_SELF_PACKAGES = setOf("com.google.android.apps.messaging")

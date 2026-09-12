@@ -48,6 +48,8 @@
         <package android:name="com.beeper.chat" />
         <package android:name="com.beeper.ima" />
         <package android:name="com.textra" />
+        <package android:name="com.discord" />
+        <package android:name="com.discord.canary" />
     </queries>
 
     <application

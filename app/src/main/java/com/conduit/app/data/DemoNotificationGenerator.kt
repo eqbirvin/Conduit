@@ -82,6 +82,11 @@ object DemoNotificationGenerator {
         ),
         "channel_airbnb" to listOf(
             Triple("Airbnb", "Your reservation in Paris is confirmed!", "OTHER")
+        ),
+        "channel_discord" to listOf(
+            Triple("Alex", "Are we still playing tonight? Let me know when you're online!", "MESSAGE"),
+            Triple("Dev Server (#announcements)", "Version 2.0 has just been released to production! 🚀", "MESSAGE"),
+            Triple("General (#gaming-lounge)", "Sarah: Check out the new clip posted in media channel.", "MESSAGE")
         )
     )
 

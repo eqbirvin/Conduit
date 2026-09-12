@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.22.00",
+        date = "September 12, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Discord Channel Support",
+                description = "Added full channel integration for Discord and Discord Canary. Intercepts incoming messages and calls with support for direct chat launches, native action chips (Reply and Mark as Read), unread dock counters, dynamic conversation bubbles, and demo mode previews.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.21.02",
         date = "September 10, 2026",
         highlights = listOf(
