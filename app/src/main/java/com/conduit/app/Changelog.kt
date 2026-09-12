@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.22.01",
+        date = "September 12, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "MessagingStyle Multi-Message Support",
+                description = "Fixed an issue where receiving multiple messages in apps like Discord would only show the latest message. Conduit now parses all unread conversation messages from MessagingStyle notifications and ingests each message into your feed while preserving conversation action chips.",
+                iconName = "Chat"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.22.00",
         date = "September 12, 2026",
         highlights = listOf(

@@ -901,12 +901,16 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 val messagesArray = extras.getParcelableArray(Notification.EXTRA_MESSAGES)
                 
                 // Fallback for apps like Textra that only use MessagingStyle fields
-                if (title.isBlank() && text.isBlank() && messagesArray != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (title.isBlank() && text.isBlank() && messagesArray != null) {
                     try {
                         val msgs = Notification.MessagingStyle.Message.getMessagesFromBundleArray(messagesArray)
                         if (msgs.isNotEmpty()) {
                             val lastMsg = msgs.last()
-                            val senderName = lastMsg.senderPerson?.name?.toString() ?: lastMsg.sender?.toString()
+                            val senderName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                lastMsg.senderPerson?.name?.toString()
+                            } else {
+                                lastMsg.sender?.toString()
+                            }
                             title = extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)?.toString() ?: senderName ?: ""
                             text = lastMsg.text?.toString() ?: ""
                         }
@@ -920,35 +924,20 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 }
                 val timestamp = it.postTime
 
+                val extractedMessages = MessagingNotificationParser.extractMessages(
+                    sbn = it,
+                    fallbackTitle = title,
+                    fallbackText = text,
+                    channelName = channel
+                )
+
                 // Intercept MessagingStyle self-replies
                 var isSelfReply = false
                 var replyText = ""
 
-                if (channel != "Snapchat" && messagesArray != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    try {
-                        val msgs = Notification.MessagingStyle.Message.getMessagesFromBundleArray(messagesArray)
-                        if (msgs.isNotEmpty()) {
-                            val lastMsg = msgs.last()
-                            val selfDisplayName = extras.getCharSequence(Notification.EXTRA_SELF_DISPLAY_NAME)?.toString()
-                            val senderName = lastMsg.senderPerson?.name?.toString() ?: lastMsg.sender?.toString()
-
-                            val isSenderSameAsTitle = senderName != null && senderName.equals(title, ignoreCase = true) && !senderName.equals("You", ignoreCase = true)
-                            val isSelfDisplayNameBroken = packageName == "com.textra" && selfDisplayName != null && selfDisplayName.equals(title, ignoreCase = true)
-
-                            val isNullSenderSelf = senderName == null && NULL_SENDER_IS_SELF_PACKAGES.contains(packageName)
-
-                            if (!isSenderSameAsTitle && (isNullSenderSelf || 
-                                (!isSelfDisplayNameBroken && senderName != null && selfDisplayName != null && senderName.equals(selfDisplayName, ignoreCase = true)) || 
-                                (senderName != null && senderName.equals("You", ignoreCase = true)))) {
-                                isSelfReply = true
-                                replyText = lastMsg.text?.toString() ?: ""
-                            }
-                        }
-                    } catch (e: ClassCastException) {
-                        android.util.Log.e("Conduit", "Class cast exception", e)
-                    } catch (e: IllegalArgumentException) {
-                        android.util.Log.e("Conduit", "Illegal argument exception", e)
-                    }
+                if (channel != "Snapchat" && extractedMessages.isNotEmpty() && extractedMessages.last().isSelfReply) {
+                    isSelfReply = true
+                    replyText = extractedMessages.last().text
                 }
 
                 if (isSelfReply && replyText.isNotEmpty()) {
@@ -979,23 +968,16 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                     }
                 }
 
-                // Check custom block rules
-                if (shouldBlockNotification(applicationContext, packageName, title, text)) {
-                    logIngestionDiagnostic(it, "blocked")
-                    return@let
+                val incomingFromStyle = extractedMessages.filter { !it.isSelfReply }
+                val messagesToIngest: List<ExtractedMessage> = if (incomingFromStyle.isNotEmpty()) {
+                    incomingFromStyle
+                } else if (text.isNotBlank() || title.isNotBlank()) {
+                    listOf(ExtractedMessage(title, text, timestamp))
+                } else {
+                    emptyList()
                 }
 
-                // Ignore if it's a background work notification or empty
-                if (text.contains("doing work in the background", ignoreCase = true)) {
-                    logIngestionDiagnostic(it, "blocked")
-                    return@let
-                }
-                if (text.contains("updating messages", ignoreCase = true)) {
-                    logIngestionDiagnostic(it, "blocked")
-                    return@let
-                }
-                
-                if (title.isBlank() && text.isBlank()) {
+                if (messagesToIngest.isEmpty()) {
                     logIngestionDiagnostic(it, "discarded-blank")
                     return@let
                 }
@@ -1008,7 +990,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                     return@let
                 }
 
-                Log.d("HubService", "Intercepted MSG [$channel]: $title - $text")
+                Log.d("HubService", "Intercepted MSG [$channel]: $title - $text (count=${messagesToIngest.size})")
 
                 val overrideMap = emptyMap<String, String>()
                 var kind = overrideMap[packageName]
@@ -1021,16 +1003,6 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                     kind = if (isMessage) "MESSAGE" else if (isCall) "CALL" else "OTHER"
                 }
 
-                val hubNotification = HubNotification(
-                    packageName = packageName,
-                    notificationKey = notificationKey,
-                    title = title,
-                    text = text,
-                    channel = channel,
-                    timestamp = timestamp,
-                    kind = kind
-                )
-
                 val contentIntent = it.notification.contentIntent
                 if (contentIntent != null) {
                     contentIntentCache[notificationKey] = contentIntent
@@ -1038,61 +1010,120 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
 
                 scope.launch {
                     notificationMutex.withLock {
-                        // Reboot-repost dedup:
-                        val unarchivedMatch = database.notificationDao().getUnarchivedExactMatch(packageName, title, text)
-                        if (unarchivedMatch != null) {
-                            database.notificationDao().adoptRow(unarchivedMatch.id, notificationKey, timestamp, kind)
-                            com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
-                            logIngestionDiagnostic(it, "duplicate")
-                            return@withLock
-                        }
+                        val existingForConversation = database.notificationDao().getNotificationsByKey(notificationKey)
+                        var insertedAny = false
+                        var latestNewMessage: ExtractedMessage? = null
 
-                        // Prevent aggressive duplicates when Google Messages changes the notification key
-                        val exactMatch = database.notificationDao().getMostRecentExactMatch(packageName, title, text)
-                        if (exactMatch != null && (timestamp - exactMatch.timestamp) < 60000) {
-                            logIngestionDiagnostic(it, "duplicate")
-                            return@withLock // Exact same message received within 60 seconds, ignore
-                        }
+                        for (msgItem in messagesToIngest) {
+                            val itemTitle = msgItem.title
+                            val itemText = msgItem.text
+                            val itemTimestamp = msgItem.timestamp
 
-                        // Prevent native apps from resurrecting a notification we just locally archived with a smart reply
-                        val recentReplyMatch = database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
-                        if (recentReplyMatch != null && recentReplyMatch.text != null && recentReplyMatch.text.contains("\n\u21aa You:")) {
-                            val originalText = recentReplyMatch.text.substringBefore("\n\u21aa You:")
-                            if (originalText == text) {
-                                logIngestionDiagnostic(it, "duplicate")
-                                return@withLock
+                            // Check custom block rules
+                            if (shouldBlockNotification(applicationContext, packageName, itemTitle, itemText)) {
+                                logIngestionDiagnostic(it, "blocked")
+                                continue
                             }
-                        }
 
-                        val existingActive = database.notificationDao().getActiveNotificationByKey(notificationKey)
-                        if (existingActive != null) {
-                            if (existingActive.title == title && existingActive.text == text) {
-                                // Exact duplicate update, ignore
-                                database.notificationDao().updateNotificationContentDetailed(existingActive.id, title, text, timestamp, kind)
+                            // Ignore background work notifications
+                            if (itemText.contains("doing work in the background", ignoreCase = true) ||
+                                itemText.contains("updating messages", ignoreCase = true)) {
+                                logIngestionDiagnostic(it, "blocked")
+                                continue
+                            }
+
+                            // Reboot-repost dedup:
+                            val unarchivedMatch = database.notificationDao().getUnarchivedExactMatch(packageName, itemTitle, itemText)
+                            if (unarchivedMatch != null) {
+                                database.notificationDao().adoptRow(unarchivedMatch.id, notificationKey, itemTimestamp, kind)
                                 logIngestionDiagnostic(it, "duplicate")
-                                return@withLock
-                            } else {
-                                // Update existing active notification
-                                database.notificationDao().updateNotificationContentDetailed(existingActive.id, title, text, timestamp, kind)
+                                continue
+                            }
+
+                            // Check if this message was already ingested for this conversation key
+                            val alreadyInConversation = existingForConversation.any { existing ->
+                                existing.text == itemText
+                            }
+                            if (alreadyInConversation) {
+                                logIngestionDiagnostic(it, "duplicate")
+                                continue
+                            }
+
+                            // Prevent aggressive duplicates when Google Messages changes the notification key
+                            val exactMatch = database.notificationDao().getMostRecentExactMatch(packageName, itemTitle, itemText)
+                            if (exactMatch != null && Math.abs(itemTimestamp - exactMatch.timestamp) < 60000) {
+                                logIngestionDiagnostic(it, "duplicate")
+                                continue // Exact same message received within 60 seconds, ignore
+                            }
+
+                            // Prevent native apps from resurrecting a notification we just locally archived with a smart reply
+                            val recentReplyMatch = database.notificationDao().getMostRecentByTitleAndPackage(packageName, itemTitle)
+                            if (recentReplyMatch != null && recentReplyMatch.text != null && recentReplyMatch.text.contains("\n\u21aa You:")) {
+                                val originalText = recentReplyMatch.text.substringBefore("\n\u21aa You:")
+                                if (originalText == itemText) {
+                                    logIngestionDiagnostic(it, "duplicate")
+                                    continue
+                                }
+                            }
+
+                            // Handle edited messages for MessagingStyle: same conversation key & timestamp, but updated text
+                            val editedMatch = existingForConversation.find { existing ->
+                                !existing.isArchived && Math.abs(existing.timestamp - itemTimestamp) < 1000
+                            }
+                            if (editedMatch != null) {
+                                database.notificationDao().updateNotificationContentDetailed(editedMatch.id, itemTitle, itemText, itemTimestamp, kind)
                                 logIngestionDiagnostic(it, "ingested-update")
+                                continue
                             }
-                        } else {
+
+                            // In-place update for non-messaging status notifications (downloads, media players, etc.)
+                            if (kind != "MESSAGE" && incomingFromStyle.isEmpty()) {
+                                val existingActive = database.notificationDao().getActiveNotificationByKey(notificationKey)
+                                if (existingActive != null) {
+                                    if (existingActive.title == itemTitle && existingActive.text == itemText) {
+                                        database.notificationDao().updateNotificationContentDetailed(existingActive.id, itemTitle, itemText, itemTimestamp, kind)
+                                        logIngestionDiagnostic(it, "duplicate")
+                                    } else {
+                                        database.notificationDao().updateNotificationContentDetailed(existingActive.id, itemTitle, itemText, itemTimestamp, kind)
+                                        logIngestionDiagnostic(it, "ingested-update")
+                                    }
+                                    continue
+                                }
+                            }
+
+                            // Insert new message
+                            val hubNotification = HubNotification(
+                                packageName = packageName,
+                                notificationKey = notificationKey,
+                                title = itemTitle,
+                                text = itemText,
+                                channel = channel,
+                                timestamp = itemTimestamp,
+                                kind = kind
+                            )
                             database.notificationDao().insert(hubNotification)
                             logIngestionDiagnostic(it, "ingested")
-                        }
-                        
-                        com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
-                        
-                        // Post native Bubble notification
-                        val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
-                        if (prefs.getBoolean("enable_bubbles", false)) {
-                            postBubbleNotification(applicationContext, packageName, title, text)
+                            insertedAny = true
+                            latestNewMessage = msgItem
                         }
 
-                        // Trigger Bracket popup if enabled
-                        if (prefs.getBoolean("enable_bracket", false) && prefs.getBoolean("bracket_notification_popup", true)) {
-                            handler.post {
-                                showBracketNotificationPopup(packageName, contentIntent)
+                        if (insertedAny) {
+                            com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
+                            
+                            val bubbleTarget = latestNewMessage ?: messagesToIngest.lastOrNull()
+                            if (bubbleTarget != null) {
+                                // Post native Bubble notification
+                                val bubblePrefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
+                                if (bubblePrefs.getBoolean("enable_bubbles", false)) {
+                                    postBubbleNotification(applicationContext, packageName, bubbleTarget.title, bubbleTarget.text)
+                                }
+
+                                // Trigger Bracket popup if enabled
+                                if (bubblePrefs.getBoolean("enable_bracket", false) && bubblePrefs.getBoolean("bracket_notification_popup", true)) {
+                                    handler.post {
+                                        showBracketNotificationPopup(packageName, contentIntent)
+                                    }
+                                }
                             }
                         }
 
