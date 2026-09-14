@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.01",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Demo Mode Icon Assets",
+                description = "Added crisp vector demo icons for WhatsApp, WhatsApp Business, BlackBerry Hub, Beeper, Textra, and Discord Canary so preview notifications display authentic branding when apps are not installed.",
+                iconName = "Palette"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.00",
         date = "September 14, 2026",
         highlights = listOf(
