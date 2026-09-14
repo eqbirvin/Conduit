@@ -311,3 +311,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-14T09:29] [v2.22.02] renamed widget labels in android manifest to standard - conduit and custom view - conduit.
 [2026-09-14T11:58] [v2.23.00] major channel expansion adding native notification parsing, channel toggles, dock counters, and action chips for 18 communication, sms, productivity, and social apps across 23 package variants (slack, google chat, zoom, google meet, signal, viber, groupme, skype, bluebubbles, airmessage, pulse sms, chomp sms, qksms, simple sms messenger, fossify messages, mood messenger, yaata, tiktok, twitch).
 [2026-09-14T13:46] [v2.23.01] added vector demo mode icons for blackberry hub, whatsapp, whatsapp business, beeper, textra, and discord canary.
+[2026-09-14T14:49] [v2.23.02] fixed pulse sms and messagingstyle self messages with null senders being incorrectly ingested as incoming messages from the recipient.

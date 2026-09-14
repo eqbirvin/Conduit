@@ -43,8 +43,6 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         var instance: HubNotificationListenerService? = null
 
         val supportedApps = ChannelRegistry.supportedApps
-
-        val NULL_SENDER_IS_SELF_PACKAGES = setOf("com.google.android.apps.messaging")
     }
 
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -935,7 +933,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                 }
 
                 val incomingFromStyle = extractedMessages.filter { !it.isSelfReply }
-                val messagesToIngest: List<ExtractedMessage> = if (incomingFromStyle.isNotEmpty()) {
+                val messagesToIngest: List<ExtractedMessage> = if (extractedMessages.isNotEmpty()) {
                     incomingFromStyle
                 } else if (text.isNotBlank() || title.isNotBlank()) {
                     listOf(ExtractedMessage(title, text, timestamp))

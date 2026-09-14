@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.02",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Pulse SMS & Self-Reply Fix",
+                description = "Fixed an issue where outgoing messages in Pulse SMS and other MessagingStyle apps could appear as new notifications from the contact when they reply. Conduit now reliably detects sent messages across all supported SMS and messaging apps and prevents them from appearing in incoming feeds.",
+                iconName = "Chat"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.01",
         date = "September 14, 2026",
         highlights = listOf(

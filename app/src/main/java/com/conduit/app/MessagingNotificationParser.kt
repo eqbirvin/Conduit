@@ -17,7 +17,32 @@ object MessagingNotificationParser {
 
     private val NULL_SENDER_IS_SELF_PACKAGES = setOf(
         "com.google.android.apps.messaging",
-        "com.samsung.android.messaging"
+        "com.samsung.android.messaging",
+        "xyz.klinker.messenger",
+        "com.p1.chompsms",
+        "com.moez.QKSMS",
+        "com.simplemobiletools.smsmessenger",
+        "org.fossify.messages",
+        "com.calea.echo",
+        "rpkandrodev.yaata",
+        "com.bluebubbles.messaging",
+        "me.tagavari.airmessage",
+        "org.thoughtcrime.securesms",
+        "com.whatsapp",
+        "com.whatsapp.w4b",
+        "com.Slack",
+        "com.google.android.apps.dynamite",
+        "com.discord",
+        "com.discord.canary",
+        "com.facebook.orca",
+        "org.telegram.messenger",
+        "com.beeper.chat",
+        "com.beeper.ima",
+        "com.skype.raider",
+        "com.skype.m2",
+        "com.viber.voip",
+        "com.groupme.android",
+        "com.textra"
     )
 
     fun extractMessages(
@@ -53,7 +78,7 @@ object MessagingNotificationParser {
 
             val isSenderSameAsTitle = senderName != null && senderName.equals(fallbackTitle, ignoreCase = true) && !senderName.equals("You", ignoreCase = true)
             val isSelfDisplayNameBroken = packageName == "com.textra" && selfDisplayName != null && selfDisplayName.equals(fallbackTitle, ignoreCase = true)
-            val isNullSenderSelf = senderName == null && NULL_SENDER_IS_SELF_PACKAGES.contains(packageName)
+            val isNullSenderSelf = senderName == null && (msgs.size > 1 || selfDisplayName != null || NULL_SENDER_IS_SELF_PACKAGES.contains(packageName))
 
             val isFromSelf = !isSenderSameAsTitle && (isNullSenderSelf || 
                 (!isSelfDisplayNameBroken && senderName != null && selfDisplayName != null && senderName.equals(selfDisplayName, ignoreCase = true)) || 
@@ -75,11 +100,11 @@ object MessagingNotificationParser {
             }
 
             val msgTitle = when {
-                !convoTitle.isNullOrBlank() && !senderName.isNullOrBlank() -> {
+                !convoTitle.isNullOrBlank() && !senderName.isNullOrBlank() && !isFromSelf -> {
                     if (fallbackTitle.contains("(") && fallbackTitle.contains(")")) fallbackTitle else "$senderName ($convoTitle)"
                 }
-                !convoTitle.isNullOrBlank() -> convoTitle
-                !senderName.isNullOrBlank() -> senderName
+                !convoTitle.isNullOrBlank() && !isFromSelf -> convoTitle
+                !senderName.isNullOrBlank() && !isFromSelf -> senderName
                 fallbackTitle.isNotBlank() -> fallbackTitle
                 else -> channelName
             }
