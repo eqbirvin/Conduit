@@ -14,6 +14,22 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.03",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "QUIK SMS & F-Droid Messages Support",
+                description = "Added native channel support for QUIK SMS (QKSMS continuation) and Messages by Anindra, including notification extraction, self-reply filtering, and channel toggles.",
+                iconName = "Chat"
+            ),
+            ChangelogItem(
+                title = "Expanded Beeper & Twitch Variants",
+                description = "Added support for Play Store Beeper (com.beeper.android) and Twitch (tv.twitch.android.app) package identifiers.",
+                iconName = "Sparkles"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.02",
         date = "September 14, 2026",
         highlights = listOf(

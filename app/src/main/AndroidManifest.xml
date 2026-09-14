@@ -47,6 +47,7 @@
         <package android:name="com.whatsapp.w4b" />
         <package android:name="com.beeper.chat" />
         <package android:name="com.beeper.ima" />
+        <package android:name="com.beeper.android" />
         <package android:name="com.textra" />
         <package android:name="com.discord" />
         <package android:name="com.discord.canary" />
@@ -65,6 +66,9 @@
         <package android:name="xyz.klinker.messenger" />
         <package android:name="com.p1.chompsms" />
         <package android:name="com.moez.QKSMS" />
+        <package android:name="dev.octoshrimpy.quik" />
+        <package android:name="dev.octoshrimpy.quik.fdroid" />
+        <package android:name="com.anindra.messages" />
         <package android:name="com.simplemobiletools.smsmessenger" />
         <package android:name="org.fossify.messages" />
         <package android:name="com.calea.echo" />
@@ -73,6 +77,7 @@
         <package android:name="com.ss.android.ugc.trill" />
         <package android:name="com.zhiliaoapp.musically.go" />
         <package android:name="tv.twitch.android.viewer" />
+        <package android:name="tv.twitch.android.app" />
     </queries>
 
     <application

@@ -153,6 +153,14 @@ object DemoNotificationGenerator {
             Triple("Security Code", "Your verification code is 482910. Valid for 10 minutes.", "MESSAGE"),
             Triple("Rachel", "Thanks for the recommendation, loved that movie!", "MESSAGE")
         ),
+        "channel_quik" to listOf(
+            Triple("Alex", "Check out the new QUIK SMS build, it's super smooth!", "MESSAGE"),
+            Triple("Delivery Status", "Your package has been delivered to the front door.", "MESSAGE")
+        ),
+        "channel_anindra_messages" to listOf(
+            Triple("Jordan", "Hey, are we still meeting later?", "MESSAGE"),
+            Triple("Dentist Office", "Reminder: Appointment tomorrow at 2:00 PM.", "MESSAGE")
+        ),
         "channel_simple_sms" to listOf(
             Triple("Bank Notice", "Alert: Recent transaction of $24.50 at Cafe.", "MESSAGE"),
             Triple("Kevin", "Did you get the keys?", "MESSAGE")

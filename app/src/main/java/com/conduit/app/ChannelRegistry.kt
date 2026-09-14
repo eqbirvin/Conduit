@@ -42,6 +42,7 @@ object ChannelRegistry {
         "com.whatsapp.w4b" to Pair("channel_whatsapp_business", "WhatsApp Business"),
         "com.beeper.chat" to Pair("channel_beeper", "Beeper"),
         "com.beeper.ima" to Pair("channel_beeper", "Beeper"),
+        "com.beeper.android" to Pair("channel_beeper", "Beeper"),
         "com.textra" to Pair("channel_textra", "Textra"),
         "com.discord" to Pair("channel_discord", "Discord"),
         "com.discord.canary" to Pair("channel_discord", "Discord"),
@@ -66,6 +67,9 @@ object ChannelRegistry {
         "xyz.klinker.messenger" to Pair("channel_pulse_sms", "Pulse SMS"),
         "com.p1.chompsms" to Pair("channel_chomp_sms", "Chomp SMS"),
         "com.moez.QKSMS" to Pair("channel_qksms", "QKSMS"),
+        "dev.octoshrimpy.quik" to Pair("channel_quik", "QUIK SMS"),
+        "dev.octoshrimpy.quik.fdroid" to Pair("channel_quik", "QUIK SMS"),
+        "com.anindra.messages" to Pair("channel_anindra_messages", "Messages (F-Droid)"),
         "com.simplemobiletools.smsmessenger" to Pair("channel_simple_sms", "Simple SMS Messenger"),
         "org.fossify.messages" to Pair("channel_simple_sms", "Simple SMS Messenger"),
         "com.calea.echo" to Pair("channel_mood_messenger", "Mood Messenger"),
@@ -75,6 +79,7 @@ object ChannelRegistry {
         "com.zhiliaoapp.musically" to Pair("channel_tiktok", "TikTok"),
         "com.ss.android.ugc.trill" to Pair("channel_tiktok", "TikTok"),
         "com.zhiliaoapp.musically.go" to Pair("channel_tiktok", "TikTok"),
-        "tv.twitch.android.viewer" to Pair("channel_twitch", "Twitch")
+        "tv.twitch.android.viewer" to Pair("channel_twitch", "Twitch"),
+        "tv.twitch.android.app" to Pair("channel_twitch", "Twitch")
     )
 }
