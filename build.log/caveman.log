@@ -313,3 +313,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-14T13:46] [v2.23.01] added vector demo mode icons for blackberry hub, whatsapp, whatsapp business, beeper, textra, and discord canary.
 [2026-09-14T14:49] [v2.23.02] fixed pulse sms and messagingstyle self messages with null senders being incorrectly ingested as incoming messages from the recipient.
 [2026-09-14T16:41] [v2.23.03] added support for quik sms (dev.octoshrimpy.quik, dev.octoshrimpy.quik.fdroid), messages by anindra (com.anindra.messages), play store beeper (com.beeper.android), and twitch app (tv.twitch.android.app).
+[2026-09-14T16:55] [v2.23.04] added native channel support for 7 email clients across 9 package variants (thunderbird, thunderbird beta, fairemail, k-9 mail, email by edison, proton mail, yahoo mail, spike email).

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.04",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Expanded Email Client Support",
+                description = "Added native channel support for popular email clients: Thunderbird, Thunderbird Beta, FairEmail, K-9 Mail, Email by Edison, Proton Mail, Yahoo Mail, and Spike Email.",
+                iconName = "Mail"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.03",
         date = "September 14, 2026",
         highlights = listOf(

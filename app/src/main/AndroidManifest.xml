@@ -43,6 +43,15 @@
         <package android:name="com.airbnb.android" />
         <package android:name="com.blackberry.hub" />
         <package android:name="com.microsoft.office.outlook" />
+        <package android:name="net.thunderbird.android" />
+        <package android:name="net.thunderbird.android.beta" />
+        <package android:name="eu.faircode.email" />
+        <package android:name="com.fsck.k9" />
+        <package android:name="com.easilydo.mail" />
+        <package android:name="ch.protonmail.android" />
+        <package android:name="com.yahoo.mobile.client.android.mail" />
+        <package android:name="com.yahoo.mobile.client.android.mail.go" />
+        <package android:name="com.pingapp.app" />
         <package android:name="com.whatsapp" />
         <package android:name="com.whatsapp.w4b" />
         <package android:name="com.beeper.chat" />

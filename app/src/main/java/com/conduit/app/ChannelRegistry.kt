@@ -12,6 +12,17 @@ object ChannelRegistry {
         "com.google.android.gm" to Pair("channel_gmail", "Gmail"),
         "com.readdle.spark" to Pair("channel_spark", "Spark"),
         "com.microsoft.office.outlook" to Pair("channel_outlook", "Outlook"),
+
+        // Email Clients
+        "net.thunderbird.android" to Pair("channel_thunderbird", "Thunderbird"),
+        "net.thunderbird.android.beta" to Pair("channel_thunderbird", "Thunderbird"),
+        "eu.faircode.email" to Pair("channel_fairemail", "FairEmail"),
+        "com.fsck.k9" to Pair("channel_k9_mail", "K-9 Mail"),
+        "com.easilydo.mail" to Pair("channel_edison_mail", "Email by Edison"),
+        "ch.protonmail.android" to Pair("channel_proton_mail", "Proton Mail"),
+        "com.yahoo.mobile.client.android.mail" to Pair("channel_yahoo_mail", "Yahoo Mail"),
+        "com.yahoo.mobile.client.android.mail.go" to Pair("channel_yahoo_mail", "Yahoo Mail"),
+        "com.pingapp.app" to Pair("channel_spike", "Spike Email"),
         "com.snapchat.android" to Pair("channel_snapchat", "Snapchat"),
         "com.linkedin.android" to Pair("channel_linkedin", "LinkedIn"),
         "com.instagram.android" to Pair("channel_instagram", "Instagram"),

@@ -28,6 +28,34 @@ object DemoNotificationGenerator {
             Triple("Project Alpha", "Please review the attached design documents by EOD.", "MESSAGE"),
             Triple("HR Department", "Reminder: Open enrollment ends tomorrow.", "MESSAGE")
         ),
+        "channel_thunderbird" to listOf(
+            Triple("Mozilla", "Thunderbird updates: New account setup and sync ready.", "MESSAGE"),
+            Triple("Dev Digest", "Open source email enhancements in the latest release.", "MESSAGE")
+        ),
+        "channel_fairemail" to listOf(
+            Triple("Privacy Weekly", "Your monthly security and privacy report is ready.", "MESSAGE"),
+            Triple("F-Droid Monitor", "FairEmail build completed successfully.", "MESSAGE")
+        ),
+        "channel_k9_mail" to listOf(
+            Triple("Server Admin", "Scheduled IMAP server maintenance this Sunday at 2 AM.", "MESSAGE"),
+            Triple("Alice", "Sent you the updated report files.", "MESSAGE")
+        ),
+        "channel_edison_mail" to listOf(
+            Triple("Flight Tracker", "Flight #UA-482 is on time. Gate B12.", "MESSAGE"),
+            Triple("Package Delivery", "Your shipment has arrived at the front porch.", "MESSAGE")
+        ),
+        "channel_proton_mail" to listOf(
+            Triple("Proton Team", "You have received a secure end-to-end encrypted email.", "MESSAGE"),
+            Triple("Security Notice", "New device login detected from Firefox on Linux.", "MESSAGE")
+        ),
+        "channel_yahoo_mail" to listOf(
+            Triple("Yahoo Finance", "Market Close: Tech stocks rise after earnings reports.", "MESSAGE"),
+            Triple("Order Receipt", "Thank you for your purchase. Total: $42.18.", "MESSAGE")
+        ),
+        "channel_spike" to listOf(
+            Triple("Emma", "Can we quickly review the presentation slides before the 3pm sync?", "MESSAGE"),
+            Triple("Product Team", "New conversation started in Design Review.", "MESSAGE")
+        ),
         "channel_snapchat" to listOf(
             Triple("Jordan", "Sent you a snap! 👀", "MESSAGE"),
             Triple("Sarah", "New story available", "MESSAGE")

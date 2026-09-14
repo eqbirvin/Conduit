@@ -46,7 +46,16 @@ object MessagingNotificationParser {
         "com.skype.m2",
         "com.viber.voip",
         "com.groupme.android",
-        "com.textra"
+        "com.textra",
+        "net.thunderbird.android",
+        "net.thunderbird.android.beta",
+        "eu.faircode.email",
+        "com.fsck.k9",
+        "com.easilydo.mail",
+        "ch.protonmail.android",
+        "com.yahoo.mobile.client.android.mail",
+        "com.yahoo.mobile.client.android.mail.go",
+        "com.pingapp.app"
     )
 
     fun extractMessages(
