@@ -137,7 +137,7 @@
         </service>
 
         <receiver android:name=".widget.ConduitWidgetProvider"
-            android:label="Standard Hub"
+            android:label="Standard - Conduit"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -147,7 +147,7 @@
         </receiver>
 
         <receiver android:name=".widget.CustomViewWidgetProvider"
-            android:label="Custom View Hub"
+            android:label="Custom View - Conduit"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

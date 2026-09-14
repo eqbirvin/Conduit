@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.22.02",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Widget Renaming",
+                description = "Renamed the widget labels to \"Standard - Conduit\" and \"Custom View - Conduit\".",
+                iconName = "Widgets"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.22.01",
         date = "September 12, 2026",
         highlights = listOf(
