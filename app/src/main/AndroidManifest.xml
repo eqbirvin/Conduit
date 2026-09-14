@@ -50,6 +50,29 @@
         <package android:name="com.textra" />
         <package android:name="com.discord" />
         <package android:name="com.discord.canary" />
+        <package android:name="com.Slack" />
+        <package android:name="com.google.android.apps.dynamite" />
+        <package android:name="us.zoom.videomeetings" />
+        <package android:name="com.google.android.apps.tachyon" />
+        <package android:name="com.google.android.apps.meetings" />
+        <package android:name="org.thoughtcrime.securesms" />
+        <package android:name="com.viber.voip" />
+        <package android:name="com.groupme.android" />
+        <package android:name="com.skype.raider" />
+        <package android:name="com.skype.m2" />
+        <package android:name="com.bluebubbles.messaging" />
+        <package android:name="me.tagavari.airmessage" />
+        <package android:name="xyz.klinker.messenger" />
+        <package android:name="com.p1.chompsms" />
+        <package android:name="com.moez.QKSMS" />
+        <package android:name="com.simplemobiletools.smsmessenger" />
+        <package android:name="org.fossify.messages" />
+        <package android:name="com.calea.echo" />
+        <package android:name="rpkandrodev.yaata" />
+        <package android:name="com.zhiliaoapp.musically" />
+        <package android:name="com.ss.android.ugc.trill" />
+        <package android:name="com.zhiliaoapp.musically.go" />
+        <package android:name="tv.twitch.android.viewer" />
     </queries>
 
     <application

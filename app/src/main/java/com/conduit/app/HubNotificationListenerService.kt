@@ -42,41 +42,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     companion object {
         var instance: HubNotificationListenerService? = null
 
-        val supportedApps = mapOf(
-            "com.google.android.apps.messaging" to Pair("channel_messages", "Google Messages"),
-            "com.google.android.gm" to Pair("channel_gmail", "Gmail"),
-            "com.readdle.spark" to Pair("channel_spark", "Spark"),
-            "com.microsoft.office.outlook" to Pair("channel_outlook", "Outlook"),
-            "com.snapchat.android" to Pair("channel_snapchat", "Snapchat"),
-            "com.linkedin.android" to Pair("channel_linkedin", "LinkedIn"),
-            "com.instagram.android" to Pair("channel_instagram", "Instagram"),
-            "com.google.android.dialer" to Pair("channel_phone", "Phone (Google Dialer)"),
-            "com.android.dialer" to Pair("channel_phone", "Phone (Google Dialer)"),
-            "com.samsung.android.dialer" to Pair("channel_phone", "Phone (Google Dialer)"),
-            "com.android.phone" to Pair("channel_phone", "Phone (Google Dialer)"),
-            "com.android.server.telecom" to Pair("channel_phone", "Phone (Google Dialer)"),
-            "com.android.contacts" to Pair("channel_phone", "Phone (Google Dialer)"),
-            "com.google.android.apps.tycho" to Pair("channel_phone", "Phone (Google Dialer)"),
-            "com.truecaller" to Pair("channel_truecaller", "Truecaller"),
-            "org.telegram.messenger" to Pair("channel_telegram", "Telegram"),
-            "org.thunderdog.challegram" to Pair("channel_telegram_x", "Telegram X"),
-            "com.reddit.frontpage" to Pair("channel_reddit", "Reddit"),
-            "com.valvesoftware.android.steam.community" to Pair("channel_steam", "Steam"),
-            "com.valvesoftware.android.steam.friendsui" to Pair("channel_steam_chat", "Steam Chat"),
-            "com.facebook.katana" to Pair("channel_facebook", "Facebook"),
-            "com.facebook.orca" to Pair("channel_messenger", "Messenger"),
-            "com.twitter.android" to Pair("channel_twitter", "Twitter (X)"),
-            "com.microsoft.teams" to Pair("channel_teams", "Microsoft Teams"),
-            "com.airbnb.android" to Pair("channel_airbnb", "Airbnb"),
-            "com.blackberry.hub" to Pair("channel_blackberry_inbox", "BlackBerry Inbox"),
-            "com.whatsapp" to Pair("channel_whatsapp", "WhatsApp"),
-            "com.whatsapp.w4b" to Pair("channel_whatsapp_business", "WhatsApp Business"),
-            "com.beeper.chat" to Pair("channel_beeper", "Beeper"),
-            "com.beeper.ima" to Pair("channel_beeper", "Beeper"),
-            "com.textra" to Pair("channel_textra", "Textra"),
-            "com.discord" to Pair("channel_discord", "Discord"),
-            "com.discord.canary" to Pair("channel_discord", "Discord")
-        )
+        val supportedApps = ChannelRegistry.supportedApps
 
         val NULL_SENDER_IS_SELF_PACKAGES = setOf("com.google.android.apps.messaging")
     }

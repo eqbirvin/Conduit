@@ -14,6 +14,32 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.00",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Major Channel Expansion: 18 New Channels",
+                description = "Added native notification parsing, channel toggles, dock counters, and action chips for 18 communication, SMS, productivity, and social apps across 23 package variants.",
+                iconName = "CheckCircle"
+            ),
+            ChangelogItem(
+                title = "Work & Productivity Support",
+                description = "Full integration for Slack, Google Chat, Zoom, and Google Meet (both modern and legacy versions) with support for meeting alerts and call actions.",
+                iconName = "Work"
+            ),
+            ChangelogItem(
+                title = "Messaging & SMS Replacements",
+                description = "Support for Signal, Viber, GroupMe, Skype, BlueBubbles, AirMessage, Pulse SMS, Chomp SMS, QKSMS, Simple SMS Messenger (and Fossify), Mood Messenger, and YAATA.",
+                iconName = "Chat"
+            ),
+            ChangelogItem(
+                title = "Social & Entertainment",
+                description = "Integrated TikTok (global, regional, and lite editions) and Twitch with stream alerts, mentions, and direct message/whisper reply action chips.",
+                iconName = "Campaign"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.22.02",
         date = "September 14, 2026",
         highlights = listOf(

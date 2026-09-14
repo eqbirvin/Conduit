@@ -87,6 +87,91 @@ object DemoNotificationGenerator {
             Triple("Alex", "Are we still playing tonight? Let me know when you're online!", "MESSAGE"),
             Triple("Dev Server (#announcements)", "Version 2.0 has just been released to production! 🚀", "MESSAGE"),
             Triple("General (#gaming-lounge)", "Sarah: Check out the new clip posted in media channel.", "MESSAGE")
+        ),
+        "channel_whatsapp" to listOf(
+            Triple("Family Group", "Dinner tonight at 7!", "MESSAGE"),
+            Triple("Carlos", "Hey, did you get the files?", "MESSAGE")
+        ),
+        "channel_whatsapp_business" to listOf(
+            Triple("Apex Support", "Your appointment is confirmed for Friday at 10 AM.", "MESSAGE")
+        ),
+        "channel_beeper" to listOf(
+            Triple("Multi-Network Chat", "Synced message across platforms.", "MESSAGE")
+        ),
+        "channel_textra" to listOf(
+            Triple("Sam", "See you tomorrow morning!", "MESSAGE")
+        ),
+        "channel_slack" to listOf(
+            Triple("Dev Team (#general)", "Sarah: The production deployment succeeded! 🚀", "MESSAGE"),
+            Triple("Alex Chen", "Can you review the PR when you get a chance?", "MESSAGE")
+        ),
+        "channel_google_chat" to listOf(
+            Triple("Product Team", "Sprint planning is scheduled for 10am tomorrow.", "MESSAGE"),
+            Triple("Mark Davis", "Shared a Google Doc: 'Q3 Strategy Draft'", "MESSAGE")
+        ),
+        "channel_zoom" to listOf(
+            Triple("Zoom Workplace", "Upcoming Meeting: Design Review in 10 minutes", "CALL"),
+            Triple("Project Sync", "Elena: Let's join the call early to test screenshare.", "MESSAGE")
+        ),
+        "channel_google_meet" to listOf(
+            Triple("Google Meet", "Incoming video call from Michael Scott", "CALL"),
+            Triple("Standup Meeting", "Your scheduled video meeting is starting now.", "CALL")
+        ),
+        "channel_signal" to listOf(
+            Triple("David Kim", "Sent encrypted media. Tap to view.", "MESSAGE"),
+            Triple("Family Group", "Dinner reservation is confirmed for 7pm!", "MESSAGE")
+        ),
+        "channel_viber" to listOf(
+            Triple("Maria Santos", "Are you available for a quick call?", "MESSAGE"),
+            Triple("Viber Community", "Weekly newsletter and announcements posted.", "MESSAGE")
+        ),
+        "channel_groupme" to listOf(
+            Triple("Campus Study Group", "Jake: Library study room 302 is booked.", "MESSAGE"),
+            Triple("Soccer League", "Game is rescheduled to Sunday at 4pm.", "MESSAGE")
+        ),
+        "channel_skype" to listOf(
+            Triple("Enterprise Support", "Engineer joined the chat session.", "MESSAGE"),
+            Triple("Robert Green", "Incoming Skype Call", "CALL")
+        ),
+        "channel_bluebubbles" to listOf(
+            Triple("Sam Wilson", "Loved 'Sounds good, see you there!'", "MESSAGE"),
+            Triple("Taylor Brooks", "Just landed! Headed to baggage claim now.", "MESSAGE")
+        ),
+        "channel_airmessage" to listOf(
+            Triple("Jordan Lee", "Sent an image via iMessage", "MESSAGE"),
+            Triple("Weekend Trip", "Chris: Don't forget to pack hiking shoes!", "MESSAGE")
+        ),
+        "channel_pulse_sms" to listOf(
+            Triple("Mom", "Can you call me when you have a minute?", "MESSAGE"),
+            Triple("Dr. Evans Office", "Appointment confirmed for tomorrow at 2:15pm.", "MESSAGE")
+        ),
+        "channel_chomp_sms" to listOf(
+            Triple("Delivery Alert", "Your package has been delivered to your front porch.", "MESSAGE"),
+            Triple("Jason", "Running about 5 minutes late!", "MESSAGE")
+        ),
+        "channel_qksms" to listOf(
+            Triple("Security Code", "Your verification code is 482910. Valid for 10 minutes.", "MESSAGE"),
+            Triple("Rachel", "Thanks for the recommendation, loved that movie!", "MESSAGE")
+        ),
+        "channel_simple_sms" to listOf(
+            Triple("Bank Notice", "Alert: Recent transaction of $24.50 at Cafe.", "MESSAGE"),
+            Triple("Kevin", "Did you get the keys?", "MESSAGE")
+        ),
+        "channel_mood_messenger" to listOf(
+            Triple("Chloe", "Happy Birthday!! 🎉🎂 Have an amazing day!", "MESSAGE"),
+            Triple("Apartment Manager", "Water service maintenance tomorrow 9am-12pm.", "MESSAGE")
+        ),
+        "channel_yaata" to listOf(
+            Triple("Transit Alert", "Line 4 bus delayed by 10 minutes due to weather.", "MESSAGE"),
+            Triple("Brian", "Leaving now, ETA 15 mins.", "MESSAGE")
+        ),
+        "channel_tiktok" to listOf(
+            Triple("TikTok", "chef_cooking started a live video: 'Cooking Italian Classics'", "OTHER"),
+            Triple("TikTok Direct", "maya_travel sent you a video.", "MESSAGE")
+        ),
+        "channel_twitch" to listOf(
+            Triple("Twitch", "shroud is live playing VALORANT: Ranked grind!", "OTHER"),
+            Triple("Twitch Whispers", "GamerPro: GG on that last match!", "MESSAGE")
         )
     )
 
