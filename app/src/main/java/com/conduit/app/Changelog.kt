@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.09",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Channel Expansion Feedback",
+                description = "This update included a lot of new sources, I tried my best to test as many as I could and as thorough as I could. But please report any issues you may run into!",
+                iconName = "Info"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.08",
         date = "September 14, 2026",
         highlights = listOf(
