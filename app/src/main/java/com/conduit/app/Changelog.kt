@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.08",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Channels Entry at Top of Settings",
+                description = "Moved the Channels settings entry card to the very top of the main Settings page for quicker and more direct access.",
+                iconName = "Settings"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.07",
         date = "September 14, 2026",
         highlights = listOf(

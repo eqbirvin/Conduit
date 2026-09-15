@@ -317,3 +317,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-14T18:02] [v2.23.05] added native channel support for voxer (com.rebelvox.voxer) and zello (com.loudtalks, net.loudtalks).
 [2026-09-14T18:15] [v2.23.06] moved channels section and supported apps explorer to a dedicated settings subpage with alphabetical sorting.
 [2026-09-14T18:43] [v2.23.07] renamed channel phone (google dialer) to phone and messages (f-droid) to messages (by anindra).
+[2026-09-14T18:48] [v2.23.08] moved channels page entry card to the top of settings page above app info and updates.

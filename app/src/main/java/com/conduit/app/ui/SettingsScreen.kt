@@ -149,6 +149,25 @@ fun SettingsScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            Text("Channels", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { 
+                        performHapticClick(context)
+                        callbacks.onNavigateToChannels() 
+                    }
+            ) {
+                ListItem(
+                    headlineContent = { Text("Channels") },
+                    supportingContent = { Text("Manage external apps integrated into Conduit.") },
+                    leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                    trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Text("App Info & Updates", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
             
             Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
@@ -611,25 +630,6 @@ fun SettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text("Channels", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { 
-                        performHapticClick(context)
-                        callbacks.onNavigateToChannels() 
-                    }
-            ) {
-                ListItem(
-                    headlineContent = { Text("Channels") },
-                    supportingContent = { Text("Manage external apps integrated into Conduit.") },
-                    leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                    trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) }
-                )
-            }
-            
             Spacer(modifier = Modifier.height(24.dp))
 
             Text("Ignored Notifications", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
