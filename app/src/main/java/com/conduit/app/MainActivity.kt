@@ -78,7 +78,7 @@ import com.conduit.app.ui.*
 import com.conduit.app.ui.theme.ConduitTheme
 import com.conduit.app.ui.HubScreen
 
-enum class Screen { HOME, SETTINGS, ARCHIVE, DEV_SETTINGS, MANAGE_VIEWS, WHATS_NEW }
+enum class Screen { HOME, SETTINGS, ARCHIVE, DEV_SETTINGS, MANAGE_VIEWS, WHATS_NEW, CHANNELS }
 
 fun performHapticTick(context: Context) {
     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -375,7 +375,7 @@ class MainActivity : ComponentActivity() {
             if (currentScreen != Screen.HOME) {
                 BackHandler {
                     currentScreen = when (currentScreen) {
-                        Screen.DEV_SETTINGS, Screen.WHATS_NEW -> Screen.SETTINGS
+                        Screen.DEV_SETTINGS, Screen.WHATS_NEW, Screen.CHANNELS -> Screen.SETTINGS
                         else -> Screen.HOME
                     }
                 }
@@ -496,9 +496,19 @@ class MainActivity : ComponentActivity() {
                                     }
                                     override fun onShowWhatsNew() { currentScreen = Screen.WHATS_NEW }
                                     override fun onNavigateToDevSettings() { currentScreen = Screen.DEV_SETTINGS }
+                                    override fun onNavigateToChannels() { currentScreen = Screen.CHANNELS }
                                     override fun onDefaultToTodoModeChanged(enabled: Boolean) { settingsViewModel.updateDefaultToTodoMode(enabled) }
                                 },
                                 onNavigateBack = { currentScreen = Screen.HOME }
+                            )
+                            Screen.CHANNELS -> com.conduit.app.ui.ChannelsSettingsScreen(
+                                settings = settings,
+                                callbacks = object : com.conduit.app.ui.ChannelsSettingsScreenCallbacks {
+                                    override fun onChannelToggled(prefKey: String, isEnabled: Boolean) {
+                                        settingsViewModel.updateChannelState(prefKey, isEnabled)
+                                    }
+                                },
+                                onNavigateBack = { currentScreen = Screen.SETTINGS }
                             )
                             Screen.DEV_SETTINGS -> com.conduit.app.ui.DevSettingsScreen(
                                 settings = settings,

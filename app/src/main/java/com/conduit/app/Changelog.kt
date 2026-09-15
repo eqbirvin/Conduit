@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.06",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Dedicated Channels Settings Page",
+                description = "Moved Channels configuration to its own dedicated page in Settings, featuring alphabetized installed channels with toggle controls and an alphabetized Supported Apps explorer.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.05",
         date = "September 14, 2026",
         highlights = listOf(

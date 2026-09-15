@@ -109,6 +109,7 @@ interface SettingsScreenCallbacks {
     fun onManualUpdateCheck()
     fun onShowWhatsNew()
     fun onNavigateToDevSettings()
+    fun onNavigateToChannels()
     fun onDefaultToTodoModeChanged(enabled: Boolean)
 }
 
@@ -121,8 +122,6 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val channelsToShow = remember { getInstalledChannels(context) }
-    var showSupportedAppsDialog by remember { mutableStateOf(false) }
     val options = listOf("System Default", "Light Theme", "Dark Theme", "Jacob Mode (AMOLED)")
     var showUninstalledAppsDialog by remember { mutableStateOf(false) }
     var uninstalledAppsList by remember { mutableStateOf<List<com.conduit.app.data.PackageChannel>>(emptyList()) }
@@ -615,105 +614,19 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text("Channels", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
-            Text(
-                text = "Channels represent external applications linked to Conduit. When enabled, notification alerts from these apps will be integrated and managed directly within your Conduit workspace feed.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-            // Use pre-computed channelsToShow
-            channelsToShow.forEach { (prefKey, name) ->
-                val pkgName = remember(prefKey) {
-                    HubNotificationListenerService.supportedApps.entries
-                        .firstOrNull { it.value.first == prefKey && try { pm.getApplicationInfo(it.key, 0).enabled } catch(e: Exception) { false } }?.key
-                        ?: HubNotificationListenerService.supportedApps.entries.firstOrNull { it.value.first == prefKey }?.key
-                        ?: ""
-                }
-                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (pkgName.isNotEmpty()) {
-                            AppIcon(packageName = pkgName, size = 28.dp)
-                            Spacer(modifier = Modifier.width(12.dp))
-                        }
-                        Text(name, style = MaterialTheme.typography.bodyLarge)
-                    }
-                    Switch(
-                        checked = settings.channelStates[prefKey] ?: true,
-                        onCheckedChange = { callbacks.onChannelToggled(prefKey, it) }
-                    )
-                }
-            }
-            
-            Row(
+            OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showSupportedAppsDialog = true }
-                    .padding(vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("View Supported Apps", style = MaterialTheme.typography.bodyLarge)
-                    Text("See all channels and package names Conduit supports", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-
-            if (showSupportedAppsDialog) {
-                AlertDialog(
-                    onDismissRequest = { showSupportedAppsDialog = false },
-                    title = { Text("Supported Apps & Channels") },
-                    text = {
-                        val groupedApps = remember {
-                            HubNotificationListenerService.supportedApps.entries
-                                .groupBy { it.value.second }
-                        }
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            groupedApps.forEach { (channelName, entries) ->
-                                item {
-                                    Column {
-                                        Text(channelName, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
-                                        entries.forEach { entry ->
-                                            val pkg = entry.key
-                                            val isInstalled = try {
-                                                val appInfo = pm.getApplicationInfo(pkg, 0)
-                                                appInfo.enabled
-                                            } catch (e: Exception) {
-                                                false
-                                            }
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 2.dp),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(pkg, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                                                if (isInstalled) {
-                                                    Text("Installed", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 8.dp))
-                                                } else {
-                                                    Text("Not Installed", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), modifier = Modifier.padding(start = 8.dp))
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showSupportedAppsDialog = false }) {
-                            Text("Close")
-                        }
+                    .clickable { 
+                        performHapticClick(context)
+                        callbacks.onNavigateToChannels() 
                     }
+            ) {
+                ListItem(
+                    headlineContent = { Text("Channels") },
+                    supportingContent = { Text("Manage external apps integrated into Conduit.") },
+                    leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                    trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) }
                 )
             }
             
