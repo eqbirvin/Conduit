@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.05",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Voxer & Zello Walkie-Talkie Support",
+                description = "Added native channel support for Voxer and Zello (consumer and work variants), including notification ingestion, channel toggles, and dock counters.",
+                iconName = "Call"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.04",
         date = "September 14, 2026",
         highlights = listOf(

@@ -169,6 +169,14 @@ object DemoNotificationGenerator {
             Triple("Jordan Lee", "Sent an image via iMessage", "MESSAGE"),
             Triple("Weekend Trip", "Chris: Don't forget to pack hiking shoes!", "MESSAGE")
         ),
+        "channel_voxer" to listOf(
+            Triple("Carlos", "Sent you a 12s voice message: 'Heading out now.'", "MESSAGE"),
+            Triple("Sarah", "Voice chirp from Team Channel.", "MESSAGE")
+        ),
+        "channel_zello" to listOf(
+            Triple("Dispatch", "Channel 1: Check in on location B.", "MESSAGE"),
+            Triple("Dave", "Incoming transmission on Team Channel.", "MESSAGE")
+        ),
         "channel_pulse_sms" to listOf(
             Triple("Mom", "Can you call me when you have a minute?", "MESSAGE"),
             Triple("Dr. Evans Office", "Appointment confirmed for tomorrow at 2:15pm.", "MESSAGE")

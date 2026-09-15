@@ -73,6 +73,9 @@ object ChannelRegistry {
         "com.skype.m2" to Pair("channel_skype", "Skype"),
         "com.bluebubbles.messaging" to Pair("channel_bluebubbles", "BlueBubbles"),
         "me.tagavari.airmessage" to Pair("channel_airmessage", "AirMessage"),
+        "com.rebelvox.voxer" to Pair("channel_voxer", "Voxer"),
+        "com.loudtalks" to Pair("channel_zello", "Zello"),
+        "net.loudtalks" to Pair("channel_zello", "Zello"),
 
         // SMS / MMS / RCS Replacements
         "xyz.klinker.messenger" to Pair("channel_pulse_sms", "Pulse SMS"),

@@ -55,7 +55,10 @@ object MessagingNotificationParser {
         "ch.protonmail.android",
         "com.yahoo.mobile.client.android.mail",
         "com.yahoo.mobile.client.android.mail.go",
-        "com.pingapp.app"
+        "com.pingapp.app",
+        "com.rebelvox.voxer",
+        "com.loudtalks",
+        "net.loudtalks"
     )
 
     fun extractMessages(

@@ -72,6 +72,9 @@
         <package android:name="com.skype.m2" />
         <package android:name="com.bluebubbles.messaging" />
         <package android:name="me.tagavari.airmessage" />
+        <package android:name="com.rebelvox.voxer" />
+        <package android:name="com.loudtalks" />
+        <package android:name="net.loudtalks" />
         <package android:name="xyz.klinker.messenger" />
         <package android:name="com.p1.chompsms" />
         <package android:name="com.moez.QKSMS" />
