@@ -28,13 +28,13 @@ object ChannelRegistry {
         "com.instagram.android" to Pair("channel_instagram", "Instagram"),
 
         // Phone & Dialers
-        "com.google.android.dialer" to Pair("channel_phone", "Phone (Google Dialer)"),
-        "com.android.dialer" to Pair("channel_phone", "Phone (Google Dialer)"),
-        "com.samsung.android.dialer" to Pair("channel_phone", "Phone (Google Dialer)"),
-        "com.android.phone" to Pair("channel_phone", "Phone (Google Dialer)"),
-        "com.android.server.telecom" to Pair("channel_phone", "Phone (Google Dialer)"),
-        "com.android.contacts" to Pair("channel_phone", "Phone (Google Dialer)"),
-        "com.google.android.apps.tycho" to Pair("channel_phone", "Phone (Google Dialer)"),
+        "com.google.android.dialer" to Pair("channel_phone", "Phone"),
+        "com.android.dialer" to Pair("channel_phone", "Phone"),
+        "com.samsung.android.dialer" to Pair("channel_phone", "Phone"),
+        "com.android.phone" to Pair("channel_phone", "Phone"),
+        "com.android.server.telecom" to Pair("channel_phone", "Phone"),
+        "com.android.contacts" to Pair("channel_phone", "Phone"),
+        "com.google.android.apps.tycho" to Pair("channel_phone", "Phone"),
         "com.truecaller" to Pair("channel_truecaller", "Truecaller"),
 
         // Messaging, Social & Community
@@ -83,7 +83,7 @@ object ChannelRegistry {
         "com.moez.QKSMS" to Pair("channel_qksms", "QKSMS"),
         "dev.octoshrimpy.quik" to Pair("channel_quik", "QUIK SMS"),
         "dev.octoshrimpy.quik.fdroid" to Pair("channel_quik", "QUIK SMS"),
-        "com.anindra.messages" to Pair("channel_anindra_messages", "Messages (F-Droid)"),
+        "com.anindra.messages" to Pair("channel_anindra_messages", "Messages (by Anindra)"),
         "com.simplemobiletools.smsmessenger" to Pair("channel_simple_sms", "Simple SMS Messenger"),
         "org.fossify.messages" to Pair("channel_simple_sms", "Simple SMS Messenger"),
         "com.calea.echo" to Pair("channel_mood_messenger", "Mood Messenger"),

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.23.07",
+        date = "September 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Channel Display Name Updates",
+                description = "Renamed \"Phone (Google Dialer)\" to \"Phone\" and \"Messages (F-Droid)\" to \"Messages (by Anindra)\" across channel settings, supported apps list, and notification badges.",
+                iconName = "Settings"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.06",
         date = "September 14, 2026",
         highlights = listOf(

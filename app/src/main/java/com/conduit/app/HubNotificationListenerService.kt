@@ -835,7 +835,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             
             val appInfo = supportedApps[packageName]
             
-            val channel = appInfo?.second ?: if (isSystemPhoneFallback) "Phone (Google Dialer)" else null
+            val channel = appInfo?.second ?: if (isSystemPhoneFallback) "Phone" else null
             
             if (channel != null) {
                 // Ignore ongoing notifications (like background services)
@@ -1473,7 +1473,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                                         packageName.contains(".dialer", ignoreCase = true) ||
                                         packageName.endsWith(".phone", ignoreCase = true)
             
-            val channelInfo = appInfo ?: if (isSystemPhoneFallback) Pair("channel_phone", "Phone (Google Dialer)") else null
+            val channelInfo = appInfo ?: if (isSystemPhoneFallback) Pair("channel_phone", "Phone") else null
             if (channelInfo != null) {
                 val prefKey = channelInfo.first
                 if (prefs.getBoolean(prefKey, true)) {
@@ -1714,7 +1714,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                                         packageName.contains(".dialer", ignoreCase = true) ||
                                         packageName.endsWith(".phone", ignoreCase = true)
             
-            val channelInfo = appInfo ?: if (isSystemPhoneFallback) Pair("channel_phone", "Phone (Google Dialer)") else null
+            val channelInfo = appInfo ?: if (isSystemPhoneFallback) Pair("channel_phone", "Phone") else null
             if (channelInfo != null) {
                 val prefKey = channelInfo.first
                 if (prefs.getBoolean(prefKey, true)) {
