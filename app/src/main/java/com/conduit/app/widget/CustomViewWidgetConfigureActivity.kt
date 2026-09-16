@@ -57,8 +57,13 @@ class CustomViewWidgetConfigureActivity : ComponentActivity() {
             val prefs = remember { getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
             val themePreference = remember { prefs.getInt("theme", 0) }
             val jacobMonochrome = remember { prefs.getBoolean("jacob_monochrome", false) }
+            val jacobFollowSystemDark = remember { prefs.getBoolean("jacob_follow_system_dark", false) }
             
-            ConduitTheme(themePreference = themePreference, jacobMonochrome = jacobMonochrome) {
+            ConduitTheme(
+                themePreference = themePreference,
+                jacobMonochrome = jacobMonochrome,
+                jacobFollowSystemDark = jacobFollowSystemDark
+            ) {
                 val views by viewsRepository.views.collectAsStateWithLifecycle()
 
                 Scaffold(

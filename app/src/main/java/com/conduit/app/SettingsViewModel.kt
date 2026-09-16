@@ -15,6 +15,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun updateTheme(theme: Int) = viewModelScope.launch { repository.updateTheme(theme) }
     fun updateJacobMonochrome(enabled: Boolean) = viewModelScope.launch { repository.updateJacobMonochrome(enabled) }
+    fun updateJacobFollowSystemDark(enabled: Boolean) = viewModelScope.launch { repository.updateJacobFollowSystemDark(enabled) }
     fun updateGroupByChannel(enabled: Boolean) = viewModelScope.launch { repository.updateGroupByChannel(enabled) }
     fun updatePersistentTrayEnabled(enabled: Boolean) = viewModelScope.launch { repository.updatePersistentTrayEnabled(enabled) }
     fun updateMasterExpandedState(enabled: Boolean) = viewModelScope.launch { repository.updateMasterExpandedState(enabled) }

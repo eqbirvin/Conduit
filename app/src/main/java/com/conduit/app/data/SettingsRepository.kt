@@ -51,6 +51,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         return ConduitSettings(
             themePreference = prefs.getInt("theme", 0),
             jacobMonochrome = prefs.getBoolean("jacob_monochrome", false),
+            jacobFollowSystemDark = prefs.getBoolean("jacob_follow_system_dark", false),
             groupByChannel = prefs.getBoolean("group_by_channel", false),
             persistentTrayEnabled = prefs.getBoolean("persistent_tray_enabled", false),
             syncDismissal = prefs.getBoolean("sync_dismissal", true),
@@ -100,6 +101,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateJacobMonochrome(enabled: Boolean) {
         prefs.edit().putBoolean("jacob_monochrome", enabled).apply()
         _settings.update { it.copy(jacobMonochrome = enabled) }
+    }
+
+    fun updateJacobFollowSystemDark(enabled: Boolean) {
+        prefs.edit().putBoolean("jacob_follow_system_dark", enabled).apply()
+        _settings.update { it.copy(jacobFollowSystemDark = enabled) }
     }
 
     fun updateGroupByChannel(enabled: Boolean) {

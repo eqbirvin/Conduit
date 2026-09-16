@@ -268,8 +268,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
             
-            var themePreference by remember { mutableIntStateOf(prefs.getInt("theme", 0)) }
-            var jacobMonochrome by remember { mutableStateOf(prefs.getBoolean("jacob_monochrome", false)) }
             var groupByChannel by remember { mutableStateOf(prefs.getBoolean("group_by_channel", false)) }
             var persistentTrayEnabled by remember { mutableStateOf(prefs.getBoolean("persistent_tray_enabled", false)) }
             val channelStates = remember { mutableStateMapOf<String, Boolean>() }
@@ -389,7 +387,11 @@ class MainActivity : ComponentActivity() {
             
 
 
-            ConduitTheme(themePreference = themePreference, jacobMonochrome = jacobMonochrome) {
+            ConduitTheme(
+                themePreference = settings.themePreference,
+                jacobMonochrome = settings.jacobMonochrome,
+                jacobFollowSystemDark = settings.jacobFollowSystemDark
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -433,6 +435,7 @@ class MainActivity : ComponentActivity() {
                                 callbacks = object : com.conduit.app.ui.SettingsScreenCallbacks {
                                     override fun onThemeChanged(theme: Int) { settingsViewModel.updateTheme(theme) }
                                     override fun onJacobMonochromeChanged(enabled: Boolean) { settingsViewModel.updateJacobMonochrome(enabled) }
+                                    override fun onJacobFollowSystemDarkChanged(enabled: Boolean) { settingsViewModel.updateJacobFollowSystemDark(enabled) }
                                     override fun onGroupByChannelChanged(enabled: Boolean) { settingsViewModel.updateGroupByChannel(enabled) }
                                     override fun onChannelToggled(prefKey: String, isEnabled: Boolean) { settingsViewModel.updateChannelState(prefKey, isEnabled) }
                                     override fun onSyncDismissalChanged(enabled: Boolean) { settingsViewModel.updateSyncDismissal(enabled) }

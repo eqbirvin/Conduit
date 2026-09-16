@@ -77,6 +77,7 @@ import androidx.activity.enableEdgeToEdge
 interface SettingsScreenCallbacks {
     fun onThemeChanged(theme: Int)
     fun onJacobMonochromeChanged(enabled: Boolean)
+    fun onJacobFollowSystemDarkChanged(enabled: Boolean)
     fun onGroupByChannelChanged(enabled: Boolean)
     fun onChannelToggled(prefKey: String, isEnabled: Boolean)
     fun onSyncDismissalChanged(enabled: Boolean)
@@ -278,6 +279,37 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(start = 16.dp)
                         )
+                    }
+                    if (index == 3) {
+                        val isJacobActive = settings.themePreference == 3
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable(enabled = isJacobActive) {
+                                    callbacks.onJacobFollowSystemDarkChanged(!settings.jacobFollowSystemDark)
+                                }
+                                .padding(start = 48.dp, end = 16.dp, top = 2.dp, bottom = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = settings.jacobFollowSystemDark,
+                                onCheckedChange = if (isJacobActive) { { callbacks.onJacobFollowSystemDarkChanged(it) } } else null,
+                                enabled = isJacobActive
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Follow System Dark Mode",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = if (isJacobActive) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                )
+                                Text(
+                                    text = "Uses Light theme during the day and AMOLED pure black when system dark mode is on",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (isJacobActive) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                                )
+                            }
+                        }
                     }
                 }
             }

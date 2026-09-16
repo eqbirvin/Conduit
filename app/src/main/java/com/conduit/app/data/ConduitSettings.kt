@@ -5,6 +5,7 @@ import com.conduit.app.FabAction
 data class ConduitSettings(
     val themePreference: Int = 0,
     val jacobMonochrome: Boolean = false,
+    val jacobFollowSystemDark: Boolean = false,
     val groupByChannel: Boolean = false,
     val persistentTrayEnabled: Boolean = false,
     val syncDismissal: Boolean = true,

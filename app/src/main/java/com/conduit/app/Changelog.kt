@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.24.00",
+        date = "September 15, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Follow System Dark Mode for Jacob Mode",
+                description = "Added a 'Follow System Dark Mode' checkbox directly under Jacob Mode (AMOLED). When enabled, Conduit uses pure-black AMOLED when system dark mode is active and standard light theme during the day.",
+                iconName = "Palette"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.23.09",
         date = "September 14, 2026",
         highlights = listOf(

@@ -73,19 +73,25 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.activity.enableEdgeToEdge
 
 @Composable
-fun ConduitTheme(themePreference: Int, jacobMonochrome: Boolean = false, content: @Composable () -> Unit) {
+fun ConduitTheme(
+    themePreference: Int,
+    jacobMonochrome: Boolean = false,
+    jacobFollowSystemDark: Boolean = false,
+    content: @Composable () -> Unit
+) {
     val context = LocalContext.current
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
-    val darkTheme = when (themePreference) {
-        1 -> false // Light
-        2 -> true  // Dark
-        3 -> true  // Jacob Mode (AMOLED)
+    val isJacobEffectiveLight = themePreference == 3 && jacobFollowSystemDark && !isSystemDark
+    val darkTheme = when {
+        themePreference == 1 -> false // Light
+        themePreference == 2 -> true  // Dark
+        themePreference == 3 -> if (jacobFollowSystemDark) isSystemDark else true  // Jacob Mode (AMOLED)
         else -> isSystemDark // System (0)
     }
     
-    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && themePreference != 3
+    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && (themePreference != 3 || isJacobEffectiveLight)
     val colorScheme = when {
-        themePreference == 3 -> {
+        themePreference == 3 && !isJacobEffectiveLight -> {
             if (jacobMonochrome) {
                 androidx.compose.material3.darkColorScheme(
                     primary = Color.White,
