@@ -808,38 +808,20 @@ fun HubScreen(
         
         Column(modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize()) {
             if (views.isNotEmpty() && !isSearchMode) {
-                @OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
-                androidx.compose.runtime.CompositionLocalProvider(
-                    androidx.compose.material3.LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
-                ) {
-                    FlowRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                    views.forEach { view ->
-                        val isSelected = activeViewId == view.id
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = {
-                                performHapticTick(context)
-                                if (isSelected) {
-                                    viewModel.setActiveViewId(null)
-                                } else {
-                                    viewModel.setActiveViewId(view.id)
-                                    selectedDockPackage = null
-                                }
-                            },
-                            label = { Text(view.name) },
-                            leadingIcon = if (isSelected) {
-                                { Icon(Icons.Filled.Check, contentDescription = "Selected", modifier = Modifier.size(18.dp)) }
-                            } else null
-                        )
+                CustomViewChipsBar(
+                    views = views,
+                    activeViewId = activeViewId,
+                    onSelectView = { newId ->
+                        viewModel.setActiveViewId(newId)
+                        if (newId != null) {
+                            selectedDockPackage = null
+                        }
+                    },
+                    isExpanded = settings.customViewsExpanded,
+                    onToggleExpanded = {
+                        settingsViewModel.updateCustomViewsExpanded(!settings.customViewsExpanded)
                     }
-                }
-                }
+                )
             }
 
             androidx.compose.animation.AnimatedVisibility(visible = !unifiedView) {

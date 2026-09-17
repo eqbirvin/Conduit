@@ -320,3 +320,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-14T18:48] [v2.23.08] moved channels page entry card to the top of settings page above app info and updates.
 [2026-09-14T19:00] [v2.23.09] added testing feedback and issue reporting notice for channel expansion to whats new changelog.
 [2026-09-15T19:22] [v2.24.00] added follow system dark mode option under jacob mode (amoled) to dynamically switch between system light theme and amoled pure black.
+[2026-09-16T18:19] [v2.25.00] added material 3 outlined expand/collapse button for custom view chips with horizontal scrolling when collapsed and multi-line wrapping when expanded.

@@ -89,7 +89,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             latestVersionAvailable = storedLatestVersion,
             defaultToTodoMode = prefs.getBoolean("default_to_todo_mode", false),
             demoModeEnabled = prefs.getBoolean("demo_mode_enabled", false),
-            ingestionDiagnosticsEnabled = prefs.getBoolean("ingestion_diagnostics", false)
+            ingestionDiagnosticsEnabled = prefs.getBoolean("ingestion_diagnostics", false),
+            customViewsExpanded = prefs.getBoolean("custom_views_expanded", true)
         )
     }
 
@@ -304,6 +305,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateIngestionDiagnosticsEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("ingestion_diagnostics", enabled).apply()
         _settings.update { it.copy(ingestionDiagnosticsEnabled = enabled) }
+    }
+
+    fun updateCustomViewsExpanded(enabled: Boolean) {
+        prefs.edit().putBoolean("custom_views_expanded", enabled).apply()
+        _settings.update { it.copy(customViewsExpanded = enabled) }
     }
 }
 

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.25.00",
+        date = "September 16, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Collapsible Custom Views",
+                description = "Added an outlined Material 3 expand/collapse button for custom view chips. When collapsed, custom views fit onto a single horizontally scrollable row; when expanded, they wrap across multiple rows.",
+                iconName = "FilterList"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.24.00",
         date = "September 15, 2026",
         highlights = listOf(
