@@ -1,12 +1,14 @@
 package com.conduit.app.ui
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -30,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -137,19 +140,27 @@ fun CustomViewChipsBar(
                                 }
                             }
 
-                            OutlinedIconButton(
-                                onClick = {
-                                    performHapticTick(context)
-                                    onToggleExpanded()
-                                },
-                                modifier = Modifier.size(32.dp)
+                            val density = LocalDensity.current
+                            val onePxDp = with(density) { 1.toDp() }
+                            Box(
+                                modifier = Modifier.height(32.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                                    contentDescription = if (isExpanded) "Collapse custom views" else "Expand custom views",
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                OutlinedIconButton(
+                                    onClick = {
+                                        performHapticTick(context)
+                                        onToggleExpanded()
+                                    },
+                                    modifier = Modifier.size(32.dp - (onePxDp * 2)),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                                ) {
+                                    Icon(
+                                        imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                                        contentDescription = if (isExpanded) "Collapse custom views" else "Expand custom views",
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         } else {
                             // Does not overflow: single row, no button needed

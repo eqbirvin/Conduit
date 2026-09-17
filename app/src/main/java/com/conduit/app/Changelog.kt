@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.25.02",
+        date = "September 16, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Refined Custom View Toggle Styling",
+                description = "Matched the expand/collapse button outline color to the lighter outline variant of the custom view chips and subtly adjusted its circle radius.",
+                iconName = "FilterList"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.25.00",
         date = "September 16, 2026",
         highlights = listOf(
