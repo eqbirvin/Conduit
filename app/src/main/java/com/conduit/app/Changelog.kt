@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.25.03",
+        date = "September 18, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Collapsible Custom View Chips",
+                description = "Custom view chips at the top of the Hub can now be collapsed into a single, horizontally scrollable row to maximize your vertical screen space. Tap the outlined toggle button on the right to smoothly expand back into the full multi-row view. Conduit remembers your expanded or collapsed preference across app restarts, and automatically scrolls to keep your active custom view visible when collapsed.",
+                iconName = "FilterList"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.25.02",
         date = "September 16, 2026",
         highlights = listOf(
