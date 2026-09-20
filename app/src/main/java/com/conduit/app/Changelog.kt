@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.25.04",
+        date = "September 20, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Refined Dock Spacing",
+                description = "Decreased the horizontal spacing between icons in the app dock by 40% for a tighter, more compact layout across all dock size settings.",
+                iconName = "Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.25.03",
         date = "September 18, 2026",
         highlights = listOf(

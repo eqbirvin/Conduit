@@ -440,9 +440,9 @@ fun HubScreen(
                         else -> 40.dp
                     }
                     val dockSpacing = when (dockSizeIndex) {
-                        0 -> 10.dp
-                        2 -> 12.dp
-                        else -> 12.dp
+                        0 -> 6.dp
+                        2 -> 7.dp
+                        else -> 7.dp
                     }
                     val dockBoxPadding = when (dockSizeIndex) {
                         0 -> 6.dp
