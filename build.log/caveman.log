@@ -324,3 +324,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-16T18:54] [v2.25.02] updated custom view chips expand/collapse button outline color to outlinevariant to match filter chips and reduced circle radius by one pixel.
 [2026-09-18T16:42] [v2.25.03] updated in-app changelog highlighting collapsible custom view chips feature with single-row horizontal scrolling when collapsed and multi-line wrapping when expanded.
 [2026-09-20T10:50] [v2.25.04] decreased horizontal spacing between icons in the app dock by about 40% across all dock sizes.
+[2026-09-20T21:59] [v2.26.00] replaced app bundles fab stack with material design 3 split button on app dock with floating bundle flyout.

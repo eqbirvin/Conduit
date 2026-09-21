@@ -727,8 +727,8 @@ fun SettingsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Enable App Bundles FAB", style = MaterialTheme.typography.bodyLarge)
-                    Text("Show the floating action button for quick app launching", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Enable App Bundles in Dock", style = MaterialTheme.typography.bodyLarge)
+                    Text("Show a split button on the dock for quick app launching", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(
                     checked = settings.enableAppBundles,
@@ -738,7 +738,7 @@ fun SettingsScreen(
             
             AnimatedVisibility(visible = settings.enableAppBundles) {
                 Column {
-                    Text("Customize which apps appear in your FAB menus", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                    Text("Customize which apps appear in your bundle menus", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
             
             var editingBundleTitle by remember { mutableStateOf<String?>(null) }
             

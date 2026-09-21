@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.26.00",
+        date = "September 20, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Overhauled Dock Split Button & App Bundles",
+                description = "Replaced the legacy bottom-right FAB button stack with a sleek Material Design 3 split button integrated directly on the far right of the dock. Tap the chevron to open a floating flyout pill right above the dock for instant access to your configured App Bundles (Recorder, AI Assistants, Notes, and Compose).",
+                iconName = "Speed"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.25.04",
         date = "September 20, 2026",
         highlights = listOf(
