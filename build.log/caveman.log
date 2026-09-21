@@ -326,3 +326,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-20T10:50] [v2.25.04] decreased horizontal spacing between icons in the app dock by about 40% across all dock sizes.
 [2026-09-20T21:59] [v2.26.00] replaced app bundles fab stack with material design 3 split button on app dock with floating bundle flyout.
 [2026-09-20T22:21] [v2.26.01] separated dock split button into distinct surfaces with 3dp gap and m3 inner corner radii to visibly divide dock shading and elevation.
+[2026-09-21T14:40] [v2.26.02] decreased dock expand button width by 25% while maintaining height parity and accessibility standards.
