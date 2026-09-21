@@ -806,25 +806,28 @@ fun HubScreen(
                                                     isBundleFlyoutExpanded = !isBundleFlyoutExpanded
                                                 }
                                                 .padding(
-                                                    start = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.5f).coerceAtLeast(6.dp) else dockPaddingHorizontal,
-                                                    end = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.8f).coerceAtLeast(10.dp) else dockPaddingHorizontal,
+                                                    start = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.4f).coerceAtLeast(5.dp) else dockPaddingHorizontal,
+                                                    end = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
                                                     top = dockPaddingVertical,
                                                     bottom = dockPaddingVertical
                                                 )
-                                                .padding(dockBoxPadding),
+                                                .padding(
+                                                    horizontal = if (dockPackagesList.isNotEmpty()) (dockBoxPadding * 0.65f).coerceAtLeast(4.dp) else dockBoxPadding,
+                                                    vertical = dockBoxPadding
+                                                ),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Box(
                                                 modifier = Modifier
                                                     .height(dockIconSize)
-                                                    .width(if (dockPackagesList.isNotEmpty()) (dockIconSize * 0.65f) else dockIconSize),
+                                                    .width(if (dockPackagesList.isNotEmpty()) (dockIconSize * 0.55f) else dockIconSize),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
                                                     imageVector = if (isBundleFlyoutExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
                                                     contentDescription = if (isBundleFlyoutExpanded) "Collapse App Bundles" else "Expand App Bundles",
                                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    modifier = Modifier.size((dockIconSize * 0.5f).coerceIn(18.dp, 22.dp))
+                                                    modifier = Modifier.size((dockIconSize * 0.45f).coerceIn(16.dp, 20.dp))
                                                 )
                                             }
                                         }
