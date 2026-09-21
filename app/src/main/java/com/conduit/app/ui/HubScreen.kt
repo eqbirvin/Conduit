@@ -578,25 +578,50 @@ fun HubScreen(
                                 }
                             }
 
-                            Surface(
-                                modifier = Modifier.wrapContentWidth(),
-                                shape = androidx.compose.foundation.shape.CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                shadowElevation = 8.dp
-                            ) {
-                                val isFading = dockScrollIndicator == "FADING_EDGES"
-                                val fadeWidth = 32.dp
-                                val fadeWidthPx = with(androidx.compose.ui.platform.LocalDensity.current) { fadeWidth.toPx() }
+                            val leftShape = if (settings.enableAppBundles) {
+                                androidx.compose.foundation.shape.RoundedCornerShape(
+                                    topStart = androidx.compose.foundation.shape.CornerSize(50),
+                                    topEnd = androidx.compose.foundation.shape.CornerSize(4.dp),
+                                    bottomEnd = androidx.compose.foundation.shape.CornerSize(4.dp),
+                                    bottomStart = androidx.compose.foundation.shape.CornerSize(50)
+                                )
+                            } else {
+                                androidx.compose.foundation.shape.CircleShape
+                            }
 
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.wrapContentWidth()
-                                ) {
-                                    if (dockPackagesList.isNotEmpty()) {
+                            val rightShape = if (dockPackagesList.isNotEmpty()) {
+                                androidx.compose.foundation.shape.RoundedCornerShape(
+                                    topStart = androidx.compose.foundation.shape.CornerSize(4.dp),
+                                    topEnd = androidx.compose.foundation.shape.CornerSize(50),
+                                    bottomEnd = androidx.compose.foundation.shape.CornerSize(50),
+                                    bottomStart = androidx.compose.foundation.shape.CornerSize(4.dp)
+                                )
+                            } else {
+                                androidx.compose.foundation.shape.CircleShape
+                            }
+
+                            val isFading = dockScrollIndicator == "FADING_EDGES"
+                            val fadeWidth = 32.dp
+                            val fadeWidthPx = with(androidx.compose.ui.platform.LocalDensity.current) { fadeWidth.toPx() }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.wrapContentWidth()
+                            ) {
+                                if (dockPackagesList.isNotEmpty()) {
+                                    Surface(
+                                        modifier = if (settings.enableAppBundles) {
+                                            Modifier.weight(1f, fill = false).wrapContentWidth()
+                                        } else {
+                                            Modifier.wrapContentWidth()
+                                        },
+                                        shape = leftShape,
+                                        color = MaterialTheme.colorScheme.surfaceVariant,
+                                        shadowElevation = 8.dp
+                                    ) {
                                         Box(
-                                            modifier = Modifier
-                                                .weight(1f, fill = false)
-                                                .wrapContentWidth(),
+                                            modifier = Modifier.wrapContentWidth(),
                                             contentAlignment = Alignment.BottomCenter
                                         ) {
                                             LazyRow(
@@ -637,14 +662,17 @@ fun HubScreen(
                                                     ),
                                                 contentPadding = PaddingValues(
                                                     start = dockPaddingHorizontal,
-                                                    end = if (settings.enableAppBundles) 8.dp else dockPaddingHorizontal,
+                                                    end = if (settings.enableAppBundles) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
                                                     top = dockPaddingVertical,
                                                     bottom = dockPaddingVertical
                                                 ), 
                                                 horizontalArrangement = Arrangement.spacedBy(dockSpacing, Alignment.CenterHorizontally),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                items(dockPackagesList.size) { index ->
+                                                items(
+                                                    count = dockPackagesList.size,
+                                                    key = { index -> dockPackagesList[index] }
+                                                ) { index ->
                                                     val pkg = dockPackagesList[index]
                                                     val groupNotifs = grouped[pkg] ?: emptyList()
                                                     
@@ -756,37 +784,47 @@ fun HubScreen(
                                             }
                                         }
                                     }
+                                }
 
-                                    if (settings.enableAppBundles) {
-                                        if (dockPackagesList.isNotEmpty()) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .height(24.dp)
-                                                    .width(1.dp)
-                                                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-                                            )
-                                        }
+                                if (dockPackagesList.isNotEmpty() && settings.enableAppBundles) {
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                }
+
+                                if (settings.enableAppBundles) {
+                                    Surface(
+                                        modifier = Modifier.wrapContentSize(),
+                                        shape = rightShape,
+                                        color = MaterialTheme.colorScheme.surfaceVariant,
+                                        shadowElevation = 8.dp
+                                    ) {
                                         Box(
                                             modifier = Modifier
-                                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                                .padding(vertical = 1.dp)
+                                                .clip(rightShape)
                                                 .clickable {
                                                     performHapticTick(context)
                                                     isBundleFlyoutExpanded = !isBundleFlyoutExpanded
                                                 }
                                                 .padding(
-                                                    start = if (dockPackagesList.isNotEmpty()) 8.dp else dockPaddingHorizontal,
+                                                    start = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
                                                     end = dockPaddingHorizontal,
                                                     top = dockPaddingVertical,
                                                     bottom = dockPaddingVertical
-                                                ),
+                                                )
+                                                .padding(dockBoxPadding),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Icon(
-                                                imageVector = if (isBundleFlyoutExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
-                                                contentDescription = if (isBundleFlyoutExpanded) "Collapse App Bundles" else "Expand App Bundles",
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.size(dockIconSize * 0.7f)
-                                            )
+                                            Box(
+                                                modifier = Modifier.size(dockIconSize),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = if (isBundleFlyoutExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                                                    contentDescription = if (isBundleFlyoutExpanded) "Collapse App Bundles" else "Expand App Bundles",
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
                                         }
                                     }
                                 }

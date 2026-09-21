@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.26.01",
+        date = "September 20, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Material 3 Split Button Dock Design",
+                description = "Refined the dock split button layout to follow the official Material Design 3 split button spec. The dock icons and the app bundles expand button are now separated into distinct surfaces with an intentional 3dp gap, subtle 4dp inner corner radii, and independent elevation shadows dividing the surfaces cleanly.",
+                iconName = "Layers"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.26.00",
         date = "September 20, 2026",
         highlights = listOf(
