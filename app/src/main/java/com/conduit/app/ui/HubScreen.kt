@@ -84,6 +84,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Density
 
 @Composable
 fun HubScreen(
@@ -578,24 +585,81 @@ fun HubScreen(
                                 }
                             }
 
+                            val dockHeight = when (dockSizeIndex) {
+                                0 -> 64.dp
+                                2 -> 80.dp
+                                else -> 72.dp
+                            }
+                            val dockCapRadius = dockHeight / 2
+
                             val leftShape = if (settings.enableAppBundles) {
                                 androidx.compose.foundation.shape.RoundedCornerShape(
-                                    topStart = androidx.compose.foundation.shape.CornerSize(50),
+                                    topStart = androidx.compose.foundation.shape.CornerSize(dockCapRadius),
                                     topEnd = androidx.compose.foundation.shape.CornerSize(4.dp),
                                     bottomEnd = androidx.compose.foundation.shape.CornerSize(4.dp),
-                                    bottomStart = androidx.compose.foundation.shape.CornerSize(50)
+                                    bottomStart = androidx.compose.foundation.shape.CornerSize(dockCapRadius)
                                 )
                             } else {
                                 androidx.compose.foundation.shape.CircleShape
                             }
 
+                            val rightSplitButtonShape = remember(dockCapRadius) {
+                                object : Shape {
+                                    override fun createOutline(
+                                        size: Size,
+                                        layoutDirection: LayoutDirection,
+                                        density: Density
+                                    ): Outline {
+                                        val rLeft = with(density) { 4.dp.toPx() }
+                                        val rRight = size.height / 2f
+                                        val path = Path().apply {
+                                            moveTo(rLeft, 0f)
+                                            val rightArcStartX = (size.width - rRight).coerceAtLeast(rLeft)
+                                            lineTo(rightArcStartX, 0f)
+                                            arcTo(
+                                                rect = Rect(
+                                                    left = size.width - 2f * rRight,
+                                                    top = 0f,
+                                                    right = size.width,
+                                                    bottom = size.height
+                                                ),
+                                                startAngleDegrees = -90f,
+                                                sweepAngleDegrees = 180f,
+                                                forceMoveTo = false
+                                            )
+                                            lineTo(rLeft, size.height)
+                                            arcTo(
+                                                rect = Rect(
+                                                    left = 0f,
+                                                    top = size.height - 2f * rLeft,
+                                                    right = 2f * rLeft,
+                                                    bottom = size.height
+                                                ),
+                                                startAngleDegrees = 90f,
+                                                sweepAngleDegrees = 90f,
+                                                forceMoveTo = false
+                                            )
+                                            lineTo(0f, rLeft)
+                                            arcTo(
+                                                rect = Rect(
+                                                    left = 0f,
+                                                    top = 0f,
+                                                    right = 2f * rLeft,
+                                                    bottom = 2f * rLeft
+                                                ),
+                                                startAngleDegrees = 180f,
+                                                sweepAngleDegrees = 90f,
+                                                forceMoveTo = false
+                                            )
+                                            close()
+                                        }
+                                        return Outline.Generic(path)
+                                    }
+                                }
+                            }
+
                             val rightShape = if (dockPackagesList.isNotEmpty()) {
-                                androidx.compose.foundation.shape.RoundedCornerShape(
-                                    topStart = androidx.compose.foundation.shape.CornerSize(4.dp),
-                                    topEnd = androidx.compose.foundation.shape.CornerSize(50),
-                                    bottomEnd = androidx.compose.foundation.shape.CornerSize(50),
-                                    bottomStart = androidx.compose.foundation.shape.CornerSize(4.dp)
-                                )
+                                rightSplitButtonShape
                             } else {
                                 androidx.compose.foundation.shape.CircleShape
                             }
@@ -612,17 +676,17 @@ fun HubScreen(
                                 if (dockPackagesList.isNotEmpty()) {
                                     Surface(
                                         modifier = if (settings.enableAppBundles) {
-                                            Modifier.weight(1f, fill = false).wrapContentWidth()
+                                            Modifier.height(dockHeight).weight(1f, fill = false).wrapContentWidth()
                                         } else {
-                                            Modifier.wrapContentWidth()
+                                            Modifier.height(dockHeight).wrapContentWidth()
                                         },
                                         shape = leftShape,
                                         color = MaterialTheme.colorScheme.surfaceVariant,
                                         shadowElevation = 8.dp
                                     ) {
                                         Box(
-                                            modifier = Modifier.wrapContentWidth(),
-                                            contentAlignment = Alignment.BottomCenter
+                                            modifier = Modifier.fillMaxHeight().wrapContentWidth(),
+                                            contentAlignment = Alignment.Center
                                         ) {
                                             LazyRow(
                                                 state = listState,
@@ -767,6 +831,7 @@ fun HubScreen(
                                                     
                                                     Box(
                                                         modifier = Modifier
+                                                            .align(Alignment.BottomCenter)
                                                             .padding(bottom = 2.dp)
                                                             .width(trackWidth)
                                                             .height(3.dp)
@@ -792,13 +857,16 @@ fun HubScreen(
 
                                 if (settings.enableAppBundles) {
                                     Surface(
-                                        modifier = Modifier.wrapContentSize(),
+                                        modifier = Modifier
+                                            .height(dockHeight)
+                                            .wrapContentWidth(),
                                         shape = rightShape,
                                         color = MaterialTheme.colorScheme.surfaceVariant,
                                         shadowElevation = 8.dp
                                     ) {
                                         Box(
                                             modifier = Modifier
+                                                .fillMaxHeight()
                                                 .padding(vertical = 1.dp)
                                                 .clip(rightShape)
                                                 .clickable {

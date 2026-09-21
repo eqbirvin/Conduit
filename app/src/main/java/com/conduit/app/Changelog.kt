@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.26.06",
+        date = "September 21, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Dock Cap Radii & Shadow Geometry",
+                description = "Crafted a custom semicircular convex shape for the split button expand button to mirror the dock's full-height left semicircular cap, locked both surfaces to matching heights, and aligned bottom baselines to eliminate drop shadow overhangs.",
+                iconName = "AutoAwesome"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.26.05",
         date = "September 21, 2026",
         highlights = listOf(
