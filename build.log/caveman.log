@@ -328,3 +328,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-20T22:21] [v2.26.01] separated dock split button into distinct surfaces with 3dp gap and m3 inner corner radii to visibly divide dock shading and elevation.
 [2026-09-21T14:40] [v2.26.02] decreased dock expand button width by 25% while maintaining height parity and accessibility standards.
 [2026-09-21T14:46] [v2.26.03] reduced dock expand button width by another 20% for a slimline split button design.
+[2026-09-21T14:56] [v2.26.04] matched expand button outer radius to dock cap radius, locked surface heights, and clipped overhanging drop shadow at divider slit.
