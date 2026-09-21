@@ -29,12 +29,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.Density
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.clip
@@ -584,15 +578,12 @@ fun HubScreen(
                                 }
                             }
 
-                            val dockHeight = dockIconSize + (dockBoxPadding * 2) + (dockPaddingVertical * 2) + 2.dp
-                            val dockCapRadius = dockHeight / 2
-
                             val leftShape = if (settings.enableAppBundles) {
                                 androidx.compose.foundation.shape.RoundedCornerShape(
-                                    topStart = androidx.compose.foundation.shape.CornerSize(dockCapRadius),
+                                    topStart = androidx.compose.foundation.shape.CornerSize(50),
                                     topEnd = androidx.compose.foundation.shape.CornerSize(4.dp),
                                     bottomEnd = androidx.compose.foundation.shape.CornerSize(4.dp),
-                                    bottomStart = androidx.compose.foundation.shape.CornerSize(dockCapRadius)
+                                    bottomStart = androidx.compose.foundation.shape.CornerSize(50)
                                 )
                             } else {
                                 androidx.compose.foundation.shape.CircleShape
@@ -601,52 +592,12 @@ fun HubScreen(
                             val rightShape = if (dockPackagesList.isNotEmpty()) {
                                 androidx.compose.foundation.shape.RoundedCornerShape(
                                     topStart = androidx.compose.foundation.shape.CornerSize(4.dp),
-                                    topEnd = androidx.compose.foundation.shape.CornerSize(dockCapRadius),
-                                    bottomEnd = androidx.compose.foundation.shape.CornerSize(dockCapRadius),
+                                    topEnd = androidx.compose.foundation.shape.CornerSize(50),
+                                    bottomEnd = androidx.compose.foundation.shape.CornerSize(50),
                                     bottomStart = androidx.compose.foundation.shape.CornerSize(4.dp)
                                 )
                             } else {
                                 androidx.compose.foundation.shape.CircleShape
-                            }
-
-                            val clipRightShadowShape = remember {
-                                object : Shape {
-                                    override fun createOutline(
-                                        size: Size,
-                                        layoutDirection: LayoutDirection,
-                                        density: Density
-                                    ): Outline {
-                                        val overflow = with(density) { 16.dp.toPx() }
-                                        return Outline.Rectangle(
-                                            Rect(
-                                                left = -overflow,
-                                                top = -overflow,
-                                                right = size.width,
-                                                bottom = size.height + overflow
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-
-                            val clipLeftShadowShape = remember {
-                                object : Shape {
-                                    override fun createOutline(
-                                        size: Size,
-                                        layoutDirection: LayoutDirection,
-                                        density: Density
-                                    ): Outline {
-                                        val overflow = with(density) { 16.dp.toPx() }
-                                        return Outline.Rectangle(
-                                            Rect(
-                                                left = 0f,
-                                                top = -overflow,
-                                                right = size.width + overflow,
-                                                bottom = size.height + overflow
-                                            )
-                                        )
-                                    }
-                                }
                             }
 
                             val isFading = dockScrollIndicator == "FADING_EDGES"
@@ -659,186 +610,175 @@ fun HubScreen(
                                 modifier = Modifier.wrapContentWidth()
                             ) {
                                 if (dockPackagesList.isNotEmpty()) {
-                                    Box(
+                                    Surface(
                                         modifier = if (settings.enableAppBundles) {
-                                            Modifier
-                                                .weight(1f, fill = false)
-                                                .wrapContentWidth()
-                                                .clip(clipRightShadowShape)
+                                            Modifier.weight(1f, fill = false).wrapContentWidth()
                                         } else {
                                             Modifier.wrapContentWidth()
-                                        }
+                                        },
+                                        shape = leftShape,
+                                        color = MaterialTheme.colorScheme.surfaceVariant,
+                                        shadowElevation = 8.dp
                                     ) {
-                                        Surface(
-                                            modifier = Modifier
-                                                .height(dockHeight)
-                                                .wrapContentWidth(),
-                                            shape = leftShape,
-                                            color = MaterialTheme.colorScheme.surfaceVariant,
-                                            shadowElevation = 8.dp
+                                        Box(
+                                            modifier = Modifier.wrapContentWidth(),
+                                            contentAlignment = Alignment.BottomCenter
                                         ) {
-                                            Box(
+                                            LazyRow(
+                                                state = listState,
                                                 modifier = Modifier
-                                                    .fillMaxHeight()
-                                                    .wrapContentWidth(),
-                                                contentAlignment = Alignment.BottomCenter
-                                            ) {
-                                                LazyRow(
-                                                    state = listState,
-                                                    modifier = Modifier
-                                                        .padding(vertical = 1.dp)
-                                                        .wrapContentWidth()
-                                                        .then(
-                                                            if (isFading) {
-                                                                Modifier
-                                                                    .graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
-                                                                    .drawWithContent {
-                                                                        drawContent()
-                                                                        val canScrollBackward = listState.canScrollBackward
-                                                                        val canScrollForward = listState.canScrollForward
-                                                                        if (canScrollBackward) {
-                                                                            drawRect(
-                                                                                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                                                                    colors = listOf(Color.Transparent, Color.Black),
-                                                                                    startX = 0f,
-                                                                                    endX = fadeWidthPx
-                                                                                ),
-                                                                                blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
-                                                                            )
-                                                                        }
-                                                                        if (canScrollForward) {
-                                                                            drawRect(
-                                                                                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                                                                    colors = listOf(Color.Black, Color.Transparent),
-                                                                                    startX = this.size.width - fadeWidthPx,
-                                                                                    endX = this.size.width
-                                                                                ),
-                                                                                blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
-                                                                            )
-                                                                        }
+                                                    .padding(vertical = 1.dp)
+                                                    .wrapContentWidth()
+                                                    .then(
+                                                        if (isFading) {
+                                                            Modifier
+                                                                .graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
+                                                                .drawWithContent {
+                                                                    drawContent()
+                                                                    val canScrollBackward = listState.canScrollBackward
+                                                                    val canScrollForward = listState.canScrollForward
+                                                                    if (canScrollBackward) {
+                                                                        drawRect(
+                                                                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                                                                colors = listOf(Color.Transparent, Color.Black),
+                                                                                startX = 0f,
+                                                                                endX = fadeWidthPx
+                                                                            ),
+                                                                            blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
+                                                                        )
                                                                     }
-                                                            } else Modifier
-                                                        ),
-                                                    contentPadding = PaddingValues(
-                                                        start = dockPaddingHorizontal,
-                                                        end = if (settings.enableAppBundles) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
-                                                        top = dockPaddingVertical,
-                                                        bottom = dockPaddingVertical
-                                                    ), 
-                                                    horizontalArrangement = Arrangement.spacedBy(dockSpacing, Alignment.CenterHorizontally),
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    items(
-                                                        count = dockPackagesList.size,
-                                                        key = { index -> dockPackagesList[index] }
-                                                    ) { index ->
-                                                        val pkg = dockPackagesList[index]
-                                                        val groupNotifs = grouped[pkg] ?: emptyList()
-                                                        
-                                                        if ((unifiedView || activeViewDockFilter) && index > 0) {
-                                                            val prevPkg = dockPackagesList[index - 1]
-                                                            val isPrevUnread = grouped.containsKey(prevPkg)
-                                                            val isCurrentRead = !grouped.containsKey(pkg)
-                                                            if (isPrevUnread && isCurrentRead) {
-                                                                Spacer(modifier = Modifier.width(4.dp))
-                                                                Box(
-                                                                    modifier = Modifier
-                                                                        .height(24.dp)
-                                                                        .width(1.dp)
-                                                                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-                                                                )
-                                                                Spacer(modifier = Modifier.width(4.dp))
-                                                            }
+                                                                    if (canScrollForward) {
+                                                                        drawRect(
+                                                                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                                                                colors = listOf(Color.Black, Color.Transparent),
+                                                                                startX = this.size.width - fadeWidthPx,
+                                                                                endX = this.size.width
+                                                                            ),
+                                                                            blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
+                                                                        )
+                                                                    }
+                                                                }
+                                                        } else Modifier
+                                                    ),
+                                                contentPadding = PaddingValues(
+                                                    start = dockPaddingHorizontal,
+                                                    end = if (settings.enableAppBundles) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
+                                                    top = dockPaddingVertical,
+                                                    bottom = dockPaddingVertical
+                                                ), 
+                                                horizontalArrangement = Arrangement.spacedBy(dockSpacing, Alignment.CenterHorizontally),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                items(
+                                                    count = dockPackagesList.size,
+                                                    key = { index -> dockPackagesList[index] }
+                                                ) { index ->
+                                                    val pkg = dockPackagesList[index]
+                                                    val groupNotifs = grouped[pkg] ?: emptyList()
+                                                    
+                                                    if ((unifiedView || activeViewDockFilter) && index > 0) {
+                                                        val prevPkg = dockPackagesList[index - 1]
+                                                        val isPrevUnread = grouped.containsKey(prevPkg)
+                                                        val isCurrentRead = !grouped.containsKey(pkg)
+                                                        if (isPrevUnread && isCurrentRead) {
+                                                            Spacer(modifier = Modifier.width(4.dp))
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .height(24.dp)
+                                                                    .width(1.dp)
+                                                                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                                                            )
+                                                            Spacer(modifier = Modifier.width(4.dp))
                                                         }
-                                                        
-                                                        val isSelected = selectedDockPackage == pkg
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .combinedClickable(
-                                                                    onClick = {
-                                                                        if (isSelected) selectedDockPackage = null else selectedDockPackage = pkg
-                                                                    },
-                                                                    onLongClick = {
-                                                                        val shouldLaunch = prefs.getBoolean("dock_long_press_launch", true)
-                                                                        if (shouldLaunch) {
-                                                                            try {
-                                                                                val launched = launchApp(context, pkg)
-                                                                                if (launched) {
+                                                    }
+                                                    
+                                                    val isSelected = selectedDockPackage == pkg
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .combinedClickable(
+                                                                onClick = {
+                                                                    if (isSelected) selectedDockPackage = null else selectedDockPackage = pkg
+                                                                },
+                                                                onLongClick = {
+                                                                    val shouldLaunch = prefs.getBoolean("dock_long_press_launch", true)
+                                                                    if (shouldLaunch) {
+                                                                        try {
+                                                                            val launched = launchApp(context, pkg)
+                                                                            if (launched) {
+                                                                                performHapticClick(context)
+                                                                            } else {
+                                                                                val launchIntent = context.packageManager.getLaunchIntentForPackage(pkg)
+                                                                                if (launchIntent != null) {
+                                                                                    context.startActivity(launchIntent)
                                                                                     performHapticClick(context)
                                                                                 } else {
-                                                                                    val launchIntent = context.packageManager.getLaunchIntentForPackage(pkg)
-                                                                                    if (launchIntent != null) {
-                                                                                        context.startActivity(launchIntent)
-                                                                                        performHapticClick(context)
-                                                                                    } else {
-                                                                                        android.widget.Toast.makeText(context, "Cannot open this application.", android.widget.Toast.LENGTH_SHORT).show()
-                                                                                    }
+                                                                                    android.widget.Toast.makeText(context, "Cannot open this application.", android.widget.Toast.LENGTH_SHORT).show()
                                                                                 }
-                                                                            } catch (e: Exception) {
-                                                                                android.util.Log.e("HubScreen", "Failed to launch application for $pkg", e)
-                                                                                android.widget.Toast.makeText(context, "Failed to launch application.", android.widget.Toast.LENGTH_SHORT).show()
                                                                             }
-                                                                        }
-                                                                    }
-                                                                )
-                                                                .background(
-                                                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
-                                                                    shape = androidx.compose.foundation.shape.CircleShape
-                                                                )
-                                                                .padding(dockBoxPadding)
-                                                        ) {
-                                                            androidx.compose.material3.BadgedBox(
-                                                                badge = {
-                                                                    if (groupNotifs.isNotEmpty()) {
-                                                                        androidx.compose.material3.Badge(
-                                                                            modifier = Modifier.offset(y = dockBadgeOffsetY, x = dockBadgeOffsetX)
-                                                                        ) {
-                                                                            Text(groupNotifs.size.toString())
+                                                                        } catch (e: Exception) {
+                                                                            android.util.Log.e("HubScreen", "Failed to launch application for $pkg", e)
+                                                                            android.widget.Toast.makeText(context, "Failed to launch application.", android.widget.Toast.LENGTH_SHORT).show()
                                                                         }
                                                                     }
                                                                 }
-                                                            ) {
-                                                                AppIcon(
-                                                                    packageName = pkg,
-                                                                    size = dockIconSize
-                                                                )
+                                                            )
+                                                            .background(
+                                                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
+                                                                shape = androidx.compose.foundation.shape.CircleShape
+                                                            )
+                                                            .padding(dockBoxPadding)
+                                                    ) {
+                                                        androidx.compose.material3.BadgedBox(
+                                                            badge = {
+                                                                if (groupNotifs.isNotEmpty()) {
+                                                                    androidx.compose.material3.Badge(
+                                                                        modifier = Modifier.offset(y = dockBadgeOffsetY, x = dockBadgeOffsetX)
+                                                                    ) {
+                                                                        Text(groupNotifs.size.toString())
+                                                                    }
+                                                                }
                                                             }
+                                                        ) {
+                                                            AppIcon(
+                                                                packageName = pkg,
+                                                                size = dockIconSize
+                                                            )
                                                         }
                                                     }
                                                 }
+                                            }
 
-                                                if (dockScrollIndicator == "SCROLLBAR" && dockPackagesList.isNotEmpty()) {
-                                                    val layoutInfo = listState.layoutInfo
-                                                    val totalItems = layoutInfo.totalItemsCount
-                                                    val visibleItems = layoutInfo.visibleItemsInfo.size
-                                                    if (totalItems > 0 && visibleItems < totalItems) {
-                                                        val scrollRange = totalItems - visibleItems
-                                                        val scrollFraction = if (scrollRange > 0) {
-                                                            val firstIndex = listState.firstVisibleItemIndex
-                                                            val firstOffset = listState.firstVisibleItemScrollOffset
-                                                            val itemSize = layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
-                                                            ((firstIndex.toFloat() + (firstOffset.toFloat() / itemSize)) / scrollRange).coerceIn(0f, 1f)
-                                                        } else 0f
-                                                        
-                                                        val trackWidth = 40.dp
-                                                        val thumbWidth = 12.dp
-                                                        val maxThumbOffset = trackWidth - thumbWidth
-                                                        
+                                            if (dockScrollIndicator == "SCROLLBAR" && dockPackagesList.isNotEmpty()) {
+                                                val layoutInfo = listState.layoutInfo
+                                                val totalItems = layoutInfo.totalItemsCount
+                                                val visibleItems = layoutInfo.visibleItemsInfo.size
+                                                if (totalItems > 0 && visibleItems < totalItems) {
+                                                    val scrollRange = totalItems - visibleItems
+                                                    val scrollFraction = if (scrollRange > 0) {
+                                                        val firstIndex = listState.firstVisibleItemIndex
+                                                        val firstOffset = listState.firstVisibleItemScrollOffset
+                                                        val itemSize = layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
+                                                        ((firstIndex.toFloat() + (firstOffset.toFloat() / itemSize)) / scrollRange).coerceIn(0f, 1f)
+                                                    } else 0f
+                                                    
+                                                    val trackWidth = 40.dp
+                                                    val thumbWidth = 12.dp
+                                                    val maxThumbOffset = trackWidth - thumbWidth
+                                                    
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .padding(bottom = 2.dp)
+                                                            .width(trackWidth)
+                                                            .height(3.dp)
+                                                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f), androidx.compose.foundation.shape.CircleShape)
+                                                    ) {
                                                         Box(
                                                             modifier = Modifier
-                                                                .padding(bottom = 2.dp)
-                                                                .width(trackWidth)
-                                                                .height(3.dp)
-                                                                .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f), androidx.compose.foundation.shape.CircleShape)
-                                                        ) {
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .offset(x = maxThumbOffset * scrollFraction)
-                                                                    .width(thumbWidth)
-                                                                    .fillMaxHeight()
-                                                                    .background(MaterialTheme.colorScheme.primary, androidx.compose.foundation.shape.CircleShape)
-                                                            )
-                                                        }
+                                                                .offset(x = maxThumbOffset * scrollFraction)
+                                                                .width(thumbWidth)
+                                                                .fillMaxHeight()
+                                                                .background(MaterialTheme.colorScheme.primary, androidx.compose.foundation.shape.CircleShape)
+                                                        )
                                                     }
                                                 }
                                             }
@@ -851,54 +791,44 @@ fun HubScreen(
                                 }
 
                                 if (settings.enableAppBundles) {
-                                    Box(
-                                        modifier = if (dockPackagesList.isNotEmpty()) {
-                                            Modifier.clip(clipLeftShadowShape)
-                                        } else {
-                                            Modifier
-                                        }
+                                    Surface(
+                                        modifier = Modifier.wrapContentSize(),
+                                        shape = rightShape,
+                                        color = MaterialTheme.colorScheme.surfaceVariant,
+                                        shadowElevation = 8.dp
                                     ) {
-                                        Surface(
+                                        Box(
                                             modifier = Modifier
-                                                .height(dockHeight)
-                                                .wrapContentWidth(),
-                                            shape = rightShape,
-                                            color = MaterialTheme.colorScheme.surfaceVariant,
-                                            shadowElevation = 8.dp
+                                                .padding(vertical = 1.dp)
+                                                .clip(rightShape)
+                                                .clickable {
+                                                    performHapticTick(context)
+                                                    isBundleFlyoutExpanded = !isBundleFlyoutExpanded
+                                                }
+                                                .padding(
+                                                    start = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.4f).coerceAtLeast(5.dp) else dockPaddingHorizontal,
+                                                    end = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
+                                                    top = dockPaddingVertical,
+                                                    bottom = dockPaddingVertical
+                                                )
+                                                .padding(
+                                                    horizontal = if (dockPackagesList.isNotEmpty()) (dockBoxPadding * 0.65f).coerceAtLeast(4.dp) else dockBoxPadding,
+                                                    vertical = dockBoxPadding
+                                                ),
+                                            contentAlignment = Alignment.Center
                                         ) {
                                             Box(
                                                 modifier = Modifier
-                                                    .fillMaxHeight()
-                                                    .padding(vertical = 1.dp)
-                                                    .clickable {
-                                                        performHapticTick(context)
-                                                        isBundleFlyoutExpanded = !isBundleFlyoutExpanded
-                                                    }
-                                                    .padding(
-                                                        start = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.4f).coerceAtLeast(5.dp) else dockPaddingHorizontal,
-                                                        end = if (dockPackagesList.isNotEmpty()) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
-                                                        top = dockPaddingVertical,
-                                                        bottom = dockPaddingVertical
-                                                    )
-                                                    .padding(
-                                                        horizontal = if (dockPackagesList.isNotEmpty()) (dockBoxPadding * 0.65f).coerceAtLeast(4.dp) else dockBoxPadding,
-                                                        vertical = dockBoxPadding
-                                                    ),
+                                                    .height(dockIconSize)
+                                                    .width(if (dockPackagesList.isNotEmpty()) (dockIconSize * 0.55f) else dockIconSize),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .height(dockIconSize)
-                                                        .width(if (dockPackagesList.isNotEmpty()) (dockIconSize * 0.55f) else dockIconSize),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        imageVector = if (isBundleFlyoutExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
-                                                        contentDescription = if (isBundleFlyoutExpanded) "Collapse App Bundles" else "Expand App Bundles",
-                                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                        modifier = Modifier.size((dockIconSize * 0.45f).coerceIn(16.dp, 20.dp))
-                                                    )
-                                                }
+                                                Icon(
+                                                    imageVector = if (isBundleFlyoutExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                                                    contentDescription = if (isBundleFlyoutExpanded) "Collapse App Bundles" else "Expand App Bundles",
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size((dockIconSize * 0.45f).coerceIn(16.dp, 20.dp))
+                                                )
                                             }
                                         }
                                     }

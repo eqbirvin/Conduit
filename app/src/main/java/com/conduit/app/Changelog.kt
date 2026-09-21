@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.26.05",
+        date = "September 21, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Revert to v2.26.03 Dock Design",
+                description = "Rolled back the dock split button and expand button styling to the exact v2.26.03 configuration while gathering visual diagnostic feedback on corner curvature and drop shadow rendering.",
+                iconName = "Undo"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.26.04",
         date = "September 21, 2026",
         highlights = listOf(
