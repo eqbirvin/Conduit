@@ -332,3 +332,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-21T16:29] [v2.26.05] rolled back dock split button and expand button styling to exact v2.26.03 configuration per user request.
 [2026-09-21T17:08] [v2.26.06] crafted custom convex semicircular shape for dock expand button matching left cap radius, aligned surface heights, and eliminated drop shadow overhang.
 [2026-09-21T18:49] [v2.26.07] enlarged dock split button expand and collapse caret icons by 50 percent.
+[2026-09-21T21:49] [v2.27.00] overhauled dock bundle flyout into a vertical material 3 fab speed-dial menu with floating app icons, pixel-style blurred backdrop, and menu sizing settings.

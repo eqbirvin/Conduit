@@ -45,6 +45,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateChannelState(prefKey: String, isEnabled: Boolean) = viewModelScope.launch { repository.updateChannelState(prefKey, isEnabled) }
     fun updateRetentionDays(days: Int) = viewModelScope.launch { repository.updateRetentionDays(days) }
     fun updateEnableAppBundles(enabled: Boolean) = viewModelScope.launch { repository.updateEnableAppBundles(enabled) }
+    fun updateBundleMenuSizing(sizing: String) = viewModelScope.launch { repository.updateBundleMenuSizing(sizing) }
     fun updateMinimizeIcons(enabled: Boolean) = viewModelScope.launch { repository.updateMinimizeIcons(enabled) }
     fun updateAutoCollapseRead(enabled: Boolean) = viewModelScope.launch { repository.updateAutoCollapseRead(enabled) }
     fun updateAutoDismissDetached(enabled: Boolean) = viewModelScope.launch { repository.updateAutoDismissDetached(enabled) }

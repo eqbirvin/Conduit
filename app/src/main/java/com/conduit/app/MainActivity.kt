@@ -470,6 +470,7 @@ class MainActivity : ComponentActivity() {
                                     override fun onTriggerNativeMarkReadChanged(enabled: Boolean) { settingsViewModel.updateTriggerNativeMarkRead(enabled) }
                                     override fun onRetentionDaysChanged(days: Int) { settingsViewModel.updateRetentionDays(days) }
                                     override fun onEnableAppBundlesChanged(enabled: Boolean) { settingsViewModel.updateEnableAppBundles(enabled) }
+                                    override fun onBundleMenuSizingChanged(sizing: String) { settingsViewModel.updateBundleMenuSizing(sizing) }
                                     override fun onMinimizeIconsChanged(enabled: Boolean) {
                                         settingsViewModel.updateMinimizeIcons(enabled)
                                     }

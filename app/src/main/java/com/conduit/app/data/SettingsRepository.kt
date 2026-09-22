@@ -90,7 +90,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             defaultToTodoMode = prefs.getBoolean("default_to_todo_mode", false),
             demoModeEnabled = prefs.getBoolean("demo_mode_enabled", false),
             ingestionDiagnosticsEnabled = prefs.getBoolean("ingestion_diagnostics", false),
-            customViewsExpanded = prefs.getBoolean("custom_views_expanded", true)
+            customViewsExpanded = prefs.getBoolean("custom_views_expanded", true),
+            bundleMenuSizing = prefs.getString("bundle_menu_sizing", "MATCH_DOCK") ?: "MATCH_DOCK"
         )
     }
 
@@ -257,6 +258,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateEnableAppBundles(enabled: Boolean) {
         prefs.edit().putBoolean("enable_app_bundles", enabled).apply()
         _settings.update { it.copy(enableAppBundles = enabled) }
+    }
+
+    fun updateBundleMenuSizing(sizing: String) {
+        prefs.edit().putString("bundle_menu_sizing", sizing).apply()
+        _settings.update { it.copy(bundleMenuSizing = sizing) }
     }
 
     fun updateMinimizeIcons(enabled: Boolean) {

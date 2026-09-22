@@ -14,6 +14,27 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.27.00",
+        date = "September 21, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Vertical Material 3 FAB Bundle Menu",
+                description = "Overhauled the dock expand menu into a vertically stacked Material 3 FAB speed-dial layout with anchored pill buttons and floating circular app icons that directly launch configured apps.",
+                iconName = "AutoAwesome"
+            ),
+            ChangelogItem(
+                title = "Pixel-Style Blurred Backdrop",
+                description = "Added a dynamic background blur with theme-aware tinting behind the expanded menu, mimicking the Pixel notification shade aesthetic with tap-anywhere dismissal.",
+                iconName = "BlurOn"
+            ),
+            ChangelogItem(
+                title = "In-App Bundle Management & Sizing",
+                description = "Long-press any bundle pill to customize its apps directly from the Hub screen, and select between 'Match Dock' and 'Compact' menu sizing under App Bundles settings.",
+                iconName = "Tune"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.26.07",
         date = "September 21, 2026",
         highlights = listOf(

@@ -103,6 +103,7 @@ interface SettingsScreenCallbacks {
     fun onTriggerNativeMarkReadChanged(enabled: Boolean)
     fun onRetentionDaysChanged(days: Int)
     fun onEnableAppBundlesChanged(enabled: Boolean)
+    fun onBundleMenuSizingChanged(sizing: String)
     fun onMinimizeIconsChanged(enabled: Boolean)
     fun onAutoCollapseReadChanged(enabled: Boolean)
     fun onAutoDismissDetachedChanged(enabled: Boolean)
@@ -793,6 +794,40 @@ fun SettingsScreen(
                         trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) },
                         modifier = Modifier.clickable { editingBundleTitle = "Compose" }
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text("Menu Sizing", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                Text("Choose whether the expanded menu scales with the dock or stays compact", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val sizingOptions = listOf("MATCH_DOCK" to "Match Dock", "COMPACT" to "Compact")
+                    sizingOptions.forEach { (value, label) ->
+                        val isSelected = settings.bundleMenuSizing == value
+                        Surface(
+                            onClick = { callbacks.onBundleMenuSizingChanged(value) },
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                            ),
+                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                            modifier = Modifier.weight(1f).height(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                Text(
+                                    text = label,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.animation.*
@@ -127,37 +128,41 @@ fun HubScreen(
     val onPinNotification: (HubNotification) -> Unit = { notif -> viewModel.togglePin(notif, settings.syncPinned) }
     var showBundleMenu by remember { mutableStateOf<Pair<String, List<String>>?>(null) }
     var isBundleFlyoutExpanded by remember { mutableStateOf(false) }
+    var editingBundleTitle by remember { mutableStateOf<String?>(null) }
     
+    val launchAppOrAction: (String) -> Unit = { pkg ->
+        performHapticTick(context)
+        isBundleFlyoutExpanded = false
+        if (pkg.startsWith("conduit.action.")) {
+            val uri = if (pkg == "conduit.action.SMS") "smsto:" else "mailto:"
+            val intent = Intent(Intent.ACTION_SENDTO, android.net.Uri.parse(uri))
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            try {
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                android.util.Log.e("HubScreen", "Failed to launch intent action: $pkg", e)
+            }
+        } else {
+            val launched = launchApp(context, pkg)
+            if (!launched) {
+                val intent = context.packageManager.getLaunchIntentForPackage(pkg)
+                intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    if (intent != null) context.startActivity(intent)
+                } catch (e: Exception) {
+                    android.util.Log.e("HubScreen", "Failed to launch app: $pkg", e)
+                }
+            }
+        }
+    }
+
     val launchBundleAction: (String, List<String>) -> Unit = { title, bundle ->
         performHapticTick(context)
         isBundleFlyoutExpanded = false
-        if (bundle.size == 1) {
-            val pkg = bundle[0]
-            if (pkg.startsWith("conduit.action.")) {
-                val uri = if (pkg == "conduit.action.SMS") "smsto:" else "mailto:"
-                val intent = Intent(Intent.ACTION_SENDTO, android.net.Uri.parse(uri))
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                try {
-                    context.startActivity(intent)
-                } catch (e: Exception) {
-                    android.util.Log.e("HubScreen", "Failed to launch intent action: $pkg", e)
-                }
-            } else {
-                val launched = launchApp(context, pkg)
-                if (!launched) {
-                    val intent = context.packageManager.getLaunchIntentForPackage(pkg)
-                    intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    try {
-                        if (intent != null) context.startActivity(intent)
-                    } catch (e: Exception) {
-                        android.util.Log.e("HubScreen", "Failed to launch app: $pkg", e)
-                    }
-                }
-            }
-        } else if (bundle.size > 1) {
-            showBundleMenu = title to bundle
+        if (bundle.isNotEmpty()) {
+            launchAppOrAction(bundle.first())
         } else {
-            android.widget.Toast.makeText(context, "No apps configured for $title", android.widget.Toast.LENGTH_SHORT).show()
+            editingBundleTitle = title
         }
     }
     
@@ -536,54 +541,30 @@ fun HubScreen(
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.wrapContentSize()
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            AnimatedVisibility(
-                                visible = isBundleFlyoutExpanded && settings.enableAppBundles,
-                                enter = fadeIn(animationSpec = tween(150)) + expandVertically(expandFrom = Alignment.Bottom, animationSpec = tween(200)),
-                                exit = fadeOut(animationSpec = tween(100)) + shrinkVertically(shrinkTowards = Alignment.Bottom, animationSpec = tween(150)),
+                            BundleFabMenu(
+                                expanded = isBundleFlyoutExpanded && settings.enableAppBundles,
+                                recorderBundle = recorderBundle,
+                                aiBundle = aiBundle,
+                                notesBundle = notesBundle,
+                                composeBundle = composeBundle,
+                                bundleMenuSizing = settings.bundleMenuSizing,
+                                dockIconSize = dockIconSize,
+                                onAppClick = { pkg ->
+                                    launchAppOrAction(pkg)
+                                },
+                                onBundleClick = { title, bundle ->
+                                    launchBundleAction(title, bundle)
+                                },
+                                onBundleLongClick = { title ->
+                                    isBundleFlyoutExpanded = false
+                                    editingBundleTitle = title
+                                },
                                 modifier = Modifier
-                                    .align(Alignment.End)
-                                    .padding(bottom = 8.dp)
-                            ) {
-                                Surface(
-                                    shape = androidx.compose.foundation.shape.CircleShape,
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    shadowElevation = 8.dp,
-                                    tonalElevation = 4.dp
-                                ) {
-                                    val bundleItems = listOf(
-                                        Triple("Recorder", Icons.Filled.PlayArrow, recorderBundle),
-                                        Triple("AI Assistants", Icons.Filled.Star, aiBundle),
-                                        Triple("Notes", Icons.AutoMirrored.Filled.List, notesBundle),
-                                        Triple("Compose", Icons.Filled.Edit, composeBundle)
-                                    )
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        bundleItems.forEach { (title, icon, bundle) ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(dockIconSize)
-                                                    .clip(androidx.compose.foundation.shape.CircleShape)
-                                                    .clickable {
-                                                        launchBundleAction(title, bundle)
-                                                    },
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    imageVector = icon,
-                                                    contentDescription = title,
-                                                    tint = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.size(dockIconSize * 0.55f)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp)
+                            )
 
                             val dockHeight = when (dockSizeIndex) {
                                 0 -> 64.dp
@@ -938,8 +919,20 @@ fun HubScreen(
                 }
             )
         }
+        val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme() || settings.themePreference == 2
+        val blurModifier = if (isBundleFlyoutExpanded && settings.enableAppBundles && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            Modifier.blur(20.dp)
+        } else {
+            Modifier
+        }
         
-        Column(modifier = Modifier.padding(top = padding.calculateTopPadding()).fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .padding(top = padding.calculateTopPadding())
+                    .fillMaxSize()
+                    .then(blurModifier)
+            ) {
             if (views.isNotEmpty() && !isSearchMode) {
                 CustomViewChipsBar(
                     views = views,
@@ -1717,6 +1710,49 @@ fun HubScreen(
                     }
                 }
             }
+        }
+
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isBundleFlyoutExpanded && settings.enableAppBundles,
+                enter = androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(200)),
+                exit = androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(150))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            if (isDarkTheme) Color.Black.copy(alpha = 0.40f)
+                            else MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).copy(alpha = 0.65f)
+                        )
+                        .pointerInput(Unit) {
+                            detectTapGestures { isBundleFlyoutExpanded = false }
+                        }
+                )
+            }
+        }
+
+        val editingTitle = editingBundleTitle
+        if (editingTitle != null) {
+            val currentApps = when (editingTitle) {
+                "AI Assistants" -> settings.aiBundle
+                "Notes" -> settings.notesBundle
+                "Recorders", "Recorder" -> settings.recorderBundle
+                "Compose" -> settings.composeBundle
+                else -> emptyList()
+            }
+            val onUpdate: (List<String>) -> Unit = when (editingTitle) {
+                "AI Assistants" -> settingsViewModel::updateAiBundle
+                "Notes" -> settingsViewModel::updateNotesBundle
+                "Recorders", "Recorder" -> settingsViewModel::updateRecorderBundle
+                "Compose" -> settingsViewModel::updateComposeBundle
+                else -> { _ -> }
+            }
+            BundleManagementBottomSheet(
+                bundleTitle = editingTitle,
+                currentApps = currentApps,
+                onUpdateApps = onUpdate,
+                onDismiss = { editingBundleTitle = null }
+            )
         }
 
         if (showBundleMenu != null) {
