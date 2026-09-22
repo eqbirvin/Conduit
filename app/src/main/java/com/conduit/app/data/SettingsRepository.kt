@@ -91,7 +91,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             demoModeEnabled = prefs.getBoolean("demo_mode_enabled", false),
             ingestionDiagnosticsEnabled = prefs.getBoolean("ingestion_diagnostics", false),
             customViewsExpanded = prefs.getBoolean("custom_views_expanded", true),
-            bundleMenuSizing = prefs.getString("bundle_menu_sizing", "MATCH_DOCK") ?: "MATCH_DOCK"
+            bundleMenuSizing = prefs.getString("bundle_menu_sizing", "MATCH_DOCK") ?: "MATCH_DOCK",
+            dockExpandPosition = prefs.getString("dock_expand_position", "RIGHT") ?: "RIGHT"
         )
     }
 
@@ -263,6 +264,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateBundleMenuSizing(sizing: String) {
         prefs.edit().putString("bundle_menu_sizing", sizing).apply()
         _settings.update { it.copy(bundleMenuSizing = sizing) }
+    }
+
+    fun updateDockExpandPosition(position: String) {
+        prefs.edit().putString("dock_expand_position", position).apply()
+        _settings.update { it.copy(dockExpandPosition = position) }
     }
 
     fun updateMinimizeIcons(enabled: Boolean) {

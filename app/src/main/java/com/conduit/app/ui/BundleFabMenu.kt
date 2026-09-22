@@ -49,6 +49,7 @@ fun BundleFabMenu(
     composeBundle: List<String>,
     bundleMenuSizing: String,
     dockIconSize: Dp,
+    dockExpandPosition: String = "RIGHT",
     onAppClick: (String) -> Unit,
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit,
@@ -66,6 +67,7 @@ fun BundleFabMenu(
 
     if (bundleEntries.isEmpty()) return
 
+    val isLeft = dockExpandPosition == "LEFT"
     val isCompact = bundleMenuSizing == "COMPACT"
     val floatingAppIconSize = if (isCompact) 28.dp else dockIconSize
     val floatingContainerSize = if (isCompact) 38.dp else (dockIconSize + 12.dp)
@@ -77,7 +79,7 @@ fun BundleFabMenu(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp),
-        horizontalAlignment = Alignment.End,
+        horizontalAlignment = if (isLeft) Alignment.Start else Alignment.End,
         verticalArrangement = Arrangement.spacedBy(rowSpacing)
     ) {
         val total = bundleEntries.size
@@ -105,6 +107,7 @@ fun BundleFabMenu(
                 BundleMenuRow(
                     entry = entry,
                     isCompact = isCompact,
+                    isLeft = isLeft,
                     floatingContainerSize = floatingContainerSize,
                     floatingAppIconSize = floatingAppIconSize,
                     pillHeight = pillHeight,
@@ -123,6 +126,7 @@ fun BundleFabMenu(
 private fun BundleMenuRow(
     entry: BundleMenuEntry,
     isCompact: Boolean,
+    isLeft: Boolean,
     floatingContainerSize: Dp,
     floatingAppIconSize: Dp,
     pillHeight: Dp,
@@ -132,19 +136,13 @@ private fun BundleMenuRow(
     onBundleLongClick: (String) -> Unit
 ) {
     val elementSpacing = if (isCompact) 8.dp else 10.dp
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Floating app icons row horizontally scrollable if multiple apps exceed available width
+
+    val appIconsContent: @Composable RowScope.() -> Unit = {
         Row(
             modifier = Modifier
                 .weight(1f, fill = false)
-                .horizontalScroll(rememberScrollState(initial = Int.MAX_VALUE)),
-            horizontalArrangement = Arrangement.spacedBy(elementSpacing, Alignment.End),
+                .horizontalScroll(rememberScrollState(initial = if (isLeft) 0 else Int.MAX_VALUE)),
+            horizontalArrangement = Arrangement.spacedBy(elementSpacing, if (isLeft) Alignment.Start else Alignment.End),
             verticalAlignment = Alignment.CenterVertically
         ) {
             entry.packages.forEach { pkg ->
@@ -187,10 +185,9 @@ private fun BundleMenuRow(
                 }
             }
         }
+    }
 
-        Spacer(modifier = Modifier.width(elementSpacing))
-
-        // Anchored M3 pill button
+    val pillContent: @Composable () -> Unit = {
         Surface(
             modifier = Modifier
                 .height(pillHeight)
@@ -211,21 +208,58 @@ private fun BundleMenuRow(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    imageVector = entry.icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(pillIconSize)
-                )
-                Spacer(modifier = Modifier.width(if (isCompact) 8.dp else 10.dp))
-                Text(
-                    text = entry.title,
-                    style = if (isCompact) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
-                )
+                if (isLeft) {
+                    // Left side: (title + icon)
+                    Text(
+                        text = entry.title,
+                        style = if (isCompact) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                    Spacer(modifier = Modifier.width(if (isCompact) 8.dp else 10.dp))
+                    Icon(
+                        imageVector = entry.icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(pillIconSize)
+                    )
+                } else {
+                    // Right side: (icon + title)
+                    Icon(
+                        imageVector = entry.icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(pillIconSize)
+                    )
+                    Spacer(modifier = Modifier.width(if (isCompact) 8.dp else 10.dp))
+                    Text(
+                        text = entry.title,
+                        style = if (isCompact) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                }
             }
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        horizontalArrangement = if (isLeft) Arrangement.Start else Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (isLeft) {
+            pillContent()
+            Spacer(modifier = Modifier.width(elementSpacing))
+            appIconsContent()
+        } else {
+            appIconsContent()
+            Spacer(modifier = Modifier.width(elementSpacing))
+            pillContent()
         }
     }
 }

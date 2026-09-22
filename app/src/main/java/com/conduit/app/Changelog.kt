@@ -14,6 +14,22 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.28.00",
+        date = "September 21, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Expand Button Alignment (Left / Right)",
+                description = "Choose whether the dock expand button sits on the left or right side of the dock, with mirrored split-button geometry and responsive menu alignment.",
+                iconName = "SwapHoriz"
+            ),
+            ChangelogItem(
+                title = "Mirrored Bundle Menu Layout",
+                description = "When left-aligned, bundle menus seamlessly flip to a (title + icon) *app icon* *app icon* flow matching the left-hand dock anchor.",
+                iconName = "FormatAlignLeft"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.27.01",
         date = "September 21, 2026",
         highlights = listOf(

@@ -45,6 +45,7 @@ data class ConduitSettings(
     val demoModeEnabled: Boolean = false,
     val ingestionDiagnosticsEnabled: Boolean = false,
     val customViewsExpanded: Boolean = true,
-    val bundleMenuSizing: String = "MATCH_DOCK"
+    val bundleMenuSizing: String = "MATCH_DOCK",
+    val dockExpandPosition: String = "RIGHT"
 )
 
