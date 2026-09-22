@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.28.02",
+        date = "September 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "App Bundle Entry Button Contrast",
+                description = "Enhanced background shading for app bundle menu entries and floating app icons with darker contrast in light theme and elevated lighter shading in dark and AMOLED themes for crisp separation from wallpaper blur.",
+                iconName = "Contrast"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.28.01",
         date = "September 22, 2026",
         highlights = listOf(

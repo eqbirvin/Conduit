@@ -24,6 +24,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -75,6 +78,22 @@ fun BundleFabMenu(
     val pillIconSize = if (isCompact) 18.dp else 24.dp
     val rowSpacing = if (isCompact) 8.dp else 12.dp
 
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val isAmoled = isDark && (MaterialTheme.colorScheme.surface == Color.Black || MaterialTheme.colorScheme.background == Color.Black)
+    val colorScheme = MaterialTheme.colorScheme
+
+    val entryButtonColor = remember(isDark, isAmoled, colorScheme) {
+        if (isDark) {
+            if (isAmoled) {
+                Color(0xFF323842)
+            } else {
+                colorScheme.onSurface.copy(alpha = 0.10f).compositeOver(colorScheme.surfaceContainerHighest)
+            }
+        } else {
+            colorScheme.onSurface.copy(alpha = 0.08f).compositeOver(colorScheme.surfaceVariant)
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -112,6 +131,7 @@ fun BundleFabMenu(
                     floatingAppIconSize = floatingAppIconSize,
                     pillHeight = pillHeight,
                     pillIconSize = pillIconSize,
+                    entryButtonColor = entryButtonColor,
                     onAppClick = onAppClick,
                     onBundleClick = onBundleClick,
                     onBundleLongClick = onBundleLongClick
@@ -131,6 +151,7 @@ private fun BundleMenuRow(
     floatingAppIconSize: Dp,
     pillHeight: Dp,
     pillIconSize: Dp,
+    entryButtonColor: Color,
     onAppClick: (String) -> Unit,
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit
@@ -152,9 +173,9 @@ private fun BundleMenuRow(
                         .clip(CircleShape)
                         .clickable { onAppClick(pkg) },
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = entryButtonColor,
                     shadowElevation = 4.dp,
-                    tonalElevation = 2.dp
+                    tonalElevation = 0.dp
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -197,9 +218,9 @@ private fun BundleMenuRow(
                     onLongClick = { onBundleLongClick(entry.title) }
                 ),
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+            color = entryButtonColor,
             shadowElevation = 6.dp,
-            tonalElevation = 3.dp
+            tonalElevation = 0.dp
         ) {
             Row(
                 modifier = Modifier
