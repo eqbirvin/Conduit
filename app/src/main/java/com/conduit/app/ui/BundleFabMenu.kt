@@ -173,9 +173,9 @@ private fun BundleMenuRow(
                         .clip(CircleShape)
                         .clickable { onAppClick(pkg) },
                     shape = CircleShape,
-                    color = entryButtonColor,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shadowElevation = 4.dp,
-                    tonalElevation = 0.dp
+                    tonalElevation = 2.dp
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,

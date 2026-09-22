@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.28.03",
+        date = "September 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Floating App Icon Dock Shading",
+                description = "Restored the background shading of accompanying floating app icons to match the app dock surface while preserving enhanced contrast on bundle title buttons.",
+                iconName = "Palette"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.28.02",
         date = "September 22, 2026",
         highlights = listOf(
