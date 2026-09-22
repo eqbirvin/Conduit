@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.27.01",
+        date = "September 21, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Scaled Bundle Menu Sizing",
+                description = "Scaled up app icons in 'Match dock' mode to directly match the sizing of dock icons, proportionally expanding outer circular containers, pill buttons, and typography.",
+                iconName = "AspectRatio"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.27.00",
         date = "September 21, 2026",
         highlights = listOf(

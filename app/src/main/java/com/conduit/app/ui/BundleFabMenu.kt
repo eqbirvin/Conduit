@@ -67,11 +67,11 @@ fun BundleFabMenu(
     if (bundleEntries.isEmpty()) return
 
     val isCompact = bundleMenuSizing == "COMPACT"
-    val floatingContainerSize = if (isCompact) 36.dp else dockIconSize
-    val floatingAppIconSize = if (isCompact) 28.dp else (dockIconSize * 0.75f).coerceAtLeast(28.dp)
-    val pillHeight = if (isCompact) 40.dp else (dockIconSize + 6.dp).coerceIn(44.dp, 52.dp)
-    val pillIconSize = if (isCompact) 18.dp else 20.dp
-    val rowSpacing = if (isCompact) 8.dp else 10.dp
+    val floatingAppIconSize = if (isCompact) 28.dp else dockIconSize
+    val floatingContainerSize = if (isCompact) 38.dp else (dockIconSize + 12.dp)
+    val pillHeight = if (isCompact) 42.dp else (floatingContainerSize + 4.dp)
+    val pillIconSize = if (isCompact) 18.dp else 24.dp
+    val rowSpacing = if (isCompact) 8.dp else 12.dp
 
     Column(
         modifier = modifier
@@ -104,6 +104,7 @@ fun BundleFabMenu(
             ) {
                 BundleMenuRow(
                     entry = entry,
+                    isCompact = isCompact,
                     floatingContainerSize = floatingContainerSize,
                     floatingAppIconSize = floatingAppIconSize,
                     pillHeight = pillHeight,
@@ -121,6 +122,7 @@ fun BundleFabMenu(
 @Composable
 private fun BundleMenuRow(
     entry: BundleMenuEntry,
+    isCompact: Boolean,
     floatingContainerSize: Dp,
     floatingAppIconSize: Dp,
     pillHeight: Dp,
@@ -129,6 +131,7 @@ private fun BundleMenuRow(
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit
 ) {
+    val elementSpacing = if (isCompact) 8.dp else 10.dp
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,7 +144,7 @@ private fun BundleMenuRow(
             modifier = Modifier
                 .weight(1f, fill = false)
                 .horizontalScroll(rememberScrollState(initial = Int.MAX_VALUE)),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(elementSpacing, Alignment.End),
             verticalAlignment = Alignment.CenterVertically
         ) {
             entry.packages.forEach { pkg ->
@@ -165,7 +168,7 @@ private fun BundleMenuRow(
                                     Icons.Filled.Email,
                                     contentDescription = "Email",
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(floatingAppIconSize * 0.65f)
+                                    modifier = Modifier.size(floatingAppIconSize * 0.68f)
                                 )
                             }
                             "conduit.action.SMS" -> {
@@ -173,7 +176,7 @@ private fun BundleMenuRow(
                                     Icons.Filled.Sms,
                                     contentDescription = "SMS",
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(floatingAppIconSize * 0.65f)
+                                    modifier = Modifier.size(floatingAppIconSize * 0.68f)
                                 )
                             }
                             else -> {
@@ -185,7 +188,7 @@ private fun BundleMenuRow(
             }
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(elementSpacing))
 
         // Anchored M3 pill button
         Surface(
@@ -204,7 +207,7 @@ private fun BundleMenuRow(
             Row(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(horizontal = 14.dp),
+                    .padding(horizontal = if (isCompact) 14.dp else 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -214,10 +217,10 @@ private fun BundleMenuRow(
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(pillIconSize)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(if (isCompact) 8.dp else 10.dp))
                 Text(
                     text = entry.title,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = if (isCompact) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
