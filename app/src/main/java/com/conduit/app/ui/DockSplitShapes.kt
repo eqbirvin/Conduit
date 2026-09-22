@@ -13,8 +13,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 /**
- * Creates the convex semicircular split button shape for an expand button placed on the right
- * side of the dock. Flat 4dp inner corners on the left, smooth semicircular arc on the right.
+ * Creates the convex semicircular split shape with flat 4dp inner corners on the left and a smooth
+ * semicircular arc on the right. Used by the expand button on the right, or the dock packages pill
+ * when the expand button is positioned on the left.
  */
 @Composable
 fun rememberRightSplitButtonShape(dockCapRadius: Dp): Shape {
@@ -75,8 +76,9 @@ fun rememberRightSplitButtonShape(dockCapRadius: Dp): Shape {
 }
 
 /**
- * Creates the convex semicircular split button shape for an expand button placed on the left
- * side of the dock. Smooth semicircular arc on the left, flat 4dp inner corners on the right.
+ * Creates the convex semicircular split shape with a smooth semicircular arc on the left and flat
+ * 4dp inner corners on the right. Used by the expand button on the left, or the dock packages pill
+ * when the expand button is positioned on the right.
  */
 @Composable
 fun rememberLeftSplitButtonShape(dockCapRadius: Dp): Shape {

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.28.01",
+        date = "September 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Dock Drop Shadow Geometry Fix",
+                description = "Unified dock split shapes with continuous generic path geometry for the dock packages pill, resolving the detached drop shadow gap under the dock when the expand button is positioned on the left.",
+                iconName = "Layers"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.28.00",
         date = "September 21, 2026",
         highlights = listOf(

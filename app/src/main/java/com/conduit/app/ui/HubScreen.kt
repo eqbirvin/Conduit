@@ -579,20 +579,10 @@ fun HubScreen(
                             val leftSplitShape = rememberLeftSplitButtonShape(dockCapRadius)
 
                             val dockPackagesShape = if (settings.enableAppBundles) {
-                                if (isExpandLeft) {
-                                    androidx.compose.foundation.shape.RoundedCornerShape(
-                                        topStart = androidx.compose.foundation.shape.CornerSize(4.dp),
-                                        topEnd = androidx.compose.foundation.shape.CornerSize(dockCapRadius),
-                                        bottomEnd = androidx.compose.foundation.shape.CornerSize(dockCapRadius),
-                                        bottomStart = androidx.compose.foundation.shape.CornerSize(4.dp)
-                                    )
+                                if (dockPackagesList.isNotEmpty()) {
+                                    if (isExpandLeft) rightSplitShape else leftSplitShape
                                 } else {
-                                    androidx.compose.foundation.shape.RoundedCornerShape(
-                                        topStart = androidx.compose.foundation.shape.CornerSize(dockCapRadius),
-                                        topEnd = androidx.compose.foundation.shape.CornerSize(4.dp),
-                                        bottomEnd = androidx.compose.foundation.shape.CornerSize(4.dp),
-                                        bottomStart = androidx.compose.foundation.shape.CornerSize(dockCapRadius)
-                                    )
+                                    androidx.compose.foundation.shape.CircleShape
                                 }
                             } else {
                                 androidx.compose.foundation.shape.CircleShape
@@ -608,7 +598,7 @@ fun HubScreen(
                             val fadeWidth = 32.dp
                             val fadeWidthPx = with(androidx.compose.ui.platform.LocalDensity.current) { fadeWidth.toPx() }
 
-                            val dockPackagesContent: @Composable () -> Unit = {
+                            val dockPackagesContent: @Composable RowScope.() -> Unit = {
                                 Surface(
                                     modifier = if (settings.enableAppBundles) {
                                         Modifier.height(dockHeight).weight(1f, fill = false).wrapContentWidth()

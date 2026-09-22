@@ -335,3 +335,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-21T21:49] [v2.27.00] overhauled dock bundle flyout into a vertical material 3 fab speed-dial menu with floating app icons, pixel-style blurred backdrop, and menu sizing settings.
 [2026-09-21T22:22] [v2.27.01] scaled up bundle menu app icons to match dock icon size and proportionally enlarged outer containers and pill buttons.
 [2026-09-21T22:40] [v2.28.00] added dock expand button position setting for left or right placement with mirrored split-button geometry and left-aligned bundle menu layout.
+[2026-09-22T14:18] [v2.28.01] unified dock split shapes with continuous generic path geometry for dock packages pill to eliminate detached drop shadow gap when expand button is positioned on the left.
