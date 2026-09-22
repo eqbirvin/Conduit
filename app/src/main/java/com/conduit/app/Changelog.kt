@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.26.07",
+        date = "September 21, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Enlarged Dock Caret Icons",
+                description = "Increased the expand and collapse caret icons on the dock split button by 50% for improved visual clarity and easier touch targeting.",
+                iconName = "TouchApp"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.26.06",
         date = "September 21, 2026",
         highlights = listOf(
