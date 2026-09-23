@@ -68,7 +68,7 @@ fun ComposeActionIcon(
         "conduit.action.EMAIL" -> Icons.Filled.Email
         "conduit.action.DIAL" -> Icons.Filled.Phone
         "conduit.action.CONTACT" -> Icons.Filled.Person
-        "conduit.action.NOTE" -> Icons.Filled.Description
+        "conduit.action.NOTE" -> Icons.Filled.EditNote
         "conduit.action.EVENT" -> Icons.Filled.Event
         "conduit.action.TIMER" -> Icons.Filled.Timer
         "conduit.action.ALARM" -> Icons.Filled.Alarm

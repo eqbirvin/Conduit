@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.29.03",
+        date = "September 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Refreshed Notes Compose Icon",
+                description = "Updated the New Note compose action base icon from a document sheet to an intuitive notepad with writing pen (EditNote) while retaining the unified mini '+' corner badge.",
+                iconName = "Palette"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.29.02",
         date = "September 22, 2026",
         highlights = listOf(
