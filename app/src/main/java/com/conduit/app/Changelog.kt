@@ -14,6 +14,22 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.30.00",
+        date = "September 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Dedicated Compose Action Picker",
+                description = "When editing the Compose bundle, the picker now exclusively displays and adds native compose actions without mixing in regular device apps.",
+                iconName = "Check"
+            ),
+            ChangelogItem(
+                title = "Bundle App Reordering Handles",
+                description = "Added drag-and-drop reorder handles in the bundle management sheet, allowing you to customize the order of apps and compose actions in your dock flyout.",
+                iconName = "Speed"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.29.04",
         date = "September 22, 2026",
         highlights = listOf(

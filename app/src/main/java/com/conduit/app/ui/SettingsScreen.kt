@@ -867,114 +867,12 @@ fun SettingsScreen(
             }
 
             if (editingBundleTitle != null) {
-                val title = editingBundleTitle!!
-                var showAppPicker by remember { mutableStateOf(false) }
-
-                ModalBottomSheet(onDismissRequest = { editingBundleTitle = null }) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(title, style = MaterialTheme.typography.headlineSmall)
-                            FilledTonalButton(onClick = { showAppPicker = true }) {
-                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Add App")
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(24.dp))
-                        
-                        if (currentApps.isEmpty()) {
-                            Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                                Text("No apps in this bundle", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        } else {
-                            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                                Column {
-                                    currentApps.forEachIndexed { index, pkg ->
-                                        val label = remember(pkg) {
-                                            getAppLabel(context, pkg)
-                                        }
-                                        ListItem(
-                                            headlineContent = { Text(text = label, fontWeight = FontWeight.Medium) },
-                                            leadingContent = { AppIcon(pkg) },
-                                            trailingContent = {
-                                                IconButton(onClick = { onUpdate(currentApps.filter { it != pkg }) }) {
-                                                    Icon(Icons.Default.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
-                                                }
-                                            }
-                                        )
-                                        if (index < currentApps.size - 1) {
-                                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(48.dp))
-                    }
-                    
-                    if (showAppPicker) {
-                        ModalBottomSheet(onDismissRequest = { showAppPicker = false }) {
-                            var searchQuery by remember { mutableStateOf("") }
-                            val installedApps = remember {
-                                getInstalledApps(context)
-                            }
-                            
-                            val filteredApps by remember {
-                                derivedStateOf {
-                                    if (searchQuery.isEmpty()) installedApps
-                                    else installedApps.filter { it.second.contains(searchQuery, ignoreCase = true) || it.first.contains(searchQuery, ignoreCase = true) }
-                                }
-                            }
-                            
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text("Select App", style = MaterialTheme.typography.titleLarge)
-                                Spacer(modifier = Modifier.height(16.dp))
-                                
-                                OutlinedTextField(
-                                    value = searchQuery,
-                                    onValueChange = { searchQuery = it },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text("Search apps...") },
-                                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                                    trailingIcon = {
-                                        if (searchQuery.isNotEmpty()) {
-                                            IconButton(onClick = { searchQuery = "" }) {
-                                                Icon(Icons.Default.Close, contentDescription = "Clear")
-                                            }
-                                        }
-                                    },
-                                    shape = MaterialTheme.shapes.medium
-                                )
-                                
-                                Spacer(modifier = Modifier.height(16.dp))
-                                
-                                LazyColumn(modifier = Modifier.heightIn(max = 500.dp)) {
-                                    items(filteredApps) { pair ->
-                                        val pkg = pair.first
-                                        val label = pair.second
-                                        val isAdded = currentApps.contains(pkg)
-                                        
-                                        ListItem(
-                                            headlineContent = { Text(text = label, color = if (isAdded) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface) },
-                                            leadingContent = { AppIcon(pkg) },
-                                            trailingContent = {
-                                                if (isAdded) {
-                                                    Icon(Icons.Default.Check, contentDescription = "Added", tint = MaterialTheme.colorScheme.primary)
-                                                }
-                                            },
-                                            modifier = Modifier.clickable(enabled = !isAdded) {
-                                                onUpdate(currentApps + pkg)
-                                                showAppPicker = false
-                                            }
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(32.dp))
-                            }
-                        }
-                    }
-                }
+                BundleManagementBottomSheet(
+                    bundleTitle = editingBundleTitle!!,
+                    currentApps = currentApps,
+                    onUpdateApps = onUpdate,
+                    onDismiss = { editingBundleTitle = null }
+                )
             }
             }
             }
