@@ -14,6 +14,22 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.31.00",
+        date = "September 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Settings Hub-and-Spoke Redesign",
+                description = "Settings has been completely overhauled from a long monolithic list into an intuitive Hub with 7 dedicated category cards: Channels, Appearance, Dock & Gestures, Notifications & Sync, Data & Retention, Bracket Overlay, and App Info & Updates.",
+                iconName = "Settings"
+            ),
+            ChangelogItem(
+                title = "Standardized Subpages & Clean Navigation",
+                description = "Each settings category now opens into its own focused subpage with standardized controls, clean segmented button rows, dynamic live summary subtitles, and instant back navigation.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.30.02",
         date = "September 23, 2026",
         highlights = listOf(
