@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.30.01",
+        date = "September 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "App Bundles & Left Dock Default",
+                description = "App Bundles are now enabled by default out of the box, with the dock expand button and bundle flyout positioned on the left side by default.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.30.00",
         date = "September 23, 2026",
         highlights = listOf(

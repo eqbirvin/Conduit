@@ -122,7 +122,7 @@ fun BundleFabMenu(
     composeBundle: List<String>,
     bundleMenuSizing: String,
     dockIconSize: Dp,
-    dockExpandPosition: String = "RIGHT",
+    dockExpandPosition: String = "LEFT",
     onAppClick: (String) -> Unit,
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit,

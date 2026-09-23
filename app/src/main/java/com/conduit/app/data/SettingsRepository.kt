@@ -86,7 +86,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             composeBundle = loadedComposeBundle,
             channelStates = channelStates,
             retentionDays = prefs.getInt("retention_days", 90),
-            enableAppBundles = prefs.getBoolean("enable_app_bundles", false),
+            enableAppBundles = prefs.getBoolean("enable_app_bundles", true),
             minimizeIcons = prefs.getBoolean("minimize_icons", false),
             masterExpandedState = prefs.getBoolean("master_expanded_state", true),
             autoCollapseRead = prefs.getBoolean("auto_collapse_read", false),
@@ -99,7 +99,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             ingestionDiagnosticsEnabled = prefs.getBoolean("ingestion_diagnostics", false),
             customViewsExpanded = prefs.getBoolean("custom_views_expanded", true),
             bundleMenuSizing = prefs.getString("bundle_menu_sizing", "MATCH_DOCK") ?: "MATCH_DOCK",
-            dockExpandPosition = prefs.getString("dock_expand_position", "RIGHT") ?: "RIGHT"
+            dockExpandPosition = prefs.getString("dock_expand_position", "LEFT") ?: "LEFT"
         )
     }
 

@@ -45,7 +45,7 @@ data class ConduitSettings(
     ),
     val channelStates: Map<String, Boolean> = emptyMap(),
     val retentionDays: Int = 90,
-    val enableAppBundles: Boolean = false,
+    val enableAppBundles: Boolean = true,
     val autoCollapseRead: Boolean = false,
     val autoDismissDetached: Boolean = true,
     val updateInterval: String = "DAILY",
@@ -56,6 +56,6 @@ data class ConduitSettings(
     val ingestionDiagnosticsEnabled: Boolean = false,
     val customViewsExpanded: Boolean = true,
     val bundleMenuSizing: String = "MATCH_DOCK",
-    val dockExpandPosition: String = "RIGHT"
+    val dockExpandPosition: String = "LEFT"
 )
 
