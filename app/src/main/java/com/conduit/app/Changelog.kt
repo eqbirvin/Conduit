@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.29.01",
+        date = "September 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Native Material '+' Compose Icons",
+                description = "Updated compose action icons to use integrated native Material '+' glyphs (New Comment, Add Call, Add Person, Add Note, Edit Calendar, More Time, Alarm Add) and streamlined unbadged '+' glyphs for New Email and Quick Record.",
+                iconName = "Palette"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.29.00",
         date = "September 22, 2026",
         highlights = listOf(

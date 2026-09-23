@@ -339,3 +339,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-22T15:05] [v2.28.02] enhanced background shading for app bundle entries and floating icons to be darker in light theme and lighter in dark and amoled themes for improved contrast.
 [2026-09-22T15:25] [v2.28.03] rolled back accompanying floating app icons background shading to surfacevariant to match dock while keeping contrast pill shading on bundle titles.
 [2026-09-22T19:03] [v2.29.00] expanded compose bundle with 7 new native actions (dial, contact, note, event, timer, alarm, record), unified material plus badge icons, safe dispatch handlers, and auto-upgrade.
+[2026-09-22T20:02] [v2.29.01] updated compose action icons to native material '+' icons (addcomment, addiccall, personadd, noteadd, editcalendar, moretime, alarmadd) and custom unbadged '+' glyphs for email and record.

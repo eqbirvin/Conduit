@@ -18,7 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -63,51 +63,116 @@ fun ComposeActionIcon(
     size: Dp,
     modifier: Modifier = Modifier
 ) {
-    val baseIcon: ImageVector = when (action) {
-        "conduit.action.SMS" -> Icons.Filled.Sms
-        "conduit.action.EMAIL" -> Icons.Filled.Email
-        "conduit.action.DIAL" -> Icons.Filled.Phone
-        "conduit.action.CONTACT" -> Icons.Filled.Person
-        "conduit.action.NOTE" -> Icons.Filled.Description
-        "conduit.action.EVENT" -> Icons.Filled.Event
-        "conduit.action.TIMER" -> Icons.Filled.Timer
-        "conduit.action.ALARM" -> Icons.Filled.Alarm
-        "conduit.action.RECORD" -> Icons.Filled.Mic
-        else -> Icons.Filled.Edit
-    }
-
-    val baseIconSize = size * 0.65f
-    val badgeContainerSize = (size * 0.38f).coerceAtLeast(10.dp)
-    val badgeIconSize = badgeContainerSize * 0.72f
-
-    Box(
-        modifier = modifier.size(size),
-        contentAlignment = Alignment.Center
-    ) {
-        // Main Action Icon (subtly shifted top-left to balance the corner badge)
-        Icon(
-            imageVector = baseIcon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .size(baseIconSize)
-                .offset(x = (-1.5).dp, y = (-1.5).dp)
-        )
-
-        // Unified Mini Compose Plus Badge (Bottom-End Corner)
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size(badgeContainerSize)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
-            contentAlignment = Alignment.Center
-        ) {
+    val iconSize = size * 0.72f
+    when (action) {
+        "conduit.action.SMS" -> {
             Icon(
-                imageVector = Icons.Filled.Add,
+                imageVector = Icons.Filled.AddComment,
+                contentDescription = "New Text",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = modifier.size(iconSize)
+            )
+        }
+        "conduit.action.EMAIL" -> {
+            Box(
+                modifier = modifier.size(iconSize),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Email,
+                    contentDescription = "New Email",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(iconSize * 0.78f)
+                        .offset(x = (-2).dp, y = 2.dp)
+                )
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(iconSize * 0.44f)
+                        .align(Alignment.TopEnd)
+                )
+            }
+        }
+        "conduit.action.DIAL" -> {
+            Icon(
+                imageVector = Icons.Filled.AddIcCall,
+                contentDescription = "New Call",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = modifier.size(iconSize)
+            )
+        }
+        "conduit.action.CONTACT" -> {
+            Icon(
+                imageVector = Icons.Filled.PersonAdd,
+                contentDescription = "New Contact",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = modifier.size(iconSize)
+            )
+        }
+        "conduit.action.NOTE" -> {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.NoteAdd,
+                contentDescription = "New Note",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = modifier.size(iconSize)
+            )
+        }
+        "conduit.action.EVENT" -> {
+            Icon(
+                imageVector = Icons.Filled.EditCalendar,
+                contentDescription = "New Event",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = modifier.size(iconSize)
+            )
+        }
+        "conduit.action.TIMER" -> {
+            Icon(
+                imageVector = Icons.Filled.MoreTime,
+                contentDescription = "Set Timer",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = modifier.size(iconSize)
+            )
+        }
+        "conduit.action.ALARM" -> {
+            Icon(
+                imageVector = Icons.Filled.AlarmAdd,
+                contentDescription = "Set Alarm",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = modifier.size(iconSize)
+            )
+        }
+        "conduit.action.RECORD" -> {
+            Box(
+                modifier = modifier.size(iconSize),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Mic,
+                    contentDescription = "Quick Record",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(iconSize * 0.80f)
+                        .offset(x = (-2).dp, y = 1.dp)
+                )
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(iconSize * 0.44f)
+                        .align(Alignment.TopEnd)
+                )
+            }
+        }
+        else -> {
+            Icon(
+                imageVector = Icons.Filled.Edit,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(badgeIconSize)
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = modifier.size(iconSize)
             )
         }
     }
