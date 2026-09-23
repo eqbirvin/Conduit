@@ -311,7 +311,8 @@ class MainActivity : ComponentActivity() {
             var aiBundle by remember { mutableStateOf(prefs.getString("ai_bundle", "com.anthropic.claude,com.google.android.apps.bard")?.split(",")?.filter { it.isNotEmpty() } ?: listOf("com.anthropic.claude", "com.google.android.apps.bard")) }
             var notesBundle by remember { mutableStateOf(prefs.getString("notes_bundle", "com.google.android.keep,com.notion.id")?.split(",")?.filter { it.isNotEmpty() } ?: listOf("com.google.android.keep", "com.notion.id")) }
             var recorderBundle by remember { mutableStateOf(prefs.getString("recorder_bundle", "com.google.android.apps.recorder")?.split(",")?.filter { it.isNotEmpty() } ?: listOf("com.google.android.apps.recorder")) }
-            var composeBundle by remember { mutableStateOf(prefs.getString("compose_bundle", "com.google.android.apps.messaging,com.google.android.gm")?.split(",")?.filter { it.isNotEmpty() } ?: listOf("com.google.android.apps.messaging", "com.google.android.gm")) }
+            val defaultComposeString = "conduit.action.SMS,conduit.action.EMAIL,conduit.action.DIAL,conduit.action.CONTACT,conduit.action.NOTE,conduit.action.EVENT,conduit.action.TIMER,conduit.action.ALARM,conduit.action.RECORD"
+            var composeBundle by remember { mutableStateOf(prefs.getString("compose_bundle", defaultComposeString)?.split(",")?.filter { it.isNotEmpty() } ?: defaultComposeString.split(",")) }
 
             fun saveBundle(key: String, list: List<String>) {
                 prefs.edit().putString(key, list.joinToString(",")).apply()

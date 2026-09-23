@@ -134,13 +134,75 @@ fun HubScreen(
         performHapticTick(context)
         isBundleFlyoutExpanded = false
         if (pkg.startsWith("conduit.action.")) {
-            val uri = if (pkg == "conduit.action.SMS") "smsto:" else "mailto:"
-            val intent = Intent(Intent.ACTION_SENDTO, android.net.Uri.parse(uri))
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             try {
-                context.startActivity(intent)
+                val intent: Intent? = when (pkg) {
+                    "conduit.action.SMS" -> {
+                        Intent(Intent.ACTION_SENDTO, android.net.Uri.parse("smsto:"))
+                    }
+                    "conduit.action.EMAIL" -> {
+                        Intent(Intent.ACTION_SENDTO, android.net.Uri.parse("mailto:"))
+                    }
+                    "conduit.action.DIAL" -> {
+                        Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:"))
+                    }
+                    "conduit.action.CONTACT" -> {
+                        Intent(Intent.ACTION_INSERT, android.provider.ContactsContract.Contacts.CONTENT_URI)
+                    }
+                    "conduit.action.NOTE" -> {
+                        val primaryNoteIntent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            Intent("android.intent.action.CREATE_NOTE")
+                        } else {
+                            Intent("com.google.android.gms.actions.CREATE_NOTE")
+                        }
+                        if (primaryNoteIntent.resolveActivity(context.packageManager) != null) {
+                            primaryNoteIntent
+                        } else {
+                            val gmsIntent = Intent("com.google.android.gms.actions.CREATE_NOTE")
+                            if (gmsIntent.resolveActivity(context.packageManager) != null) {
+                                gmsIntent
+                            } else {
+                                Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, "")
+                                }
+                            }
+                        }
+                    }
+                    "conduit.action.EVENT" -> {
+                        Intent(Intent.ACTION_INSERT).apply {
+                            data = android.provider.CalendarContract.Events.CONTENT_URI
+                        }
+                    }
+                    "conduit.action.TIMER" -> {
+                        Intent(android.provider.AlarmClock.ACTION_SET_TIMER).apply {
+                            putExtra(android.provider.AlarmClock.EXTRA_SKIP_UI, false)
+                        }
+                    }
+                    "conduit.action.ALARM" -> {
+                        Intent(android.provider.AlarmClock.ACTION_SET_ALARM).apply {
+                            putExtra(android.provider.AlarmClock.EXTRA_SKIP_UI, false)
+                        }
+                    }
+                    "conduit.action.RECORD" -> {
+                        val recordIntent = Intent(android.provider.MediaStore.Audio.Media.RECORD_SOUND_ACTION)
+                        if (recordIntent.resolveActivity(context.packageManager) != null) {
+                            recordIntent
+                        } else {
+                            val recorderApp = context.packageManager.getLaunchIntentForPackage("com.google.android.apps.recorder")
+                            recorderApp ?: recordIntent
+                        }
+                    }
+                    else -> null
+                }
+                if (intent != null) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } else {
+                    android.widget.Toast.makeText(context, "Unknown action: $pkg", android.widget.Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
                 android.util.Log.e("HubScreen", "Failed to launch intent action: $pkg", e)
+                android.widget.Toast.makeText(context, "No app available to handle this action.", android.widget.Toast.LENGTH_SHORT).show()
             }
         } else {
             val launched = launchApp(context, pkg)

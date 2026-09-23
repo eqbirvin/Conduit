@@ -48,6 +48,13 @@ class SettingsRepository(private val prefs: SharedPreferences) {
                 .apply()
         }
 
+        val defaultComposeBundle = "conduit.action.SMS,conduit.action.EMAIL,conduit.action.DIAL,conduit.action.CONTACT,conduit.action.NOTE,conduit.action.EVENT,conduit.action.TIMER,conduit.action.ALARM,conduit.action.RECORD"
+        var loadedComposeBundle = getBundle("compose_bundle", defaultComposeBundle)
+        if (!loadedComposeBundle.contains("conduit.action.DIAL")) {
+            loadedComposeBundle = defaultComposeBundle.split(",")
+            prefs.edit().putString("compose_bundle", defaultComposeBundle).apply()
+        }
+
         return ConduitSettings(
             themePreference = prefs.getInt("theme", 0),
             jacobMonochrome = prefs.getBoolean("jacob_monochrome", false),
@@ -76,7 +83,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             aiBundle = getBundle("ai_bundle", "com.anthropic.claude,com.google.android.apps.bard"),
             notesBundle = getBundle("notes_bundle", "com.google.android.keep,com.notion.id"),
             recorderBundle = getBundle("recorder_bundle", "com.google.android.apps.recorder"),
-            composeBundle = getBundle("compose_bundle", "com.google.android.apps.messaging,com.google.android.gm"),
+            composeBundle = loadedComposeBundle,
             channelStates = channelStates,
             retentionDays = prefs.getInt("retention_days", 90),
             enableAppBundles = prefs.getBoolean("enable_app_bundles", false),

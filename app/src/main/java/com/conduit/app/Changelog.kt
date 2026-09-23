@@ -14,6 +14,27 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.29.00",
+        date = "September 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Expanded Compose Actions Suite",
+                description = "Expanded the Compose bundle from 2 to 9 native Android quick actions: New Text, New Email, New Call, New Contact, New Note (Android 14+ System Note API with Assistant fallback), New Calendar Event, Set Timer, Set Alarm, and Quick Audio Record.",
+                iconName = "AddCircle"
+            ),
+            ChangelogItem(
+                title = "Unified Material '+' Compose Icons",
+                description = "Crafted a cohesive icon system across all 9 compose actions featuring distinctive Material tool symbols layered with a consistent mini '+' badge.",
+                iconName = "Palette"
+            ),
+            ChangelogItem(
+                title = "Automatic Compose Bundle Upgrade",
+                description = "Existing installs automatically receive the expanded 9-action suite with graceful device capability fallbacks.",
+                iconName = "AutoAwesome"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.28.03",
         date = "September 22, 2026",
         highlights = listOf(

@@ -32,7 +32,17 @@ data class ConduitSettings(
     val aiBundle: List<String> = listOf("com.anthropic.claude", "com.google.android.apps.bard"),
     val notesBundle: List<String> = listOf("com.google.android.keep", "com.notion.id"),
     val recorderBundle: List<String> = listOf("com.google.android.apps.recorder"),
-    val composeBundle: List<String> = listOf("com.google.android.apps.messaging", "com.google.android.gm"),
+    val composeBundle: List<String> = listOf(
+        "conduit.action.SMS",
+        "conduit.action.EMAIL",
+        "conduit.action.DIAL",
+        "conduit.action.CONTACT",
+        "conduit.action.NOTE",
+        "conduit.action.EVENT",
+        "conduit.action.TIMER",
+        "conduit.action.ALARM",
+        "conduit.action.RECORD"
+    ),
     val channelStates: Map<String, Boolean> = emptyMap(),
     val retentionDays: Int = 90,
     val enableAppBundles: Boolean = false,

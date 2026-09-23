@@ -7,6 +7,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -42,6 +43,75 @@ data class BundleMenuEntry(
     val icon: ImageVector,
     val packages: List<String>
 )
+
+fun getComposeActionLabel(action: String): String = when (action) {
+    "conduit.action.SMS" -> "New Text"
+    "conduit.action.EMAIL" -> "New Email"
+    "conduit.action.DIAL" -> "New Call"
+    "conduit.action.CONTACT" -> "New Contact"
+    "conduit.action.NOTE" -> "New Note"
+    "conduit.action.EVENT" -> "New Event"
+    "conduit.action.TIMER" -> "Set Timer"
+    "conduit.action.ALARM" -> "Set Alarm"
+    "conduit.action.RECORD" -> "Quick Record"
+    else -> "Compose Action"
+}
+
+@Composable
+fun ComposeActionIcon(
+    action: String,
+    size: Dp,
+    modifier: Modifier = Modifier
+) {
+    val baseIcon: ImageVector = when (action) {
+        "conduit.action.SMS" -> Icons.Filled.Sms
+        "conduit.action.EMAIL" -> Icons.Filled.Email
+        "conduit.action.DIAL" -> Icons.Filled.Phone
+        "conduit.action.CONTACT" -> Icons.Filled.Person
+        "conduit.action.NOTE" -> Icons.Filled.Description
+        "conduit.action.EVENT" -> Icons.Filled.Event
+        "conduit.action.TIMER" -> Icons.Filled.Timer
+        "conduit.action.ALARM" -> Icons.Filled.Alarm
+        "conduit.action.RECORD" -> Icons.Filled.Mic
+        else -> Icons.Filled.Edit
+    }
+
+    val baseIconSize = size * 0.65f
+    val badgeContainerSize = (size * 0.38f).coerceAtLeast(10.dp)
+    val badgeIconSize = badgeContainerSize * 0.72f
+
+    Box(
+        modifier = modifier.size(size),
+        contentAlignment = Alignment.Center
+    ) {
+        // Main Action Icon (subtly shifted top-left to balance the corner badge)
+        Icon(
+            imageVector = baseIcon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(baseIconSize)
+                .offset(x = (-1.5).dp, y = (-1.5).dp)
+        )
+
+        // Unified Mini Compose Plus Badge (Bottom-End Corner)
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(badgeContainerSize)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(badgeIconSize)
+            )
+        }
+    }
+}
 
 @Composable
 fun BundleFabMenu(
@@ -181,26 +251,13 @@ private fun BundleMenuRow(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        when (pkg) {
-                            "conduit.action.EMAIL" -> {
-                                Icon(
-                                    Icons.Filled.Email,
-                                    contentDescription = "Email",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(floatingAppIconSize * 0.68f)
-                                )
-                            }
-                            "conduit.action.SMS" -> {
-                                Icon(
-                                    Icons.Filled.Sms,
-                                    contentDescription = "SMS",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(floatingAppIconSize * 0.68f)
-                                )
-                            }
-                            else -> {
-                                AppIcon(packageName = pkg, size = floatingAppIconSize)
-                            }
+                        if (pkg.startsWith("conduit.action.")) {
+                            ComposeActionIcon(
+                                action = pkg,
+                                size = floatingAppIconSize
+                            )
+                        } else {
+                            AppIcon(packageName = pkg, size = floatingAppIconSize)
                         }
                     }
                 }
@@ -337,17 +394,14 @@ fun BundleManagementBottomSheet(
                     Column {
                         currentApps.forEachIndexed { index, pkg ->
                             val label = remember(pkg) {
-                                if (pkg == "conduit.action.SMS") "Compose SMS"
-                                else if (pkg == "conduit.action.EMAIL") "Compose Email"
+                                if (pkg.startsWith("conduit.action.")) getComposeActionLabel(pkg)
                                 else getAppLabel(context, pkg)
                             }
                             ListItem(
                                 headlineContent = { Text(text = label, fontWeight = FontWeight.Medium) },
                                 leadingContent = {
-                                    if (pkg == "conduit.action.EMAIL") {
-                                        Icon(Icons.Filled.Email, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                                    } else if (pkg == "conduit.action.SMS") {
-                                        Icon(Icons.Filled.Sms, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                    if (pkg.startsWith("conduit.action.")) {
+                                        ComposeActionIcon(action = pkg, size = 32.dp)
                                     } else {
                                         AppIcon(pkg)
                                     }
@@ -373,11 +427,26 @@ fun BundleManagementBottomSheet(
         if (showAppPicker) {
             ModalBottomSheet(onDismissRequest = { showAppPicker = false }) {
                 var searchQuery by remember { mutableStateOf("") }
+                val isComposeBundle = remember(bundleTitle) { bundleTitle.equals("Compose", ignoreCase = true) }
+                val allComposeActions = remember {
+                    listOf(
+                        "conduit.action.SMS" to "New Text",
+                        "conduit.action.EMAIL" to "New Email",
+                        "conduit.action.DIAL" to "New Call",
+                        "conduit.action.CONTACT" to "New Contact",
+                        "conduit.action.NOTE" to "New Note",
+                        "conduit.action.EVENT" to "New Event",
+                        "conduit.action.TIMER" to "Set Timer",
+                        "conduit.action.ALARM" to "Set Alarm",
+                        "conduit.action.RECORD" to "Quick Record"
+                    )
+                }
                 val installedApps = remember { getInstalledApps(context) }
-                val filteredApps by remember {
+                val filteredItems by remember(searchQuery, isComposeBundle) {
                     derivedStateOf {
-                        if (searchQuery.isEmpty()) installedApps
-                        else installedApps.filter {
+                        val baseList = if (isComposeBundle) allComposeActions + installedApps else installedApps
+                        if (searchQuery.isEmpty()) baseList
+                        else baseList.filter {
                             it.second.contains(searchQuery, ignoreCase = true) || it.first.contains(searchQuery, ignoreCase = true)
                         }
                     }
@@ -410,12 +479,18 @@ fun BundleManagementBottomSheet(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     LazyColumn(modifier = Modifier.weight(1f, fill = false).heightIn(max = 400.dp)) {
-                        items(filteredApps, key = { it.first }) { (pkg, label) ->
+                        items(filteredItems, key = { it.first }) { (pkg, label) ->
                             val isAdded = currentApps.contains(pkg)
                             ListItem(
                                 headlineContent = { Text(label) },
-                                supportingContent = { Text(pkg, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                leadingContent = { AppIcon(pkg) },
+                                supportingContent = { Text(if (pkg.startsWith("conduit.action.")) "Compose Action" else pkg, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                leadingContent = {
+                                    if (pkg.startsWith("conduit.action.")) {
+                                        ComposeActionIcon(action = pkg, size = 32.dp)
+                                    } else {
+                                        AppIcon(pkg)
+                                    }
+                                },
                                 trailingContent = {
                                     if (isAdded) {
                                         Icon(Icons.Default.Check, contentDescription = "Added", tint = MaterialTheme.colorScheme.primary)
