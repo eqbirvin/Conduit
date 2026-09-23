@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.29.02",
+        date = "September 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Restored Unified Badge Compose Icons",
+                description = "Restored the compose action icon design to the cohesive v2.29.00 styling featuring base tool symbols paired with unified mini '+' corner badge containers.",
+                iconName = "Undo"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.29.01",
         date = "September 22, 2026",
         highlights = listOf(
