@@ -33,6 +33,7 @@ interface AppearanceSettingsScreenCallbacks {
     fun onActiveAppIconChanged(icon: String)
     fun onMinimizeIconsChanged(enabled: Boolean)
     fun onAutoCollapseReadChanged(enabled: Boolean)
+    fun onDefaultToTodoModeChanged(enabled: Boolean)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -218,6 +219,13 @@ fun AppearanceSettingsScreen(
                 description = "Automatically collapse read (archived) notifications. This overrides the Master 'Expand All' state unless you manually expand them one-by-one.",
                 checked = settings.autoCollapseRead,
                 onCheckedChange = callbacks::onAutoCollapseReadChanged
+            )
+
+            SettingsSwitchRow(
+                title = "Default to Todo Mode",
+                description = "Automatically open Conduit in Todo Mode on startup instead of the Unified View",
+                checked = settings.defaultToTodoMode,
+                onCheckedChange = callbacks::onDefaultToTodoModeChanged
             )
 
             Spacer(modifier = Modifier.height(24.dp))

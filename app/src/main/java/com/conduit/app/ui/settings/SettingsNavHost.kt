@@ -63,6 +63,7 @@ fun SettingsNavHost(
                 }
                 override fun onMinimizeIconsChanged(enabled: Boolean) { settingsViewModel.updateMinimizeIcons(enabled) }
                 override fun onAutoCollapseReadChanged(enabled: Boolean) { settingsViewModel.updateAutoCollapseRead(enabled) }
+                override fun onDefaultToTodoModeChanged(enabled: Boolean) { settingsViewModel.updateDefaultToTodoMode(enabled) }
             },
             onNavigateBack = onNavigateBackToSettings
         )
@@ -84,7 +85,6 @@ fun SettingsNavHost(
                 override fun onDockScrollIndicatorChanged(indicator: String) { settingsViewModel.updateDockScrollIndicator(indicator) }
                 override fun onSwipeRightActionChanged(action: String) { settingsViewModel.updateSwipeRightAction(action) }
                 override fun onSwipeLeftActionChanged(action: String) { settingsViewModel.updateSwipeLeftAction(action) }
-                override fun onDefaultToTodoModeChanged(enabled: Boolean) { settingsViewModel.updateDefaultToTodoMode(enabled) }
             },
             onNavigateBack = onNavigateBackToSettings
         )

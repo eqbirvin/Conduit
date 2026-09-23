@@ -39,7 +39,6 @@ interface DockSettingsScreenCallbacks {
     fun onDockScrollIndicatorChanged(indicator: String)
     fun onSwipeRightActionChanged(action: String)
     fun onSwipeLeftActionChanged(action: String)
-    fun onDefaultToTodoModeChanged(enabled: Boolean)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -217,7 +216,7 @@ fun DockSettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            SettingsSectionHeader(title = "Gestures & View")
+            SettingsSectionHeader(title = "Swipe Gestures")
 
             SwipeActionSelector(
                 label = "Swipe Right",
@@ -229,15 +228,6 @@ fun DockSettingsScreen(
                 label = "Swipe Left",
                 currentValue = settings.swipeLeftAction,
                 onValueSelected = callbacks::onSwipeLeftActionChanged
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            SettingsSwitchRow(
-                title = "Default to Todo Mode",
-                description = "Automatically open Conduit in Todo Mode on startup instead of the Unified View",
-                checked = settings.defaultToTodoMode,
-                onCheckedChange = callbacks::onDefaultToTodoModeChanged
             )
 
             Spacer(modifier = Modifier.height(24.dp))

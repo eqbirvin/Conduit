@@ -14,6 +14,27 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.31.01",
+        date = "September 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Live Supported vs Enabled Channels",
+                description = "The Channels settings card now accurately filters by apps installed on your device, showing a live summary of supported apps alongside your enabled channels count.",
+                iconName = "Check"
+            ),
+            ChangelogItem(
+                title = "Homepage Advanced Security & OTPs",
+                description = "Moved the Android 15+ sensitive notifications guide and one-tap ADB command directly to the bottom of the Settings homepage for immediate visibility.",
+                iconName = "Lock"
+            ),
+            ChangelogItem(
+                title = "Todo Mode Default in Appearance",
+                description = "Moved the 'Default to Todo Mode' toggle into the Appearance settings screen alongside notification feed presentation options.",
+                iconName = "Palette"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.31.00",
         date = "September 23, 2026",
         highlights = listOf(
