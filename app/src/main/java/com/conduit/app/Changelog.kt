@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.29.04",
+        date = "September 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Dedicated Clock & Timer Dispatch",
+                description = "Resolved timer and alarm launching by adding com.android.alarm.permission.SET_ALARM, supporting ACTION_SHOW_TIMERS, and prioritizing system Clock apps over third-party task apps.",
+                iconName = "Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.29.03",
         date = "September 22, 2026",
         highlights = listOf(

@@ -342,3 +342,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-22T20:02] [v2.29.01] updated compose action icons to native material '+' icons (addcomment, addiccall, personadd, noteadd, editcalendar, moretime, alarmadd) and custom unbadged '+' glyphs for email and record.
 [2026-09-22T20:08] [v2.29.02] rolled back compose action icons to v2.29.00 design with base tool symbols and unified mini plus corner badges.
 [2026-09-22T20:16] [v2.29.03] updated notes compose action base icon from description to editnote (notepad with pen) while keeping unified mini plus badge.
+[2026-09-22T22:32] [v2.29.04] added set_alarm permission and show_timers/show_alarms queries, routed timer/alarm dispatch to dedicated clock apps, preventing non-clock apps like ticktick from hijacking alarms.

@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <!-- Requires this permission if the app wants to read its own notifications. But NotificationListenerService needs BIND_NOTIFICATION_LISTENER_SERVICE on the service itself -->
 
@@ -91,6 +92,22 @@
         <package android:name="tv.twitch.android.viewer" />
         <package android:name="tv.twitch.android.app" />
         
+        <!-- Clock & Timer Packages -->
+        <package android:name="com.google.android.deskclock" />
+        <package android:name="com.sec.android.app.clockpackage" />
+        <package android:name="com.android.deskclock" />
+        <package android:name="com.oneplus.deskclock" />
+        <package android:name="com.coloros.alarmclock" />
+        <package android:name="com.oppo.alarmclock" />
+        <package android:name="com.miui.deskclock" />
+        <package android:name="com.asus.deskclock" />
+        <package android:name="com.motorola.blur.alarmclock" />
+        <package android:name="com.sec.android.app.voicenote" />
+        <package android:name="com.samsung.android.voicenote" />
+        <package android:name="com.android.soundrecorder" />
+        <package android:name="com.oneplus.soundrecorder" />
+        <package android:name="com.coloros.soundrecorder" />
+        
         <!-- Intent queries for native Compose actions -->
         <intent>
             <action android:name="android.intent.action.SENDTO" />
@@ -122,7 +139,13 @@
             <action android:name="android.intent.action.SET_TIMER" />
         </intent>
         <intent>
+            <action android:name="android.intent.action.SHOW_TIMERS" />
+        </intent>
+        <intent>
             <action android:name="android.intent.action.SET_ALARM" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SHOW_ALARMS" />
         </intent>
         <intent>
             <action android:name="android.provider.MediaStore.RECORD_SOUND" />
