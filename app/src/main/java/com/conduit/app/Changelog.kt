@@ -14,6 +14,22 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.31.02",
+        date = "September 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Pixel-Style Grouped Settings Box",
+                description = "Overhauled the settings homepage into a continuous, solid Material 3 rounded card with edge-to-edge dividers, following the design of Google Pixel settings.",
+                iconName = "Settings"
+            ),
+            ChangelogItem(
+                title = "Minimalist Gray-Shaded Icons",
+                description = "Updated category icons to use clean, gray-shaded styling directly on the surface without heavy colored backgrounds or redundant chevrons.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.31.01",
         date = "September 23, 2026",
         highlights = listOf(

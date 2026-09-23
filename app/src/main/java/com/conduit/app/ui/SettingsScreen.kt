@@ -4,6 +4,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,7 +36,7 @@ import com.conduit.app.HubNotificationListenerService
 import com.conduit.app.data.ConduitSettings
 import com.conduit.app.getInstalledChannels
 import com.conduit.app.performHapticClick
-import com.conduit.app.ui.settings.SettingsCategoryCard
+import com.conduit.app.ui.settings.SettingsMenuItemRow
 import com.conduit.app.ui.settings.SettingsSectionHeader
 
 interface SettingsScreenCallbacks {
@@ -56,6 +58,32 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val adbCommandText = "adb shell appops set --user 0 com.conduit.app RECEIVE_SENSITIVE_NOTIFICATIONS allow"
+
+    val isDark = when (settings.themePreference) {
+        1 -> false // Light
+        2 -> true  // Dark
+        3 -> if (settings.jacobFollowSystemDark) isSystemInDarkTheme() else true // Jacob AMOLED
+        else -> isSystemInDarkTheme() // System
+    }
+    val isAmoled = settings.themePreference == 3 && isDark
+
+    val cardContainerColor = when {
+        isAmoled -> Color(0xFF141414)
+        !isDark -> Color.White
+        else -> MaterialTheme.colorScheme.surface
+    }
+
+    val borderColor = if (isAmoled) {
+        Color.White.copy(alpha = 0.12f)
+    } else {
+        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    }
+
+    val dividerColor = if (isAmoled) {
+        Color.White.copy(alpha = 0.10f)
+    } else {
+        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+    }
 
     val installedChannels = remember { getInstalledChannels(context) }
     val enabledChannelsCount = remember(settings.channelStates, installedChannels) {
@@ -134,85 +162,106 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            SettingsCategoryCard(
-                title = "Channels",
-                subtitle = channelsSummary,
-                icon = Icons.Default.Notifications,
-                onClick = {
-                    performHapticClick(context)
-                    callbacks.onNavigateToChannels()
-                }
-            )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = cardContainerColor),
+                border = BorderStroke(width = 1.dp, color = borderColor)
+            ) {
+                Column {
+                    SettingsMenuItemRow(
+                        title = "Channels",
+                        subtitle = channelsSummary,
+                        icon = Icons.Default.Notifications,
+                        onClick = {
+                            performHapticClick(context)
+                            callbacks.onNavigateToChannels()
+                        }
+                    )
+                    HorizontalDivider(thickness = 1.dp, color = dividerColor)
 
-            SettingsCategoryCard(
-                title = "Appearance",
-                subtitle = appearanceSummary,
-                icon = Icons.Default.Palette,
-                onClick = {
-                    performHapticClick(context)
-                    callbacks.onNavigateToAppearance()
-                }
-            )
+                    SettingsMenuItemRow(
+                        title = "Appearance",
+                        subtitle = appearanceSummary,
+                        icon = Icons.Default.Palette,
+                        onClick = {
+                            performHapticClick(context)
+                            callbacks.onNavigateToAppearance()
+                        }
+                    )
+                    HorizontalDivider(thickness = 1.dp, color = dividerColor)
 
-            SettingsCategoryCard(
-                title = "Dock & Gestures",
-                subtitle = dockSummary,
-                icon = Icons.Default.Apps,
-                onClick = {
-                    performHapticClick(context)
-                    callbacks.onNavigateToDock()
-                }
-            )
+                    SettingsMenuItemRow(
+                        title = "Dock & Gestures",
+                        subtitle = dockSummary,
+                        icon = Icons.Default.Apps,
+                        onClick = {
+                            performHapticClick(context)
+                            callbacks.onNavigateToDock()
+                        }
+                    )
+                    HorizontalDivider(thickness = 1.dp, color = dividerColor)
 
-            SettingsCategoryCard(
-                title = "Notifications & Sync",
-                subtitle = syncSummary,
-                icon = Icons.Default.Sync,
-                onClick = {
-                    performHapticClick(context)
-                    callbacks.onNavigateToNotifications()
-                }
-            )
+                    SettingsMenuItemRow(
+                        title = "Notifications & Sync",
+                        subtitle = syncSummary,
+                        icon = Icons.Default.Sync,
+                        onClick = {
+                            performHapticClick(context)
+                            callbacks.onNavigateToNotifications()
+                        }
+                    )
+                    HorizontalDivider(thickness = 1.dp, color = dividerColor)
 
-            SettingsCategoryCard(
-                title = "Data & Retention",
-                subtitle = dataSummary,
-                icon = Icons.Default.Storage,
-                onClick = {
-                    performHapticClick(context)
-                    callbacks.onNavigateToData()
-                }
-            )
+                    SettingsMenuItemRow(
+                        title = "Data & Retention",
+                        subtitle = dataSummary,
+                        icon = Icons.Default.Storage,
+                        onClick = {
+                            performHapticClick(context)
+                            callbacks.onNavigateToData()
+                        }
+                    )
+                    HorizontalDivider(thickness = 1.dp, color = dividerColor)
 
-            SettingsCategoryCard(
-                title = "Bracket Overlay",
-                subtitle = bracketSummary,
-                icon = Icons.Default.FlipToFront,
-                onClick = {
-                    performHapticClick(context)
-                    callbacks.onNavigateToBracket()
-                }
-            )
+                    SettingsMenuItemRow(
+                        title = "Bracket Overlay",
+                        subtitle = bracketSummary,
+                        icon = Icons.Default.FlipToFront,
+                        onClick = {
+                            performHapticClick(context)
+                            callbacks.onNavigateToBracket()
+                        }
+                    )
+                    HorizontalDivider(thickness = 1.dp, color = dividerColor)
 
-            SettingsCategoryCard(
-                title = "App Info & Updates",
-                subtitle = aboutSummary,
-                icon = Icons.Default.Info,
-                onClick = {
-                    performHapticClick(context)
-                    callbacks.onNavigateToAbout()
+                    SettingsMenuItemRow(
+                        title = "App Info & Updates",
+                        subtitle = aboutSummary,
+                        icon = Icons.Default.Info,
+                        onClick = {
+                            performHapticClick(context)
+                            callbacks.onNavigateToAbout()
+                        }
+                    )
                 }
-            )
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             SettingsSectionHeader(title = "Advanced Security & OTPs")
 
-            OutlinedCard(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                Column(modifier = Modifier.padding(16.dp)) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = cardContainerColor),
+                border = BorderStroke(width = 1.dp, color = borderColor)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Text(
                         text = "Read Sensitive Notifications",
                         style = MaterialTheme.typography.bodyLarge,
@@ -224,17 +273,17 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(8.dp),
+                        color = if (isAmoled) Color(0xFF1E1E1E) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -266,7 +315,7 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
