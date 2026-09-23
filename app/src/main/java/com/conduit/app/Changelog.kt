@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.30.02",
+        date = "September 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Smart Bundle App Detection",
+                description = "When App Bundles is first enabled, Conduit automatically scans for your installed apps across popular Recorders, AI Assistants, and Notes apps, enabling only the apps you actually have installed.",
+                iconName = "Star"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.30.01",
         date = "September 23, 2026",
         highlights = listOf(

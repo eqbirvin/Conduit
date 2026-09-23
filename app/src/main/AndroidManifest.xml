@@ -108,6 +108,24 @@
         <package android:name="com.oneplus.soundrecorder" />
         <package android:name="com.coloros.soundrecorder" />
         
+        <!-- App Bundle Candidate Packages -->
+        <!-- Recorders -->
+        <package android:name="org.fossify.voicerecorder" />
+        <package android:name="com.aisense.otter" />
+
+        <!-- AI Assistants -->
+        <package android:name="com.openai.chatgpt" />
+        <package android:name="com.microsoft.copilot" />
+        <package android:name="perplexity.ai" />
+        <package android:name="ai.perplexity.app.android" />
+        <package android:name="com.deepseek.chat" />
+
+        <!-- Notes -->
+        <package android:name="com.samsung.android.app.notes" />
+        <package android:name="com.microsoft.office.onenote" />
+        <package android:name="com.notion.id" />
+        <package android:name="md.obsidian" />
+        
         <!-- Intent queries for native Compose actions -->
         <intent>
             <action android:name="android.intent.action.SENDTO" />

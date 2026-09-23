@@ -19,10 +19,12 @@ fun isPackageInstalled(context: Context, packageName: String): Boolean {
     val pm = context.packageManager
     try {
         val appInfo = pm.getApplicationInfo(packageName, 0)
-        if (!appInfo.enabled) {
-            return false
+        if (appInfo.enabled) {
+            return true
         }
     } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+        // Ignored
+    } catch (e: Exception) {
         // Ignored
     }
 
@@ -33,9 +35,7 @@ fun isPackageInstalled(context: Context, packageName: String): Boolean {
             if (launcherApps.isPackageEnabled(packageName, user)) {
                 return true
             }
-        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
-            // Ignore
-        } catch (e: IllegalArgumentException) {
+        } catch (e: Exception) {
             // Ignore
         }
     }

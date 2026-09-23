@@ -345,3 +345,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-22T22:32] [v2.29.04] added set_alarm permission and show_timers/show_alarms queries, routed timer/alarm dispatch to dedicated clock apps, preventing non-clock apps like ticktick from hijacking alarms.
 [2026-09-23T10:55] [v2.30.00] added dedicated compose action picker restricting options to native compose actions, added drag-and-drop reorder handles across app bundles, and extracted bundlemanagementbottomsheet.
 [2026-09-23T11:20] [v2.30.01] enabled app bundles by default and set dock split expand button position to left by default.
+[2026-09-23T12:35] [v2.30.02] added smart first-time installed app detection and seeding for recorder, ai assistant, and note app bundles with androidmanifest package queries.

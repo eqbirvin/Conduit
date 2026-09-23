@@ -29,9 +29,9 @@ data class ConduitSettings(
     val minimizeIcons: Boolean = false,
     val masterExpandedState: Boolean = true,
     val fabConfigs: List<FabAction> = emptyList(),
-    val aiBundle: List<String> = listOf("com.anthropic.claude", "com.google.android.apps.bard"),
-    val notesBundle: List<String> = listOf("com.google.android.keep", "com.notion.id"),
-    val recorderBundle: List<String> = listOf("com.google.android.apps.recorder"),
+    val aiBundle: List<String> = emptyList(),
+    val notesBundle: List<String> = emptyList(),
+    val recorderBundle: List<String> = emptyList(),
     val composeBundle: List<String> = listOf(
         "conduit.action.SMS",
         "conduit.action.EMAIL",

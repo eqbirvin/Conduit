@@ -1,13 +1,17 @@
 package com.conduit.app.data
 
+import android.content.Context
 import android.content.SharedPreferences
 import com.conduit.app.DEFAULT_FABS
 import com.conduit.app.FabAction
 import com.conduit.app.HubNotificationListenerService
+import com.conduit.app.isPackageInstalled
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 
 class SettingsRepository(private val prefs: SharedPreferences) {
 
@@ -80,9 +84,9 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             smartMarkReadTarget = prefs.getString("smart_mark_read_target", "widget_only") ?: "widget_only",
             triggerNativeMarkRead = prefs.getBoolean("trigger_native_mark_read", false),
             fabConfigs = fabConfigs,
-            aiBundle = getBundle("ai_bundle", "com.anthropic.claude,com.google.android.apps.bard"),
-            notesBundle = getBundle("notes_bundle", "com.google.android.keep,com.notion.id"),
-            recorderBundle = getBundle("recorder_bundle", "com.google.android.apps.recorder"),
+            aiBundle = if (prefs.getBoolean("app_bundles_seeded", false) || prefs.contains("ai_bundle")) getBundle("ai_bundle", "") else emptyList(),
+            notesBundle = if (prefs.getBoolean("app_bundles_seeded", false) || prefs.contains("notes_bundle")) getBundle("notes_bundle", "") else emptyList(),
+            recorderBundle = if (prefs.getBoolean("app_bundles_seeded", false) || prefs.contains("recorder_bundle")) getBundle("recorder_bundle", "") else emptyList(),
             composeBundle = loadedComposeBundle,
             channelStates = channelStates,
             retentionDays = prefs.getInt("retention_days", 90),
@@ -266,6 +270,83 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateEnableAppBundles(enabled: Boolean) {
         prefs.edit().putBoolean("enable_app_bundles", enabled).apply()
         _settings.update { it.copy(enableAppBundles = enabled) }
+    }
+
+    suspend fun seedDefaultAppBundlesIfFirstTime(context: Context) = withContext(Dispatchers.IO) {
+        if (prefs.getBoolean("app_bundles_seeded", false)) {
+            return@withContext
+        }
+
+        // For Recorders: Google Recorder (Pixel Recorder), Samsung Voice Recorder, Fossify Voice Recorder, Otter.ai
+        val recorderCandidates = listOf(
+            listOf("com.google.android.apps.recorder"),
+            listOf("com.sec.android.app.voicenote", "com.samsung.android.voicenote"),
+            listOf("org.fossify.voicerecorder"),
+            listOf("com.aisense.otter")
+        )
+
+        // For AI Assistants: Google Gemini, Claude, ChatGPT, Copilot, Perplexity, Deepseek
+        val aiCandidates = listOf(
+            listOf("com.google.android.apps.bard"),
+            listOf("com.anthropic.claude"),
+            listOf("com.openai.chatgpt"),
+            listOf("com.microsoft.copilot"),
+            listOf("perplexity.ai", "ai.perplexity.app.android"),
+            listOf("com.deepseek.chat")
+        )
+
+        // For Notes apps: Google Keep, Samsung Notes, Microsoft OneNotes, Notion, Obsidian
+        val notesCandidates = listOf(
+            listOf("com.google.android.keep"),
+            listOf("com.samsung.android.app.notes"),
+            listOf("com.microsoft.office.onenote"),
+            listOf("notion.id", "com.notion.id"),
+            listOf("md.obsidian")
+        )
+
+        fun findInstalled(candidates: List<List<String>>): List<String> {
+            val result = mutableListOf<String>()
+            for (variants in candidates) {
+                val installed = variants.firstOrNull { isPackageInstalled(context, it) }
+                if (installed != null) {
+                    result.add(installed)
+                }
+            }
+            return result
+        }
+
+        val installedRecorders = if (prefs.contains("recorder_bundle")) {
+            prefs.getString("recorder_bundle", "")?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
+        } else {
+            findInstalled(recorderCandidates)
+        }
+
+        val installedAi = if (prefs.contains("ai_bundle")) {
+            prefs.getString("ai_bundle", "")?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
+        } else {
+            findInstalled(aiCandidates)
+        }
+
+        val installedNotes = if (prefs.contains("notes_bundle")) {
+            prefs.getString("notes_bundle", "")?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
+        } else {
+            findInstalled(notesCandidates)
+        }
+
+        prefs.edit()
+            .putString("recorder_bundle", installedRecorders.joinToString(","))
+            .putString("ai_bundle", installedAi.joinToString(","))
+            .putString("notes_bundle", installedNotes.joinToString(","))
+            .putBoolean("app_bundles_seeded", true)
+            .apply()
+
+        _settings.update {
+            it.copy(
+                recorderBundle = installedRecorders,
+                aiBundle = installedAi,
+                notesBundle = installedNotes
+            )
+        }
     }
 
     fun updateBundleMenuSizing(sizing: String) {

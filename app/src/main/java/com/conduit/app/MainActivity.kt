@@ -187,6 +187,10 @@ class MainActivity : ComponentActivity() {
                 val currentInterval = prefs.getString("update_interval", "DAILY") ?: "DAILY"
                 com.conduit.app.updater.UpdateManager.setupWorker(context, currentInterval)
                 
+                if (settingsRepo.settings.value.enableAppBundles) {
+                    settingsRepo.seedDefaultAppBundlesIfFirstTime(context.applicationContext)
+                }
+                
                 if (!prefs.getBoolean("defaults_seeded", false)) {
                     val currentRules = prefs.getStringSet("blocked_rules", emptySet()) ?: emptySet()
                     val defaultRules = setOf(
@@ -306,22 +310,6 @@ class MainActivity : ComponentActivity() {
                         } catch (e: Exception) { DEFAULT_FABS }
                     } else { DEFAULT_FABS }
                 )
-            }
-            
-            var aiBundle by remember { mutableStateOf(prefs.getString("ai_bundle", "com.anthropic.claude,com.google.android.apps.bard")?.split(",")?.filter { it.isNotEmpty() } ?: listOf("com.anthropic.claude", "com.google.android.apps.bard")) }
-            var notesBundle by remember { mutableStateOf(prefs.getString("notes_bundle", "com.google.android.keep,com.notion.id")?.split(",")?.filter { it.isNotEmpty() } ?: listOf("com.google.android.keep", "com.notion.id")) }
-            var recorderBundle by remember { mutableStateOf(prefs.getString("recorder_bundle", "com.google.android.apps.recorder")?.split(",")?.filter { it.isNotEmpty() } ?: listOf("com.google.android.apps.recorder")) }
-            val defaultComposeString = "conduit.action.SMS,conduit.action.EMAIL,conduit.action.DIAL,conduit.action.CONTACT,conduit.action.NOTE,conduit.action.EVENT,conduit.action.TIMER,conduit.action.ALARM,conduit.action.RECORD"
-            var composeBundle by remember { mutableStateOf(prefs.getString("compose_bundle", defaultComposeString)?.split(",")?.filter { it.isNotEmpty() } ?: defaultComposeString.split(",")) }
-
-            fun saveBundle(key: String, list: List<String>) {
-                prefs.edit().putString(key, list.joinToString(",")).apply()
-                when (key) {
-                    "ai_bundle" -> aiBundle = list
-                    "notes_bundle" -> notesBundle = list
-                    "recorder_bundle" -> recorderBundle = list
-                    "compose_bundle" -> composeBundle = list
-                }
             }
             
             fun saveFabConfigs(configs: List<FabAction>) {
@@ -470,7 +458,7 @@ class MainActivity : ComponentActivity() {
                                     override fun onSmartMarkReadTargetChanged(target: String) { settingsViewModel.updateSmartMarkReadTarget(target) }
                                     override fun onTriggerNativeMarkReadChanged(enabled: Boolean) { settingsViewModel.updateTriggerNativeMarkRead(enabled) }
                                     override fun onRetentionDaysChanged(days: Int) { settingsViewModel.updateRetentionDays(days) }
-                                    override fun onEnableAppBundlesChanged(enabled: Boolean) { settingsViewModel.updateEnableAppBundles(enabled) }
+                                    override fun onEnableAppBundlesChanged(enabled: Boolean) { settingsViewModel.updateEnableAppBundles(enabled, context.applicationContext) }
                                     override fun onBundleMenuSizingChanged(sizing: String) { settingsViewModel.updateBundleMenuSizing(sizing) }
                                     override fun onDockExpandPositionChanged(position: String) { settingsViewModel.updateDockExpandPosition(position) }
                                     override fun onMinimizeIconsChanged(enabled: Boolean) {

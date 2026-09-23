@@ -747,14 +747,14 @@ fun SettingsScreen(
             val currentApps = when (editingBundleTitle) {
                 "AI Assistants" -> settings.aiBundle
                 "Notes" -> settings.notesBundle
-                "Recorder" -> settings.recorderBundle
+                "Recorder", "Recorders" -> settings.recorderBundle
                 "Compose" -> settings.composeBundle
                 else -> emptyList()
             }
             val onUpdate: (List<String>) -> Unit = when (editingBundleTitle) {
                 "AI Assistants" -> callbacks::onAiBundleChanged
                 "Notes" -> callbacks::onNotesBundleChanged
-                "Recorder" -> callbacks::onRecorderBundleChanged
+                "Recorder", "Recorders" -> callbacks::onRecorderBundleChanged
                 "Compose" -> callbacks::onComposeBundleChanged
                 else -> { _ -> }
             }
@@ -765,11 +765,11 @@ fun SettingsScreen(
             ) {
                 Column {
                     ListItem(
-                        headlineContent = { Text("Recorder") },
+                        headlineContent = { Text("Recorders") },
                         supportingContent = { Text("${settings.recorderBundle.size} apps configured") },
                         leadingContent = { Icon(Icons.Default.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
                         trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null) },
-                        modifier = Modifier.clickable { editingBundleTitle = "Recorder" }
+                        modifier = Modifier.clickable { editingBundleTitle = "Recorders" }
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
                     ListItem(

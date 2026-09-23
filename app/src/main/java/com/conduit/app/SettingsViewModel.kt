@@ -44,7 +44,15 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateComposeBundle(bundle: List<String>) = viewModelScope.launch { repository.updateComposeBundle(bundle) }
     fun updateChannelState(prefKey: String, isEnabled: Boolean) = viewModelScope.launch { repository.updateChannelState(prefKey, isEnabled) }
     fun updateRetentionDays(days: Int) = viewModelScope.launch { repository.updateRetentionDays(days) }
-    fun updateEnableAppBundles(enabled: Boolean) = viewModelScope.launch { repository.updateEnableAppBundles(enabled) }
+    fun updateEnableAppBundles(enabled: Boolean, context: android.content.Context? = null) = viewModelScope.launch {
+        repository.updateEnableAppBundles(enabled)
+        if (enabled && context != null) {
+            repository.seedDefaultAppBundlesIfFirstTime(context)
+        }
+    }
+    fun seedDefaultAppBundlesIfFirstTime(context: android.content.Context) = viewModelScope.launch {
+        repository.seedDefaultAppBundlesIfFirstTime(context)
+    }
     fun updateBundleMenuSizing(sizing: String) = viewModelScope.launch { repository.updateBundleMenuSizing(sizing) }
     fun updateDockExpandPosition(position: String) = viewModelScope.launch { repository.updateDockExpandPosition(position) }
     fun updateMinimizeIcons(enabled: Boolean) = viewModelScope.launch { repository.updateMinimizeIcons(enabled) }
