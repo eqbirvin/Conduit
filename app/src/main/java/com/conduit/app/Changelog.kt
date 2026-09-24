@@ -15,336 +15,71 @@ data class ChangelogRelease(
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
         versionName = "2.31.02",
-        date = "September 23, 2026",
+        date = "September 24, 2026",
         highlights = listOf(
             ChangelogItem(
-                title = "Pixel-Style Grouped Settings Box",
-                description = "Overhauled the settings homepage into a continuous, solid Material 3 rounded card with edge-to-edge dividers, following the design of Google Pixel settings.",
-                iconName = "Settings"
+                title = "App Bundles Overhaul",
+                description = "Overhauled the app bundles flyout into a vertical stack with anchored pill buttons for bundle titles and floating app icons for the apps in the bundles. Moved the app bundle FAB button to the dock.",
+                iconName = "Speed"
+            ),
+            ChangelogItem(
+                title = "Grouped Settings Box",
+                description = "Overhauled the settings homepage into grouped Material 3 pages.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Expanded Compose Bundle",
+                description = "Expanded from 2 to 9 native Android quick compose actions: New Text, New Email, New Call, New Contact, New Note (supporting Android 14+ System Note API with Assistant action fallback for older Android versions), New Calendar Event, Set Timer, Set Alarm, and Quick Audio Record.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Smart First-Time App Detection",
+                description = "When App Bundles is first enabled (from first install or when off and turned on), Conduit automatically scans installed applications across popular Recorders (Pixel, Samsung, Fossify, Otter), AI Assistants (Gemini, Claude, ChatGPT, Copilot, Perplexity, DeepSeek), and Notes (Keep, Samsung Notes, OneNote, Notion, Obsidian), enabling only apps actually installed on your device.",
+                iconName = "Check"
+            ),
+            ChangelogItem(
+                title = "Blurred Backdrop",
+                description = "Added dynamic wallpaper blur with theme-aware tinting behind the open flyout for app bundles, following Pixel's Android 16/17 notification shade background blur.",
+                iconName = "Info"
+            ),
+            ChangelogItem(
+                title = "In-App Bundle Customization",
+                description = "Long-press any bundle pill to customize its apps directly from the Hub screen.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Drag-and-Drop Reordering Handles",
+                description = "Added reorder handles in the bundle management sheets, allowing you to freely reorder apps and compose actions in your flyout menus.",
+                iconName = "Refresh"
+            ),
+            ChangelogItem(
+                title = "Dock Expand Button Alignment (Left / Right)",
+                description = "Added a setting to place the expand button on either the left or right side of the dock, featuring mirrored split-button geometry and left-aligned bundle menu flow.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "App Bundles On by Default",
+                description = "Enabled App Bundles out-of-the-box on fresh installs.",
+                iconName = "Check"
+            ),
+            ChangelogItem(
+                title = "Left Dock Alignment by Default",
+                description = "Set the dock expand button and bundle flyout to the left-hand position by default; can be changed in settings any time.",
+                iconName = "Check"
+            ),
+            ChangelogItem(
+                title = "Dedicated Compose Action Picker",
+                description = "Restricted the Compose bundle picker exclusively to native compose actions, preventing apps from being added to the quick-compose list as it made no sense.",
+                iconName = "Check"
             ),
             ChangelogItem(
                 title = "Minimalist Gray-Shaded Icons",
-                description = "Updated category icons to use clean, gray-shaded styling directly on the surface without heavy colored backgrounds or redundant chevrons.",
-                iconName = "Check"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.31.01",
-        date = "September 23, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Live Supported vs Enabled Channels",
-                description = "The Channels settings card now accurately filters by apps installed on your device, showing a live summary of supported apps alongside your enabled channels count.",
+                description = "Settings category icons are neutral gray-shaded iconography.",
                 iconName = "Check"
             ),
-            ChangelogItem(
-                title = "Homepage Advanced Security & OTPs",
-                description = "Moved the Android 15+ sensitive notifications guide and one-tap ADB command directly to the bottom of the Settings homepage for immediate visibility.",
-                iconName = "Lock"
-            ),
-            ChangelogItem(
-                title = "Todo Mode Default in Appearance",
-                description = "Moved the 'Default to Todo Mode' toggle into the Appearance settings screen alongside notification feed presentation options.",
-                iconName = "Palette"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.31.00",
-        date = "September 23, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Settings Hub-and-Spoke Redesign",
-                description = "Settings has been completely overhauled from a long monolithic list into an intuitive Hub with 7 dedicated category cards: Channels, Appearance, Dock & Gestures, Notifications & Sync, Data & Retention, Bracket Overlay, and App Info & Updates.",
-                iconName = "Settings"
-            ),
-            ChangelogItem(
-                title = "Standardized Subpages & Clean Navigation",
-                description = "Each settings category now opens into its own focused subpage with standardized controls, clean segmented button rows, dynamic live summary subtitles, and instant back navigation.",
-                iconName = "Check"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.30.02",
-        date = "September 23, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Smart Bundle App Detection",
-                description = "When App Bundles is first enabled, Conduit automatically scans for your installed apps across popular Recorders, AI Assistants, and Notes apps, enabling only the apps you actually have installed.",
-                iconName = "Star"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.30.01",
-        date = "September 23, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "App Bundles & Left Dock Default",
-                description = "App Bundles are now enabled by default out of the box, with the dock expand button and bundle flyout positioned on the left side by default.",
-                iconName = "Check"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.30.00",
-        date = "September 23, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Dedicated Compose Action Picker",
-                description = "When editing the Compose bundle, the picker now exclusively displays and adds native compose actions without mixing in regular device apps.",
-                iconName = "Check"
-            ),
-            ChangelogItem(
-                title = "Bundle App Reordering Handles",
-                description = "Added drag-and-drop reorder handles in the bundle management sheet, allowing you to customize the order of apps and compose actions in your dock flyout.",
-                iconName = "Speed"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.29.04",
-        date = "September 22, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Dedicated Clock & Timer Dispatch",
-                description = "Resolved timer and alarm launching by adding com.android.alarm.permission.SET_ALARM, supporting ACTION_SHOW_TIMERS, and prioritizing system Clock apps over third-party task apps.",
-                iconName = "Build"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.29.03",
-        date = "September 22, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Refreshed Notes Compose Icon",
-                description = "Updated the New Note compose action base icon from a document sheet to an intuitive notepad with writing pen (EditNote) while retaining the unified mini '+' corner badge.",
-                iconName = "Palette"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.29.02",
-        date = "September 22, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Restored Unified Badge Compose Icons",
-                description = "Restored the compose action icon design to the cohesive v2.29.00 styling featuring base tool symbols paired with unified mini '+' corner badge containers.",
-                iconName = "Undo"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.29.01",
-        date = "September 22, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Native Material '+' Compose Icons",
-                description = "Updated compose action icons to use integrated native Material '+' glyphs (New Comment, Add Call, Add Person, Add Note, Edit Calendar, More Time, Alarm Add) and streamlined unbadged '+' glyphs for New Email and Quick Record.",
-                iconName = "Palette"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.29.00",
-        date = "September 22, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Expanded Compose Actions Suite",
-                description = "Expanded the Compose bundle from 2 to 9 native Android quick actions: New Text, New Email, New Call, New Contact, New Note (Android 14+ System Note API with Assistant fallback), New Calendar Event, Set Timer, Set Alarm, and Quick Audio Record.",
-                iconName = "AddCircle"
-            ),
-            ChangelogItem(
-                title = "Unified Material '+' Compose Icons",
-                description = "Crafted a cohesive icon system across all 9 compose actions featuring distinctive Material tool symbols layered with a consistent mini '+' badge.",
-                iconName = "Palette"
-            ),
-            ChangelogItem(
-                title = "Automatic Compose Bundle Upgrade",
-                description = "Existing installs automatically receive the expanded 9-action suite with graceful device capability fallbacks.",
-                iconName = "AutoAwesome"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.28.03",
-        date = "September 22, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Floating App Icon Dock Shading",
-                description = "Restored the background shading of accompanying floating app icons to match the app dock surface while preserving enhanced contrast on bundle title buttons.",
-                iconName = "Palette"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.28.02",
-        date = "September 22, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "App Bundle Entry Button Contrast",
-                description = "Enhanced background shading for app bundle menu entries and floating app icons with darker contrast in light theme and elevated lighter shading in dark and AMOLED themes for crisp separation from wallpaper blur.",
-                iconName = "Contrast"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.28.01",
-        date = "September 22, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Dock Drop Shadow Geometry Fix",
-                description = "Unified dock split shapes with continuous generic path geometry for the dock packages pill, resolving the detached drop shadow gap under the dock when the expand button is positioned on the left.",
-                iconName = "Layers"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.28.00",
-        date = "September 21, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Expand Button Alignment (Left / Right)",
-                description = "Choose whether the dock expand button sits on the left or right side of the dock, with mirrored split-button geometry and responsive menu alignment.",
-                iconName = "SwapHoriz"
-            ),
-            ChangelogItem(
-                title = "Mirrored Bundle Menu Layout",
-                description = "When left-aligned, bundle menus seamlessly flip to a (title + icon) *app icon* *app icon* flow matching the left-hand dock anchor.",
-                iconName = "FormatAlignLeft"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.27.01",
-        date = "September 21, 2026",
-        highlights = listOf(
             ChangelogItem(
                 title = "Scaled Bundle Menu Sizing",
-                description = "Scaled up app icons in 'Match dock' mode to directly match the sizing of dock icons, proportionally expanding outer circular containers, pill buttons, and typography.",
-                iconName = "AspectRatio"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.27.00",
-        date = "September 21, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Vertical Material 3 FAB Bundle Menu",
-                description = "Overhauled the dock expand menu into a vertically stacked Material 3 FAB speed-dial layout with anchored pill buttons and floating circular app icons that directly launch configured apps.",
-                iconName = "AutoAwesome"
-            ),
-            ChangelogItem(
-                title = "Pixel-Style Blurred Backdrop",
-                description = "Added a dynamic background blur with theme-aware tinting behind the expanded menu, mimicking the Pixel notification shade aesthetic with tap-anywhere dismissal.",
-                iconName = "BlurOn"
-            ),
-            ChangelogItem(
-                title = "In-App Bundle Management & Sizing",
-                description = "Long-press any bundle pill to customize its apps directly from the Hub screen, and select between 'Match Dock' and 'Compact' menu sizing under App Bundles settings.",
-                iconName = "Tune"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.26.07",
-        date = "September 21, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Enlarged Dock Caret Icons",
-                description = "Increased the expand and collapse caret icons on the dock split button by 50% for improved visual clarity and easier touch targeting.",
-                iconName = "TouchApp"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.26.06",
-        date = "September 21, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Dock Cap Radii & Shadow Geometry",
-                description = "Crafted a custom semicircular convex shape for the split button expand button to mirror the dock's full-height left semicircular cap, locked both surfaces to matching heights, and aligned bottom baselines to eliminate drop shadow overhangs.",
-                iconName = "AutoAwesome"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.26.05",
-        date = "September 21, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Revert to v2.26.03 Dock Design",
-                description = "Rolled back the dock split button and expand button styling to the exact v2.26.03 configuration while gathering visual diagnostic feedback on corner curvature and drop shadow rendering.",
-                iconName = "Undo"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.26.04",
-        date = "September 21, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Dock Radii & Drop Shadow Alignment",
-                description = "Matched the expand button's outer rounded corner radius exactly to the dock's half-circle radius, locked both surfaces to matching heights, and eliminated overhanging drop shadows across the divider gap for a crisp, seamless finish.",
-                iconName = "AutoAwesome"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.26.03",
-        date = "September 21, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Slimline Dock Split Button",
-                description = "Further reduced the horizontal footprint of the App Bundles expand button by an additional 20% for an ultra-clean, proportional trailing pill design, maintaining pixel-perfect height parity with the dock.",
-                iconName = "Compress"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.26.02",
-        date = "September 21, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Compact Dock Split Button",
-                description = "Reduced the width of the App Bundles expand button in the dock by 25% for a more compact and balanced Material 3 split button appearance, while preserving exact vertical height alignment and accessibility touch standards.",
-                iconName = "Compress"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.26.01",
-        date = "September 20, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Material 3 Split Button Dock Design",
-                description = "Refined the dock split button layout to follow the official Material Design 3 split button spec. The dock icons and the app bundles expand button are now separated into distinct surfaces with an intentional 3dp gap, subtle 4dp inner corner radii, and independent elevation shadows dividing the surfaces cleanly.",
-                iconName = "Layers"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.26.00",
-        date = "September 20, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Overhauled Dock Split Button & App Bundles",
-                description = "Replaced the legacy bottom-right FAB button stack with a sleek Material Design 3 split button integrated directly on the far right of the dock. Tap the chevron to open a floating flyout pill right above the dock for instant access to your configured App Bundles (Recorder, AI Assistants, Notes, and Compose).",
-                iconName = "Speed"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.25.04",
-        date = "September 20, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Refined Dock Spacing",
-                description = "Decreased the horizontal spacing between icons in the app dock by 40% for a tighter, more compact layout across all dock size settings.",
+                description = "Added 'Match Dock' mode to app bundles menu to match dock icon size, proportionally enlarging pill buttons and text. Also has a 'minimal mode' which makes it small always.",
                 iconName = "Build"
             )
         )
