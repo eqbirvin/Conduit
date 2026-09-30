@@ -80,6 +80,8 @@ fun SettingsNavHost(
                 override fun onComposeBundleChanged(bundle: List<String>) { settingsViewModel.updateComposeBundle(bundle) }
                 override fun onBundleMenuSizingChanged(sizing: String) { settingsViewModel.updateBundleMenuSizing(sizing) }
                 override fun onDockExpandPositionChanged(position: String) { settingsViewModel.updateDockExpandPosition(position) }
+                override fun onTransparentBundlePillsChanged(enabled: Boolean) { settingsViewModel.updateTransparentBundlePills(enabled) }
+                override fun onBundleMenuBlurChanged(enabled: Boolean) { settingsViewModel.updateBundleMenuBlur(enabled) }
                 override fun onDockLongPressLaunchChanged(enabled: Boolean) { settingsViewModel.updateDockLongPressLaunch(enabled) }
                 override fun onDockSizeChanged(size: Int) { settingsViewModel.updateDockSize(size) }
                 override fun onDockScrollIndicatorChanged(indicator: String) { settingsViewModel.updateDockScrollIndicator(indicator) }

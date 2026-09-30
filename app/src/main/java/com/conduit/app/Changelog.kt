@@ -14,6 +14,22 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.32.00",
+        date = "September 30, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Transparent Bundle Pills Option",
+                description = "Added an option in Settings under Dock & Gestures > App Bundles to make the background and drop shadow of bundle title pills transparent for a clean floating look.",
+                iconName = "Palette"
+            ),
+            ChangelogItem(
+                title = "Bundle Menu Background Blur Toggle",
+                description = "Added a toggle in Settings to turn the background wallpaper blur on or off when the app bundle flyout is expanded.",
+                iconName = "BlurOn"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.31.02",
         date = "September 24, 2026",
         highlights = listOf(

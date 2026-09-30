@@ -556,6 +556,7 @@ fun HubScreen(
                                 bundleMenuSizing = settings.bundleMenuSizing,
                                 dockIconSize = dockIconSize,
                                 dockExpandPosition = settings.dockExpandPosition,
+                                transparentBundlePills = settings.transparentBundlePills,
                                 onAppClick = { pkg ->
                                     launchAppOrAction(pkg)
                                 },
@@ -897,7 +898,7 @@ fun HubScreen(
             )
         }
         val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme() || settings.themePreference == 2
-        val blurModifier = if (isBundleFlyoutExpanded && settings.enableAppBundles && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        val blurModifier = if (isBundleFlyoutExpanded && settings.enableAppBundles && settings.bundleMenuBlur && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             Modifier.blur(20.dp)
         } else {
             Modifier

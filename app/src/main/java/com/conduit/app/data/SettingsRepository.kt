@@ -103,7 +103,9 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             ingestionDiagnosticsEnabled = prefs.getBoolean("ingestion_diagnostics", false),
             customViewsExpanded = prefs.getBoolean("custom_views_expanded", true),
             bundleMenuSizing = prefs.getString("bundle_menu_sizing", "MATCH_DOCK") ?: "MATCH_DOCK",
-            dockExpandPosition = prefs.getString("dock_expand_position", "LEFT") ?: "LEFT"
+            dockExpandPosition = prefs.getString("dock_expand_position", "LEFT") ?: "LEFT",
+            transparentBundlePills = prefs.getBoolean("transparent_bundle_pills", false),
+            bundleMenuBlur = prefs.getBoolean("bundle_menu_blur", true)
         )
     }
 
@@ -357,6 +359,16 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateDockExpandPosition(position: String) {
         prefs.edit().putString("dock_expand_position", position).apply()
         _settings.update { it.copy(dockExpandPosition = position) }
+    }
+
+    fun updateTransparentBundlePills(enabled: Boolean) {
+        prefs.edit().putBoolean("transparent_bundle_pills", enabled).apply()
+        _settings.update { it.copy(transparentBundlePills = enabled) }
+    }
+
+    fun updateBundleMenuBlur(enabled: Boolean) {
+        prefs.edit().putBoolean("bundle_menu_blur", enabled).apply()
+        _settings.update { it.copy(bundleMenuBlur = enabled) }
     }
 
     fun updateMinimizeIcons(enabled: Boolean) {

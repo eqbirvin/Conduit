@@ -34,6 +34,8 @@ interface DockSettingsScreenCallbacks {
     fun onComposeBundleChanged(bundle: List<String>)
     fun onBundleMenuSizingChanged(sizing: String)
     fun onDockExpandPositionChanged(position: String)
+    fun onTransparentBundlePillsChanged(enabled: Boolean)
+    fun onBundleMenuBlurChanged(enabled: Boolean)
     fun onDockLongPressLaunchChanged(enabled: Boolean)
     fun onDockSizeChanged(size: Int)
     fun onDockScrollIndicatorChanged(indicator: String)
@@ -168,6 +170,24 @@ fun DockSettingsScreen(
                             onValueSelected = callbacks::onDockExpandPositionChanged
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingsSwitchRow(
+                        title = "Transparent Bundle Pills",
+                        description = "Make the background and shadow of bundle title pills transparent",
+                        checked = settings.transparentBundlePills,
+                        onCheckedChange = callbacks::onTransparentBundlePillsChanged
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    SettingsSwitchRow(
+                        title = "Bundle Menu Background Blur",
+                        description = "Blur the background when the app bundle flyout is expanded",
+                        checked = settings.bundleMenuBlur,
+                        onCheckedChange = callbacks::onBundleMenuBlurChanged
+                    )
                 }
             }
 

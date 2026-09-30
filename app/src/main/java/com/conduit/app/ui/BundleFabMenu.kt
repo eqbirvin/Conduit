@@ -123,6 +123,7 @@ fun BundleFabMenu(
     bundleMenuSizing: String,
     dockIconSize: Dp,
     dockExpandPosition: String = "LEFT",
+    transparentBundlePills: Boolean = false,
     onAppClick: (String) -> Unit,
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit,
@@ -202,6 +203,7 @@ fun BundleFabMenu(
                     pillHeight = pillHeight,
                     pillIconSize = pillIconSize,
                     entryButtonColor = entryButtonColor,
+                    transparentBundlePills = transparentBundlePills,
                     onAppClick = onAppClick,
                     onBundleClick = onBundleClick,
                     onBundleLongClick = onBundleLongClick
@@ -222,6 +224,7 @@ private fun BundleMenuRow(
     pillHeight: Dp,
     pillIconSize: Dp,
     entryButtonColor: Color,
+    transparentBundlePills: Boolean,
     onAppClick: (String) -> Unit,
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit
@@ -275,8 +278,8 @@ private fun BundleMenuRow(
                     onLongClick = { onBundleLongClick(entry.title) }
                 ),
             shape = CircleShape,
-            color = entryButtonColor,
-            shadowElevation = 6.dp,
+            color = if (transparentBundlePills) Color.Transparent else entryButtonColor,
+            shadowElevation = if (transparentBundlePills) 0.dp else 6.dp,
             tonalElevation = 0.dp
         ) {
             Row(

@@ -349,3 +349,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-23T13:51] [v2.31.00] overhauled settings page from monolithic layout into modular hub-and-spoke architecture with 7 category cards, dynamic subtitles, standardized subpage controls, and strict compliance with file-size limits.
 [2026-09-23T15:22] [v2.31.01] moved advanced security & otps warning to settings homepage bottom, fixed channels count to filter by installed apps with live supported vs enabled subtitle, and moved default to todo mode to appearance settings.
 [2026-09-23T16:55] [v2.31.02] updated settings submenus container to continuous solid material 3 rounded card with dividers and clean gray-shaded icons inspired by google pixel photos settings.
+[2026-09-30T10:18] [v2.32.00] added transparent bundle pills setting to remove background and elevation from bundle title pills, and added bundle menu background blur toggle in settings.

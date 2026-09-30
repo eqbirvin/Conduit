@@ -55,6 +55,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     }
     fun updateBundleMenuSizing(sizing: String) = viewModelScope.launch { repository.updateBundleMenuSizing(sizing) }
     fun updateDockExpandPosition(position: String) = viewModelScope.launch { repository.updateDockExpandPosition(position) }
+    fun updateTransparentBundlePills(enabled: Boolean) = viewModelScope.launch { repository.updateTransparentBundlePills(enabled) }
+    fun updateBundleMenuBlur(enabled: Boolean) = viewModelScope.launch { repository.updateBundleMenuBlur(enabled) }
     fun updateMinimizeIcons(enabled: Boolean) = viewModelScope.launch { repository.updateMinimizeIcons(enabled) }
     fun updateAutoCollapseRead(enabled: Boolean) = viewModelScope.launch { repository.updateAutoCollapseRead(enabled) }
     fun updateAutoDismissDetached(enabled: Boolean) = viewModelScope.launch { repository.updateAutoDismissDetached(enabled) }
