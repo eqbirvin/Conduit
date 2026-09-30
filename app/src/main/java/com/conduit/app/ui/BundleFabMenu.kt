@@ -25,11 +25,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -124,6 +129,7 @@ fun BundleFabMenu(
     dockIconSize: Dp,
     dockExpandPosition: String = "LEFT",
     transparentBundlePills: Boolean = false,
+    bundleMenuBlur: Boolean = true,
     onAppClick: (String) -> Unit,
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit,
@@ -204,6 +210,7 @@ fun BundleFabMenu(
                     pillIconSize = pillIconSize,
                     entryButtonColor = entryButtonColor,
                     transparentBundlePills = transparentBundlePills,
+                    bundleMenuBlur = bundleMenuBlur,
                     onAppClick = onAppClick,
                     onBundleClick = onBundleClick,
                     onBundleLongClick = onBundleLongClick
@@ -225,6 +232,7 @@ private fun BundleMenuRow(
     pillIconSize: Dp,
     entryButtonColor: Color,
     transparentBundlePills: Boolean,
+    bundleMenuBlur: Boolean,
     onAppClick: (String) -> Unit,
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit
@@ -289,14 +297,18 @@ private fun BundleMenuRow(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
+                val textStyle = if (isCompact) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium
+                val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+
                 if (isLeft) {
                     // Left side: (title + icon)
-                    Text(
-                        text = entry.title,
-                        style = if (isCompact) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
+                    BundlePillText(
+                        title = entry.title,
+                        style = textStyle,
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
+                        hasTransparentPills = transparentBundlePills,
+                        isBlurOff = !bundleMenuBlur,
+                        isDark = isDark
                     )
                     Spacer(modifier = Modifier.width(if (isCompact) 8.dp else 10.dp))
                     Icon(
@@ -314,12 +326,13 @@ private fun BundleMenuRow(
                         modifier = Modifier.size(pillIconSize)
                     )
                     Spacer(modifier = Modifier.width(if (isCompact) 8.dp else 10.dp))
-                    Text(
-                        text = entry.title,
-                        style = if (isCompact) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
+                    BundlePillText(
+                        title = entry.title,
+                        style = textStyle,
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
+                        hasTransparentPills = transparentBundlePills,
+                        isBlurOff = !bundleMenuBlur,
+                        isDark = isDark
                     )
                 }
             }
@@ -342,6 +355,57 @@ private fun BundleMenuRow(
             Spacer(modifier = Modifier.width(elementSpacing))
             pillContent()
         }
+    }
+}
+
+@Composable
+private fun BundlePillText(
+    title: String,
+    style: TextStyle,
+    color: Color,
+    hasTransparentPills: Boolean,
+    isBlurOff: Boolean,
+    isDark: Boolean
+) {
+    if (hasTransparentPills) {
+        val strokeColor = if (isDark) Color.Black.copy(alpha = 0.95f) else Color.White.copy(alpha = 0.95f)
+        val strokeWidth = if (isBlurOff) 3.5f else 2.5f
+        val textShadow = Shadow(
+            color = if (isDark) Color.Black.copy(alpha = 0.95f) else Color.Black.copy(alpha = 0.35f),
+            offset = Offset(0f, 1.5f),
+            blurRadius = if (isBlurOff) 6f else 4f
+        )
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = title,
+                style = style.copy(
+                    color = strokeColor,
+                    drawStyle = Stroke(
+                        width = strokeWidth,
+                        join = StrokeJoin.Round
+                    )
+                ),
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1
+            )
+            Text(
+                text = title,
+                style = style.copy(
+                    color = color,
+                    shadow = textShadow
+                ),
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1
+            )
+        }
+    } else {
+        Text(
+            text = title,
+            style = style,
+            fontWeight = FontWeight.SemiBold,
+            color = color,
+            maxLines = 1
+        )
     }
 }
 

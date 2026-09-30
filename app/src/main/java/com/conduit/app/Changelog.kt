@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.32.02",
+        date = "September 30, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Text Border for Transparent Bundle Pills",
+                description = "Added a high-contrast text border outline and drop shadow to bundle title pills when Transparent Bundle Pills is enabled, maintaining crisp legibility over unblurred notifications and backgrounds while restoring the original background scrim.",
+                iconName = "FormatColorText"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.32.01",
         date = "September 30, 2026",
         highlights = listOf(
