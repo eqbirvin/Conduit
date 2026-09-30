@@ -350,3 +350,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-09-23T15:22] [v2.31.01] moved advanced security & otps warning to settings homepage bottom, fixed channels count to filter by installed apps with live supported vs enabled subtitle, and moved default to todo mode to appearance settings.
 [2026-09-23T16:55] [v2.31.02] updated settings submenus container to continuous solid material 3 rounded card with dividers and clean gray-shaded icons inspired by google pixel photos settings.
 [2026-09-30T10:18] [v2.32.00] added transparent bundle pills setting to remove background and elevation from bundle title pills, and added bundle menu background blur toggle in settings.
+[2026-09-30T10:41] [v2.32.01] removed wallpaper mentions from changelog blur descriptions, and slightly darkened bundle flyout background scrim when blur is disabled.

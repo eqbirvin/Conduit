@@ -1699,8 +1699,15 @@ fun HubScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
-                            if (isDarkTheme) Color.Black.copy(alpha = 0.40f)
-                            else MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).copy(alpha = 0.65f)
+                            if (isDarkTheme) {
+                                Color.Black.copy(alpha = if (settings.bundleMenuBlur) 0.40f else 0.58f)
+                            } else {
+                                if (settings.bundleMenuBlur) {
+                                    MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).copy(alpha = 0.65f)
+                                } else {
+                                    Color.Black.copy(alpha = 0.22f)
+                                }
+                            }
                         )
                         .pointerInput(Unit) {
                             detectTapGestures { isBundleFlyoutExpanded = false }

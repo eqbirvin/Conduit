@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.32.01",
+        date = "September 30, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Enhanced Contrast When Blur Is Off",
+                description = "Darkened the background scrim slightly when the bundle menu blur effect is disabled, ensuring crisp legibility and focus for floating apps and bundle pills.",
+                iconName = "Contrast"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.32.00",
         date = "September 30, 2026",
         highlights = listOf(
@@ -24,7 +35,7 @@ val CHANGELOG: List<ChangelogRelease> = listOf(
             ),
             ChangelogItem(
                 title = "Bundle Menu Background Blur Toggle",
-                description = "Added a toggle in Settings to turn the background wallpaper blur on or off when the app bundle flyout is expanded.",
+                description = "Added a toggle in Settings to turn the background blur on or off when the app bundle flyout is expanded.",
                 iconName = "BlurOn"
             )
         )
@@ -55,7 +66,7 @@ val CHANGELOG: List<ChangelogRelease> = listOf(
             ),
             ChangelogItem(
                 title = "Blurred Backdrop",
-                description = "Added dynamic wallpaper blur with theme-aware tinting behind the open flyout for app bundles, following Pixel's Android 16/17 notification shade background blur.",
+                description = "Added dynamic background blur with theme-aware tinting behind the open flyout for app bundles, following Pixel's Android 16/17 notification shade background blur.",
                 iconName = "Info"
             ),
             ChangelogItem(
