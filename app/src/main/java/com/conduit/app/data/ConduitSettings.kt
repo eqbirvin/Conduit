@@ -58,6 +58,7 @@ data class ConduitSettings(
     val bundleMenuSizing: String = "MATCH_DOCK",
     val dockExpandPosition: String = "LEFT",
     val transparentBundlePills: Boolean = false,
-    val bundleMenuBlur: Boolean = true
+    val bundleMenuBlur: Boolean = true,
+    val combineConversations: Boolean = true
 )
 

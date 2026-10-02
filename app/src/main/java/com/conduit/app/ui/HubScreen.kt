@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.input.pointer.pointerInput
@@ -1244,44 +1245,77 @@ fun HubScreen(
                                 }
                             }
                         }
-                        items(pinnedNotifications, key = { "pinned_${it.id}" }) { notification ->
+                        itemsIndexed(pinnedNotifications, key = { _, it -> "pinned_${it.id}" }) { index, notification ->
+                            val parentInConvo = if (settings.combineConversations) {
+                                ConversationCombineHelper.findParentInConversation(context, pinnedNotifications, index)
+                            } else null
+
                             Box(modifier = Modifier.animateItem(
                                 placementSpec = tween(durationMillis = 300)
                             )) {
-                                NotificationItem(
-                                    notification = notification,
-                                    isArchivedView = false,
-                                    isUnifiedView = unifiedView,
+                                if (parentInConvo != null) {
+                                    val displayText = ConversationCombineHelper.getChildDisplayText(notification, parentInConvo)
+                                    CombinedNotificationItem(
+                                        notification = notification,
+                                        displayText = displayText,
+                                        isSelected = selectedIds.contains(notification.id),
+                                        isSelectionMode = isSelectionMode,
+                                        onSelectToggle = {
+                                            val becomingSelected = !selectedIds.contains(notification.id)
+                                            if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                            selectedIds = if (becomingSelected) selectedIds + notification.id else selectedIds - notification.id
+                                        },
+                                        showActionChips = showActionChips,
+                                        minimizeIcons = settings.minimizeIcons,
+                                        allActions = actionsByKey[notification.notificationKey],
+                                        isExpanded = individualToggles[notification.id]
+                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
+                                        onExpandToggle = {
+                                            val currentState = individualToggles[notification.id]
+                                                ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                            individualToggles[notification.id] = !currentState
+                                            performHapticTick(context)
+                                        },
+                                        onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
+                                        onReply = { text, action -> viewModel.sendReply(context, notification, text, action) },
+                                        onArchiveNotification = onArchiveNotification
+                                    )
+                                } else {
+                                    NotificationItem(
+                                        notification = notification,
+                                        isArchivedView = false,
+                                        isUnifiedView = unifiedView,
 
-                                    onArchiveNotification = onArchiveNotification,
-                                    onPinNotification = onPinNotification,
-                                    isSelected = selectedIds.contains(notification.id),
-                                    isSelectionMode = isSelectionMode,
-                                    onSelectToggle = {
-                                        val becomingSelected = !selectedIds.contains(notification.id)
-                                        if (becomingSelected) performHapticClick(context) else performHapticTick(context)
-                                        
-                                        selectedIds = if (becomingSelected) {
-                                            selectedIds + notification.id
-                                        } else {
-                                            selectedIds - notification.id
-                                        }
-                                    },
+                                        onArchiveNotification = onArchiveNotification,
+                                        onPinNotification = onPinNotification,
+                                        isSelected = selectedIds.contains(notification.id),
+                                        isSelectionMode = isSelectionMode,
+                                        onSelectToggle = {
+                                            val becomingSelected = !selectedIds.contains(notification.id)
+                                            if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                            
+                                            selectedIds = if (becomingSelected) {
+                                                selectedIds + notification.id
+                                            } else {
+                                                selectedIds - notification.id
+                                            }
+                                        },
 
-                                    showActionChips = showActionChips,
-                                    minimizeIcons = settings.minimizeIcons,
-                                    allActions = actionsByKey[notification.notificationKey],
-                                    isExpanded = individualToggles[notification.id] 
-                                        ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
-                                    onExpandToggle = {
-                                        val currentState = individualToggles[notification.id] 
-                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
-                                        individualToggles[notification.id] = !currentState
-                                        performHapticTick(context)
-                                    },
-                                    onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
-                                    onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
-                                )
+                                        showActionChips = showActionChips,
+                                        minimizeIcons = settings.minimizeIcons,
+                                        allActions = actionsByKey[notification.notificationKey],
+                                        isExpanded = individualToggles[notification.id] 
+                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
+                                        onExpandToggle = {
+                                            val currentState = individualToggles[notification.id] 
+                                                ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                            individualToggles[notification.id] = !currentState
+                                            performHapticTick(context)
+                                        },
+                                        onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
+                                        onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
+                                    )
+                                }
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                             }
                         }
@@ -1364,7 +1398,7 @@ fun HubScreen(
                                 }
                             }
                         }
-                        items(itemsList, key = { it.id }) { notification ->
+                        itemsIndexed(itemsList, key = { _, it -> it.id }) { index, notification ->
                             class StateHolder(var state: SwipeToDismissBoxState? = null)
                             val stateHolder = remember { StateHolder() }
                             val dismissState = rememberSwipeToDismissBoxState(
@@ -1494,40 +1528,73 @@ fun HubScreen(
                                 },
                                 content = {
                                     Column {
-                                        NotificationItem(
-                                            notification = notification,
-                                            isArchivedView = false,
-                                            isUnifiedView = unifiedView,
+                                        val parentInConvo = if (settings.combineConversations) {
+                                            ConversationCombineHelper.findParentInConversation(context, itemsList, index)
+                                        } else null
 
-                                            onArchiveNotification = onArchiveNotification,
-                                            onPinNotification = onPinNotification,
-                                            isSelected = selectedIds.contains(notification.id),
-                                            isSelectionMode = isSelectionMode,
-                                            onSelectToggle = {
-                                                val becomingSelected = !selectedIds.contains(notification.id)
-                                                if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                        if (parentInConvo != null) {
+                                            val displayText = ConversationCombineHelper.getChildDisplayText(notification, parentInConvo)
+                                            CombinedNotificationItem(
+                                                notification = notification,
+                                                displayText = displayText,
+                                                isSelected = selectedIds.contains(notification.id),
+                                                isSelectionMode = isSelectionMode,
+                                                onSelectToggle = {
+                                                    val becomingSelected = !selectedIds.contains(notification.id)
+                                                    if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                                    selectedIds = if (becomingSelected) selectedIds + notification.id else selectedIds - notification.id
+                                                },
+                                                showActionChips = showActionChips,
+                                                minimizeIcons = settings.minimizeIcons,
+                                                allActions = actionsByKey[notification.notificationKey],
+                                                isExpanded = individualToggles[notification.id]
+                                                    ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
+                                                onExpandToggle = {
+                                                    val currentState = individualToggles[notification.id]
+                                                        ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                                    individualToggles[notification.id] = !currentState
+                                                    performHapticTick(context)
+                                                },
+                                                onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
+                                                onReply = { text, action -> viewModel.sendReply(context, notification, text, action) },
+                                                onArchiveNotification = onArchiveNotification
+                                            )
+                                        } else {
+                                            NotificationItem(
+                                                notification = notification,
+                                                isArchivedView = false,
+                                                isUnifiedView = unifiedView,
 
-                                                selectedIds = if (becomingSelected) {
-                                                    selectedIds + notification.id
-                                                } else {
-                                                    selectedIds - notification.id
-                                                }
-                                            },
+                                                onArchiveNotification = onArchiveNotification,
+                                                onPinNotification = onPinNotification,
+                                                isSelected = selectedIds.contains(notification.id),
+                                                isSelectionMode = isSelectionMode,
+                                                onSelectToggle = {
+                                                    val becomingSelected = !selectedIds.contains(notification.id)
+                                                    if (becomingSelected) performHapticClick(context) else performHapticTick(context)
 
-                                            showActionChips = showActionChips,
-                                            minimizeIcons = settings.minimizeIcons,
-                                            allActions = actionsByKey[notification.notificationKey],
-                                            isExpanded = individualToggles[notification.id] 
-                                                ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
-                                            onExpandToggle = {
-                                                val currentState = individualToggles[notification.id] 
-                                                    ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
-                                                individualToggles[notification.id] = !currentState
-                                                performHapticTick(context)
-                                            },
-                                            onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
-                                            onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
-                                        )
+                                                    selectedIds = if (becomingSelected) {
+                                                        selectedIds + notification.id
+                                                    } else {
+                                                        selectedIds - notification.id
+                                                    }
+                                                },
+
+                                                showActionChips = showActionChips,
+                                                minimizeIcons = settings.minimizeIcons,
+                                                allActions = actionsByKey[notification.notificationKey],
+                                                isExpanded = individualToggles[notification.id] 
+                                                    ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
+                                                onExpandToggle = {
+                                                    val currentState = individualToggles[notification.id] 
+                                                        ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                                    individualToggles[notification.id] = !currentState
+                                                    performHapticTick(context)
+                                                },
+                                                onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
+                                                onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
+                                            )
+                                        }
                                         Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                                     }
                                 }

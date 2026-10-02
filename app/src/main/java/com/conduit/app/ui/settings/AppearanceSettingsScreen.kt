@@ -34,6 +34,7 @@ interface AppearanceSettingsScreenCallbacks {
     fun onMinimizeIconsChanged(enabled: Boolean)
     fun onAutoCollapseReadChanged(enabled: Boolean)
     fun onDefaultToTodoModeChanged(enabled: Boolean)
+    fun onCombineConversationsChanged(enabled: Boolean)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -226,6 +227,13 @@ fun AppearanceSettingsScreen(
                 description = "Automatically open Conduit in Todo Mode on startup instead of the Unified View",
                 checked = settings.defaultToTodoMode,
                 onCheckedChange = callbacks::onDefaultToTodoModeChanged
+            )
+
+            SettingsSwitchRow(
+                title = "Combine Conversations",
+                description = "Group adjacent messages from the same conversation into a streamlined thread, hiding duplicate titles and app icons",
+                checked = settings.combineConversations,
+                onCheckedChange = callbacks::onCombineConversationsChanged
             )
 
             Spacer(modifier = Modifier.height(24.dp))

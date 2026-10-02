@@ -64,6 +64,7 @@ fun SettingsNavHost(
                 override fun onMinimizeIconsChanged(enabled: Boolean) { settingsViewModel.updateMinimizeIcons(enabled) }
                 override fun onAutoCollapseReadChanged(enabled: Boolean) { settingsViewModel.updateAutoCollapseRead(enabled) }
                 override fun onDefaultToTodoModeChanged(enabled: Boolean) { settingsViewModel.updateDefaultToTodoMode(enabled) }
+                override fun onCombineConversationsChanged(enabled: Boolean) { settingsViewModel.updateCombineConversations(enabled) }
             },
             onNavigateBack = onNavigateBackToSettings
         )

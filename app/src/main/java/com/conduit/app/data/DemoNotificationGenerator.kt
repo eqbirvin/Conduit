@@ -282,7 +282,36 @@ object DemoNotificationGenerator {
                 testNotifications.add(notif)
             }
         }
-        
+
+        // Seed adjacent multi-message conversation for Google Messages to test Combine Conversations
+        val googleMessagesPkg = "com.google.android.apps.messaging"
+        val convoKey = "demo_convo_danae"
+        val topConvoNotif = HubNotification(
+            packageName = googleMessagesPkg,
+            notificationKey = convoKey,
+            title = "Danae Shepard",
+            text = "Are you on your way home yet?",
+            timestamp = now - 60_000L,
+            channel = "Messages",
+            isDemo = true,
+            kind = "MESSAGE"
+        )
+        val childConvoNotif = HubNotification(
+            packageName = googleMessagesPkg,
+            notificationKey = convoKey,
+            title = "Danae Shepard",
+            text = "Don't forget to grab milk on the way!",
+            timestamp = now - 180_000L,
+            channel = "Messages",
+            isDemo = true,
+            kind = "MESSAGE"
+        )
+        testNotifications.add(topConvoNotif)
+        testNotifications.add(childConvoNotif)
+        if (service != null) {
+            service.injectDemoActions(convoKey, generateMockActions(context, "MESSAGE", "Messages"))
+        }
+
         testNotifications.forEach { database.notificationDao().insert(it) }
     }
     

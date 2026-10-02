@@ -66,6 +66,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateDemoModeEnabled(enabled: Boolean) = viewModelScope.launch { repository.updateDemoModeEnabled(enabled) }
     fun updateIngestionDiagnosticsEnabled(enabled: Boolean) = viewModelScope.launch { repository.updateIngestionDiagnosticsEnabled(enabled) }
     fun updateCustomViewsExpanded(enabled: Boolean) = viewModelScope.launch { repository.updateCustomViewsExpanded(enabled) }
+    fun updateCombineConversations(enabled: Boolean) = viewModelScope.launch { repository.updateCombineConversations(enabled) }
 
     class Factory(private val repository: SettingsRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

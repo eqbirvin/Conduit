@@ -132,58 +132,7 @@ fun NotificationItem(
                     if (isSelectionMode) {
                         onSelectToggle()
                     } else {
-                        var launched = false
-                        val service = HubNotificationListenerService.instance
-                        if (service != null) {
-                            try {
-                                val activeNotifs = service.activeNotifications
-                                for (sbn in activeNotifs) {
-                                    if (sbn.key == notification.notificationKey) {
-                                        val intent = sbn.notification.contentIntent
-                                        if (intent != null) {
-                                            val options = android.app.ActivityOptions.makeBasic()
-                                            if (android.os.Build.VERSION.SDK_INT >= 34) {
-                                                options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                                            }
-                                            intent.send(context, 0, null, null, null, null, options.toBundle())
-                                            launched = true
-                                        }
-                                        break
-                                    }
-                                }
-                                
-                                // Fallback to in-memory cache if not found in active live notifications
-                                if (!launched) {
-                                    val cachedIntent = service.getCachedContentIntent(notification.notificationKey)
-                                    if (cachedIntent != null) {
-                                        val options = android.app.ActivityOptions.makeBasic()
-                                        if (android.os.Build.VERSION.SDK_INT >= 34) {
-                                            options.pendingIntentBackgroundActivityStartMode = android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                                        }
-                                        cachedIntent.send(context, 0, null, null, null, null, options.toBundle())
-                                        launched = true
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                android.util.Log.e("Conduit", "Exception caught", e)
-                            }
-                        }
-
-                        if (!launched) {
-                            try {
-                                val repPkg = getRepresentativePackage(context, notification.packageName)
-                                val launchedCrossProfile = launchApp(context, repPkg)
-                                if (!launchedCrossProfile) {
-                                    val launchIntent = context.packageManager.getLaunchIntentForPackage(repPkg)
-                                    if (launchIntent != null) {
-                                        launchIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        context.startActivity(launchIntent)
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                android.util.Log.e("Conduit", "Exception caught", e)
-                            }
-                        }
+                        NotificationLaunchHelper.launchNotification(context, notification)
                     }
                 },
                 onLongClick = {

@@ -105,7 +105,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             bundleMenuSizing = prefs.getString("bundle_menu_sizing", "MATCH_DOCK") ?: "MATCH_DOCK",
             dockExpandPosition = prefs.getString("dock_expand_position", "LEFT") ?: "LEFT",
             transparentBundlePills = prefs.getBoolean("transparent_bundle_pills", false),
-            bundleMenuBlur = prefs.getBoolean("bundle_menu_blur", true)
+            bundleMenuBlur = prefs.getBoolean("bundle_menu_blur", true),
+            combineConversations = prefs.getBoolean("combine_conversations", true)
         )
     }
 
@@ -422,6 +423,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateCustomViewsExpanded(enabled: Boolean) {
         prefs.edit().putBoolean("custom_views_expanded", enabled).apply()
         _settings.update { it.copy(customViewsExpanded = enabled) }
+    }
+
+    fun updateCombineConversations(enabled: Boolean) {
+        prefs.edit().putBoolean("combine_conversations", enabled).apply()
+        _settings.update { it.copy(combineConversations = enabled) }
     }
 }
 

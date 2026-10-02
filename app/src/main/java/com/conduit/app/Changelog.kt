@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.33.00",
+        date = "October 1, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Combine Conversations",
+                description = "Streamlines adjacent messages from the same conversation into a clean thread, showing only the message content, timestamp, and expand controls while removing redundant app icons, names, and titles.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.32.02",
         date = "September 30, 2026",
         highlights = listOf(
