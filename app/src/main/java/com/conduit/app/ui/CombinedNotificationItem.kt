@@ -132,34 +132,24 @@ fun CombinedNotificationItem(
                     .weight(1f)
                     .padding(vertical = 2.dp)
             ) {
-                // Top row: Sender Name (if group chat) or message preview on left, Time + Expand toggle on right
+                // Top row: Sender Name (if group chat) on left, Time + Expand toggle on right
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (isGroupChat && !senderName.isNullOrBlank()) {
-                            Text(
-                                text = senderName,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        } else if (!isExpanded) {
-                            Text(
-                                text = annotatedText,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                    if (isGroupChat && !senderName.isNullOrBlank()) {
+                        Text(
+                            text = senderName,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -190,28 +180,17 @@ fun CombinedNotificationItem(
                     }
                 }
 
-                // Body text: if group chat, or if expanded, show the full message content
-                if (isGroupChat && !senderName.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = annotatedText,
-                        fontSize = 14.sp,
-                        lineHeight = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = if (isExpanded) 12 else 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                } else if (isExpanded) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = annotatedText,
-                        fontSize = 14.sp,
-                        lineHeight = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 12,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                // Body text: full width across its own dedicated line for both 1-on-1 and Group Chat!
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = annotatedText,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = if (isExpanded) 12 else 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

@@ -850,15 +850,19 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
                     title = extras.getCharSequence(Notification.EXTRA_TITLE_BIG)?.toString() ?: ""
                 }
                 
-                var text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+                val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()
+                val extraText = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
+                var text = if (!bigText.isNullOrBlank() && bigText.length > extraText.length) {
+                    bigText
+                } else if (extraText.isNotBlank()) {
+                    extraText
+                } else {
+                    extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
+                }
                 if (text.isBlank()) {
-                    text = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() 
-                        ?: extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
-                    if (text.isBlank()) {
-                        val lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
-                        if (lines != null && lines.isNotEmpty()) {
-                            text = lines.last()?.toString() ?: ""
-                        }
+                    val lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
+                    if (lines != null && lines.isNotEmpty()) {
+                        text = lines.last()?.toString() ?: ""
                     }
                 }
                 
