@@ -132,13 +132,13 @@ fun CombinedNotificationItem(
                     .weight(1f)
                     .padding(vertical = 2.dp)
             ) {
-                // Top row: Sender Name (if group chat) on left, Time + Expand toggle on right
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (isGroupChat && !senderName.isNullOrBlank()) {
+                if (isGroupChat && !senderName.isNullOrBlank()) {
+                    // Group chat: Header row with Sender Name and Time/Expand toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
                             text = senderName,
                             fontWeight = FontWeight.SemiBold,
@@ -148,49 +148,106 @@ fun CombinedNotificationItem(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, fill = false)
                         )
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = formatTimestamp(notification.timestamp),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = onExpandToggle
-                                )
-                                .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp))
-                        ) {
-                            Icon(
-                                imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                                contentDescription = if (isExpanded) "Collapse" else "Expand",
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = formatTimestamp(notification.timestamp),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                        onClick = onExpandToggle
+                                    )
+                                    .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp))
+                            ) {
+                                Icon(
+                                    imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
                         }
                     }
-                }
 
-                // Body text: full width across its own dedicated line for both 1-on-1 and Group Chat!
-                Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    text = annotatedText,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = if (isExpanded) 12 else 3,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    // Body messages under sender name in group chat
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = annotatedText,
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = if (isExpanded) 12 else 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    // 1-on-1 chat: Single line layout extending all the way up to the timestamp
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (!isExpanded) {
+                            Text(
+                                text = annotatedText,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = formatTimestamp(notification.timestamp),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                        onClick = onExpandToggle
+                                    )
+                                    .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp))
+                            ) {
+                                Icon(
+                                    imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+
+                    if (isExpanded) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = annotatedText,
+                            fontSize = 14.sp,
+                            lineHeight = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 12,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
         }
     }

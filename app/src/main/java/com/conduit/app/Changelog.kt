@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.33.03",
+        date = "October 6, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Streamlined Single-Line Conversation Messages",
+                description = "Reverted expanded vertical spacing for combined 1-on-1 messages to keep conversation lists compact. Collapsed messages now render on a clean single line extending edge-to-edge right up to the timestamp, expanding only when tapped.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.33.02",
         date = "October 6, 2026",
         highlights = listOf(
