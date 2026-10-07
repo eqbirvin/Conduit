@@ -189,27 +189,27 @@ fun CombinedNotificationItem(
                         modifier = Modifier.fillMaxWidth()
                     )
                 } else {
-                    // 1-on-1 chat: Single line layout extending all the way up to the timestamp
+                    // 1-on-1 chat: Text starts directly on the top line beside the timestamp
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.Top
                     ) {
-                        if (!isExpanded) {
-                            Text(
-                                text = annotatedText,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
+                        Text(
+                            text = annotatedText,
+                            fontSize = 14.sp,
+                            lineHeight = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = if (isExpanded) 12 else 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = 1.dp)
+                        ) {
                             Text(
                                 text = formatTimestamp(notification.timestamp),
                                 fontSize = 12.sp,
@@ -233,19 +233,6 @@ fun CombinedNotificationItem(
                                 )
                             }
                         }
-                    }
-
-                    if (isExpanded) {
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = annotatedText,
-                            fontSize = 14.sp,
-                            lineHeight = 18.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 12,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.fillMaxWidth()
-                        )
                     }
                 }
             }

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.33.04",
+        date = "October 6, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Seamless Conversation Message Placement",
+                description = "Removed empty header gap above expanded 1-on-1 messages. Message text now starts immediately on the top line beside the timestamp and flows downward naturally when expanded, eliminating blank vertical spacing.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.33.03",
         date = "October 6, 2026",
         highlights = listOf(
