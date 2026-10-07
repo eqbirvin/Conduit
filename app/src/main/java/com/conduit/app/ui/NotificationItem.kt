@@ -93,7 +93,8 @@ fun NotificationItem(
     isUnifiedView: Boolean = false,
     allActions: List<Notification.Action>? = null,
     onTriggerAction: (Notification.Action) -> Unit = {},
-    onReply: (String, Notification.Action) -> Unit = { _, _ -> }
+    onReply: (String, Notification.Action) -> Unit = { _, _ -> },
+    overrideText: String? = null
 ) {
     val context = LocalContext.current
     var isReplying by remember { mutableStateOf(false) }
@@ -154,8 +155,9 @@ fun NotificationItem(
         }
         
         val replyPrimaryColor = MaterialTheme.colorScheme.primary
-        val annotatedText = remember(notification.text, replyPrimaryColor) {
-            val fullText = notification.text ?: ""
+        val textToRender = overrideText ?: notification.text
+        val annotatedText = remember(textToRender, replyPrimaryColor) {
+            val fullText = textToRender ?: ""
             buildAnnotatedString {
                 val lines = fullText.split("\n")
                 lines.forEachIndexed { index, line ->
@@ -310,7 +312,7 @@ fun NotificationItem(
                         fontSize = 14.sp,
                         lineHeight = 18.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 6,
+                        maxLines = if (overrideText != null) 12 else 6,
                         overflow = TextOverflow.Ellipsis
                     )
                 } else {

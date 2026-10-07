@@ -90,4 +90,109 @@ object ConversationCombineHelper {
         }
         return text
     }
+
+    fun groupConversationItems(
+        context: Context,
+        items: List<HubNotification>,
+        combineEnabled: Boolean
+    ): List<GroupedConversationItem> {
+        if (items.isEmpty()) return emptyList()
+        if (!combineEnabled) {
+            return items.map { notif ->
+                GroupedConversationItem(
+                    primaryNotification = notif,
+                    allNotifications = listOf(notif),
+                    isChildInConversation = false,
+                    senderName = null,
+                    isGroupChat = isGroupChat(notif.title),
+                    combinedText = notif.text.orEmpty()
+                )
+            }
+        }
+
+        val result = mutableListOf<GroupedConversationItem>()
+        var i = 0
+        while (i < items.size) {
+            val clusterStart = i
+            // Find contiguous conversation cluster
+            while (i + 1 < items.size && areInSameConversation(context, items[i + 1], items[i])) {
+                i++
+            }
+            val clusterEnd = i // inclusive
+            val cluster = items.subList(clusterStart, clusterEnd + 1)
+            val isGroup = cluster.any { isGroupChat(it.title) }
+
+            if (!isGroup) {
+                // 1-on-1 chat: Each notification is its own item; first is primary, rest are children without action chips
+                cluster.forEachIndexed { index, notif ->
+                    result.add(
+                        GroupedConversationItem(
+                            primaryNotification = notif,
+                            allNotifications = listOf(notif),
+                            isChildInConversation = index > 0,
+                            senderName = null,
+                            isGroupChat = false,
+                            combinedText = notif.text.orEmpty()
+                        )
+                    )
+                }
+            } else {
+                // Group chat: Partition consecutive messages within the cluster by sender
+                var s = 0
+                var isFirstSenderGroupInCluster = true
+                while (s < cluster.size) {
+                    val senderGroupStart = s
+                    val currentSender = extractSenderName(cluster[s].title)
+                    while (s + 1 < cluster.size) {
+                        val nextSender = extractSenderName(cluster[s + 1].title)
+                        if ((currentSender.isNullOrBlank() && nextSender.isNullOrBlank()) ||
+                            (!currentSender.isNullOrBlank() && currentSender.equals(nextSender, ignoreCase = true))
+                        ) {
+                            s++
+                        } else {
+                            break
+                        }
+                    }
+                    val senderGroupEnd = s // inclusive
+                    val senderGroup = cluster.subList(senderGroupStart, senderGroupEnd + 1)
+
+                    // Sort chronological (oldest to newest) for message bubble display
+                    val chronological = senderGroup.sortedBy { it.timestamp }
+                    val combinedText = chronological.mapNotNull { it.text?.trim() }
+                        .filter { it.isNotEmpty() }
+                        .joinToString("\n")
+                        .ifEmpty { senderGroup.first().text.orEmpty() }
+
+                    val primaryNotif = senderGroup.maxByOrNull { it.timestamp } ?: senderGroup.first()
+                    val isChild = !isFirstSenderGroupInCluster
+
+                    result.add(
+                        GroupedConversationItem(
+                            primaryNotification = primaryNotif,
+                            allNotifications = senderGroup,
+                            isChildInConversation = isChild,
+                            senderName = currentSender,
+                            isGroupChat = true,
+                            combinedText = combinedText
+                        )
+                    )
+
+                    isFirstSenderGroupInCluster = false
+                    s++
+                }
+            }
+
+            i++
+        }
+        return result
+    }
 }
+
+data class GroupedConversationItem(
+    val primaryNotification: HubNotification,
+    val allNotifications: List<HubNotification>,
+    val isChildInConversation: Boolean,
+    val senderName: String?,
+    val isGroupChat: Boolean,
+    val combinedText: String
+)

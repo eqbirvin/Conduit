@@ -312,6 +312,56 @@ object DemoNotificationGenerator {
             service.injectDemoActions(convoKey, generateMockActions(context, "MESSAGE", "Messages"))
         }
 
+        // Seed group chat conversation with multiple senders and consecutive messages
+        val groupKey = "demo_convo_group"
+        val groupChatTitle = "Danae Shepard, Djuana Tucker"
+        val groupNotifs = listOf(
+            HubNotification(
+                packageName = googleMessagesPkg,
+                notificationKey = groupKey,
+                title = "Djuana Tucker ($groupChatTitle)",
+                text = "Eat, not at.",
+                timestamp = now - 10_000L,
+                channel = "Messages",
+                isDemo = true,
+                kind = "MESSAGE"
+            ),
+            HubNotification(
+                packageName = googleMessagesPkg,
+                notificationKey = groupKey,
+                title = "Djuana Tucker ($groupChatTitle)",
+                text = "They usually change the flavor every week, so she can pick up a new quart after they come at Uncle lennys.",
+                timestamp = now - 20_000L,
+                channel = "Messages",
+                isDemo = true,
+                kind = "MESSAGE"
+            ),
+            HubNotification(
+                packageName = googleMessagesPkg,
+                notificationKey = groupKey,
+                title = "Danae Shepard ($groupChatTitle)",
+                text = "Aw I'm glad!",
+                timestamp = now - 30_000L,
+                channel = "Messages",
+                isDemo = true,
+                kind = "MESSAGE"
+            ),
+            HubNotification(
+                packageName = googleMessagesPkg,
+                notificationKey = groupKey,
+                title = "Danae Shepard ($groupChatTitle)",
+                text = "❤️ to \"Grandma loves the froyo! She said thank you!\"",
+                timestamp = now - 40_000L,
+                channel = "Messages",
+                isDemo = true,
+                kind = "MESSAGE"
+            )
+        )
+        testNotifications.addAll(groupNotifs)
+        if (service != null) {
+            service.injectDemoActions(groupKey, generateMockActions(context, "MESSAGE", "Messages"))
+        }
+
         testNotifications.forEach { database.notificationDao().insert(it) }
     }
     

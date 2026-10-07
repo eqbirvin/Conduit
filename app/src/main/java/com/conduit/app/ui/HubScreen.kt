@@ -1200,8 +1200,15 @@ fun HubScreen(
                 val unpinnedNotifications = remember(displayNotifications) {
                     displayNotifications.filter { !it.isPinned }
                 }
-                val groupedNotifications = remember(unpinnedNotifications) {
-                    unpinnedNotifications.groupBy { formatDateHeader(it.timestamp) }
+                val groupedNotifications = remember(unpinnedNotifications, settings.combineConversations) {
+                    unpinnedNotifications
+                        .groupBy { formatDateHeader(it.timestamp) }
+                        .mapValues { (_, itemsList) ->
+                            ConversationCombineHelper.groupConversationItems(context, itemsList, settings.combineConversations)
+                        }
+                }
+                val groupedPinned = remember(pinnedNotifications, settings.combineConversations) {
+                    ConversationCombineHelper.groupConversationItems(context, pinnedNotifications, settings.combineConversations)
                 }
                 
                 val currentViewConfig = LocalViewConfiguration.current
@@ -1245,29 +1252,27 @@ fun HubScreen(
                                 }
                             }
                         }
-                        itemsIndexed(pinnedNotifications, key = { _, it -> "pinned_${it.id}" }) { index, notification ->
-                            val parentInConvo = if (settings.combineConversations) {
-                                ConversationCombineHelper.findParentInConversation(context, pinnedNotifications, index)
-                            } else null
-
+                        items(groupedPinned, key = { "pinned_${it.primaryNotification.id}" }) { item ->
+                            val notification = item.primaryNotification
                             Box(modifier = Modifier.animateItem(
                                 placementSpec = tween(durationMillis = 300)
                             )) {
-                                if (parentInConvo != null) {
-                                    val displayText = ConversationCombineHelper.getChildDisplayText(notification, parentInConvo)
+                                if (item.isChildInConversation) {
                                     CombinedNotificationItem(
                                         notification = notification,
-                                        displayText = displayText,
-                                        isSelected = selectedIds.contains(notification.id),
+                                        displayText = item.combinedText,
+                                        senderName = item.senderName,
+                                        isGroupChat = item.isGroupChat,
+                                        isSelected = item.allNotifications.any { selectedIds.contains(it.id) },
                                         isSelectionMode = isSelectionMode,
                                         onSelectToggle = {
-                                            val becomingSelected = !selectedIds.contains(notification.id)
+                                            val allIds = item.allNotifications.map { it.id }.toSet()
+                                            val anySelected = allIds.any { selectedIds.contains(it) }
+                                            val becomingSelected = !anySelected
                                             if (becomingSelected) performHapticClick(context) else performHapticTick(context)
-                                            selectedIds = if (becomingSelected) selectedIds + notification.id else selectedIds - notification.id
+                                            selectedIds = if (becomingSelected) selectedIds + allIds else selectedIds - allIds
                                         },
-                                        showActionChips = showActionChips,
                                         minimizeIcons = settings.minimizeIcons,
-                                        allActions = actionsByKey[notification.notificationKey],
                                         isExpanded = individualToggles[notification.id]
                                             ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
                                         onExpandToggle = {
@@ -1275,32 +1280,24 @@ fun HubScreen(
                                                 ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
                                             individualToggles[notification.id] = !currentState
                                             performHapticTick(context)
-                                        },
-                                        onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
-                                        onReply = { text, action -> viewModel.sendReply(context, notification, text, action) },
-                                        onArchiveNotification = onArchiveNotification
+                                        }
                                     )
                                 } else {
                                     NotificationItem(
                                         notification = notification,
                                         isArchivedView = false,
                                         isUnifiedView = unifiedView,
-
                                         onArchiveNotification = onArchiveNotification,
                                         onPinNotification = onPinNotification,
-                                        isSelected = selectedIds.contains(notification.id),
+                                        isSelected = item.allNotifications.any { selectedIds.contains(it.id) },
                                         isSelectionMode = isSelectionMode,
                                         onSelectToggle = {
-                                            val becomingSelected = !selectedIds.contains(notification.id)
+                                            val allIds = item.allNotifications.map { it.id }.toSet()
+                                            val anySelected = allIds.any { selectedIds.contains(it) }
+                                            val becomingSelected = !anySelected
                                             if (becomingSelected) performHapticClick(context) else performHapticTick(context)
-                                            
-                                            selectedIds = if (becomingSelected) {
-                                                selectedIds + notification.id
-                                            } else {
-                                                selectedIds - notification.id
-                                            }
+                                            selectedIds = if (becomingSelected) selectedIds + allIds else selectedIds - allIds
                                         },
-
                                         showActionChips = showActionChips,
                                         minimizeIcons = settings.minimizeIcons,
                                         allActions = actionsByKey[notification.notificationKey],
@@ -1313,10 +1310,11 @@ fun HubScreen(
                                             performHapticTick(context)
                                         },
                                         onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
-                                        onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
+                                        onReply = { text, action -> viewModel.sendReply(context, notification, text, action) },
+                                        overrideText = if (settings.combineConversations) item.combinedText else null
                                     )
                                 }
-                                Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                             }
                         }
                     }
@@ -1343,7 +1341,8 @@ fun HubScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                     if (unifiedView) {
-                                        val pendingCount = itemsList.count { notifications.contains(it) }
+                                        val allNotifsInDate = itemsList.flatMap { it.allNotifications }
+                                        val pendingCount = allNotifsInDate.count { notifications.contains(it) }
                                         val chipText = if (pendingCount > 0) "${itemsList.size} | UNREAD $pendingCount" else "${itemsList.size}"
                                         
                                         Row(
@@ -1377,7 +1376,7 @@ fun HubScreen(
                                                         .clip(rightShape)
                                                         .clickable {
                                                             performHapticClick(context)
-                                                            val itemsToArchive = itemsList.filter { notifications.contains(it) }
+                                                            val itemsToArchive = allNotifsInDate.filter { notifications.contains(it) }
                                                             if (itemsToArchive.isNotEmpty()) {
                                                                 viewModel.markNotificationsAsRead(itemsToArchive)
                                                             }
@@ -1398,7 +1397,8 @@ fun HubScreen(
                                 }
                             }
                         }
-                        itemsIndexed(itemsList, key = { _, it -> it.id }) { index, notification ->
+                        items(itemsList, key = { it.primaryNotification.id }) { item ->
+                            val notification = item.primaryNotification
                             class StateHolder(var state: SwipeToDismissBoxState? = null)
                             val stateHolder = remember { StateHolder() }
                             val dismissState = rememberSwipeToDismissBoxState(
@@ -1417,7 +1417,7 @@ fun HubScreen(
                                     val action = if (value == SwipeToDismissBoxValue.StartToEnd) swipeRightAction else swipeLeftAction
                                     when (action) {
                                         "ARCHIVE" -> {
-                                            viewModel.markNotificationsAsRead(listOf(notification))
+                                            viewModel.markNotificationsAsRead(item.allNotifications)
                                             !unifiedView
                                         }
                                         "SNOOZE" -> {
@@ -1425,7 +1425,7 @@ fun HubScreen(
                                             false
                                         }
                                         "PIN" -> {
-                                            onPinNotification(notification)
+                                            item.allNotifications.forEach { onPinNotification(it) }
                                             false
                                         }
                                         "BLOCK" -> {
@@ -1528,25 +1528,22 @@ fun HubScreen(
                                 },
                                 content = {
                                     Column {
-                                        val parentInConvo = if (settings.combineConversations) {
-                                            ConversationCombineHelper.findParentInConversation(context, itemsList, index)
-                                        } else null
-
-                                        if (parentInConvo != null) {
-                                            val displayText = ConversationCombineHelper.getChildDisplayText(notification, parentInConvo)
+                                        if (item.isChildInConversation) {
                                             CombinedNotificationItem(
                                                 notification = notification,
-                                                displayText = displayText,
-                                                isSelected = selectedIds.contains(notification.id),
+                                                displayText = item.combinedText,
+                                                senderName = item.senderName,
+                                                isGroupChat = item.isGroupChat,
+                                                isSelected = item.allNotifications.any { selectedIds.contains(it.id) },
                                                 isSelectionMode = isSelectionMode,
                                                 onSelectToggle = {
-                                                    val becomingSelected = !selectedIds.contains(notification.id)
+                                                    val allIds = item.allNotifications.map { it.id }.toSet()
+                                                    val anySelected = allIds.any { selectedIds.contains(it) }
+                                                    val becomingSelected = !anySelected
                                                     if (becomingSelected) performHapticClick(context) else performHapticTick(context)
-                                                    selectedIds = if (becomingSelected) selectedIds + notification.id else selectedIds - notification.id
+                                                    selectedIds = if (becomingSelected) selectedIds + allIds else selectedIds - allIds
                                                 },
-                                                showActionChips = showActionChips,
                                                 minimizeIcons = settings.minimizeIcons,
-                                                allActions = actionsByKey[notification.notificationKey],
                                                 isExpanded = individualToggles[notification.id]
                                                     ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
                                                 onExpandToggle = {
@@ -1554,32 +1551,24 @@ fun HubScreen(
                                                         ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
                                                     individualToggles[notification.id] = !currentState
                                                     performHapticTick(context)
-                                                },
-                                                onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
-                                                onReply = { text, action -> viewModel.sendReply(context, notification, text, action) },
-                                                onArchiveNotification = onArchiveNotification
+                                                }
                                             )
                                         } else {
                                             NotificationItem(
                                                 notification = notification,
                                                 isArchivedView = false,
                                                 isUnifiedView = unifiedView,
-
                                                 onArchiveNotification = onArchiveNotification,
                                                 onPinNotification = onPinNotification,
-                                                isSelected = selectedIds.contains(notification.id),
+                                                isSelected = item.allNotifications.any { selectedIds.contains(it.id) },
                                                 isSelectionMode = isSelectionMode,
                                                 onSelectToggle = {
-                                                    val becomingSelected = !selectedIds.contains(notification.id)
+                                                    val allIds = item.allNotifications.map { it.id }.toSet()
+                                                    val anySelected = allIds.any { selectedIds.contains(it) }
+                                                    val becomingSelected = !anySelected
                                                     if (becomingSelected) performHapticClick(context) else performHapticTick(context)
-
-                                                    selectedIds = if (becomingSelected) {
-                                                        selectedIds + notification.id
-                                                    } else {
-                                                        selectedIds - notification.id
-                                                    }
+                                                    selectedIds = if (becomingSelected) selectedIds + allIds else selectedIds - allIds
                                                 },
-
                                                 showActionChips = showActionChips,
                                                 minimizeIcons = settings.minimizeIcons,
                                                 allActions = actionsByKey[notification.notificationKey],
@@ -1592,10 +1581,11 @@ fun HubScreen(
                                                     performHapticTick(context)
                                                 },
                                                 onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
-                                                onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
+                                                onReply = { text, action -> viewModel.sendReply(context, notification, text, action) },
+                                                overrideText = if (settings.combineConversations) item.combinedText else null
                                             )
                                         }
-                                        Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                                     }
                                 }
                             )

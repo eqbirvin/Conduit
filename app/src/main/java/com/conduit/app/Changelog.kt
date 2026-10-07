@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.33.01",
+        date = "October 6, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Group Chat Sender Combining & Clean Action Chips",
+                description = "Group chat messages from the same sender are now bundled into clean, self-contained cards showing the sender name once with all of their consecutive messages together. Action chips (Mark as read, Reply) now appear exclusively on the top conversation entry, removing repetitive buttons from child messages.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.33.00",
         date = "October 1, 2026",
         highlights = listOf(
