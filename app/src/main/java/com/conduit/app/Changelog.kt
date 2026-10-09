@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.33.08",
+        date = "October 8, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Conversation Threading & Launch Optimizations",
+                description = "Fixed group chat sub-count to accurately reflect child sender groups, ensured thread archiving/selection on primary cards applies to all rolled-up messages, hoisted regex patterns, and added fast-path in-memory intent dispatch.",
+                iconName = "CheckCircle"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.33.07",
         date = "October 8, 2026",
         highlights = listOf(

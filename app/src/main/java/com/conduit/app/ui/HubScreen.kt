@@ -1188,7 +1188,7 @@ fun HubScreen(
                                                         onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
                                                         onReply = { text, action -> viewModel.sendReply(context, notification, text, action) }
                                                     )
-                                                    Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                                                 }
                                             }
                                         )
@@ -1220,6 +1220,7 @@ fun HubScreen(
                 val unpinnedNotifications = remember(displayNotifications) {
                     displayNotifications.filter { !it.isPinned }
                 }
+                val activeNotificationIds = remember(notifications) { notifications.map { it.id }.toSet() }
                 val groupedNotifications = remember(unpinnedNotifications, settings.combineConversations) {
                     unpinnedNotifications
                         .groupBy { formatDateHeader(it.timestamp) }
@@ -1399,7 +1400,7 @@ fun HubScreen(
                                     )
                                     if (unifiedView) {
                                         val allNotifsInDate = remember(itemsList) { itemsList.flatMap { it.allNotifications }.distinctBy { it.id } }
-                                        val pendingCount = allNotifsInDate.count { notifications.contains(it) }
+                                        val pendingCount = allNotifsInDate.count { activeNotificationIds.contains(it.id) }
                                         val chipText = if (pendingCount > 0) "${itemsList.size} | UNREAD $pendingCount" else "${itemsList.size}"
                                         
                                         Row(
@@ -1433,7 +1434,7 @@ fun HubScreen(
                                                         .clip(rightShape)
                                                         .clickable {
                                                             performHapticClick(context)
-                                                            val itemsToArchive = allNotifsInDate.filter { notifications.contains(it) }
+                                                            val itemsToArchive = allNotifsInDate.filter { activeNotificationIds.contains(it.id) }
                                                             if (itemsToArchive.isNotEmpty()) {
                                                                 viewModel.markNotificationsAsRead(itemsToArchive)
                                                             }

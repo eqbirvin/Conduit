@@ -6,17 +6,20 @@ import com.conduit.app.getRepresentativePackage
 
 object ConversationCombineHelper {
 
+    private val CONVERSATION_NAME_REGEX = Regex("""\((.+)\)$""")
+    private val SENDER_NAME_REGEX = Regex("""^(.*?)\s*\((.+)\)$""")
+
     fun extractConversationName(title: String?): String? {
         if (title.isNullOrBlank()) return null
         val trimmed = title.trim()
-        val match = Regex("""\((.+)\)$""").find(trimmed)
+        val match = CONVERSATION_NAME_REGEX.find(trimmed)
         return match?.groupValues?.get(1)?.trim() ?: trimmed
     }
 
     fun extractSenderName(title: String?): String? {
         if (title.isNullOrBlank()) return null
         val trimmed = title.trim()
-        val match = Regex("""^(.*?)\s*\((.+)\)$""").find(trimmed)
+        val match = SENDER_NAME_REGEX.find(trimmed)
         return if (match != null && match.groupValues[1].isNotBlank()) {
             match.groupValues[1].trim()
         } else {
@@ -26,7 +29,7 @@ object ConversationCombineHelper {
 
     fun isGroupChat(title: String?): Boolean {
         if (title.isNullOrBlank()) return false
-        return Regex("""\((.+)\)$""").containsMatchIn(title.trim())
+        return CONVERSATION_NAME_REGEX.containsMatchIn(title.trim())
     }
 
     fun areInSameConversation(
@@ -133,13 +136,13 @@ object ConversationCombineHelper {
                     result.add(
                         GroupedConversationItem(
                             primaryNotification = notif,
-                            allNotifications = listOf(notif),
+                            allNotifications = if (index == 0) cluster else listOf(notif),
                             isChildInConversation = index > 0,
                             senderName = null,
                             isGroupChat = false,
                             combinedText = notif.text.orEmpty(),
                             subNotificationCount = if (index == 0) subCount else 0,
-                            isLastInConversation = index == cluster.size - 1 && cluster.size > 1,
+                            isLastInConversation = index > 0 && index == cluster.size - 1,
                             conversationClusterId = clusterPrimaryId
                         )
                     )
@@ -165,6 +168,8 @@ object ConversationCombineHelper {
                     s++
                 }
 
+                val groupSubCount = if (senderGroups.size > 1) senderGroups.size - 1 else 0
+
                 senderGroups.forEachIndexed { groupIdx, senderGroup ->
                     val currentSender = extractSenderName(senderGroup.first().title)
                     val chronological = senderGroup.sortedBy { it.timestamp }
@@ -175,17 +180,17 @@ object ConversationCombineHelper {
 
                     val primaryNotif = senderGroup.maxByOrNull { it.timestamp } ?: senderGroup.first()
                     val isChild = groupIdx > 0
-                    val isLast = groupIdx == senderGroups.size - 1 && cluster.size > 1
+                    val isLast = isChild && groupIdx == senderGroups.size - 1
 
                     result.add(
                         GroupedConversationItem(
                             primaryNotification = primaryNotif,
-                            allNotifications = senderGroup,
+                            allNotifications = if (groupIdx == 0) cluster else senderGroup,
                             isChildInConversation = isChild,
                             senderName = currentSender,
                             isGroupChat = true,
                             combinedText = combinedText,
-                            subNotificationCount = if (groupIdx == 0) subCount else 0,
+                            subNotificationCount = if (groupIdx == 0) groupSubCount else 0,
                             isLastInConversation = isLast,
                             conversationClusterId = clusterPrimaryId
                         )

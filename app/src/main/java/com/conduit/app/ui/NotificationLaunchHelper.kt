@@ -16,32 +16,33 @@ object NotificationLaunchHelper {
         val service = HubNotificationListenerService.instance
         if (service != null) {
             try {
-                val activeNotifs = service.activeNotifications
-                for (sbn in activeNotifs) {
-                    if (sbn.key == notification.notificationKey) {
-                        val intent = sbn.notification.contentIntent
-                        if (intent != null) {
-                            val options = ActivityOptions.makeBasic()
-                            if (Build.VERSION.SDK_INT >= 34) {
-                                options.pendingIntentBackgroundActivityStartMode = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                            }
-                            intent.send(context, 0, null, null, null, null, options.toBundle())
-                            launched = true
-                        }
-                        break
+                // Fast path: check in-memory cache first (zero IPC cost)
+                val cachedIntent = service.getCachedContentIntent(notification.notificationKey)
+                if (cachedIntent != null) {
+                    val options = ActivityOptions.makeBasic()
+                    if (Build.VERSION.SDK_INT >= 34) {
+                        options.pendingIntentBackgroundActivityStartMode = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
                     }
+                    cachedIntent.send(context, 0, null, null, null, null, options.toBundle())
+                    launched = true
                 }
 
-                // Fallback to in-memory cache if not found in active live notifications
+                // Fallback to active live notifications if not found in memory cache
                 if (!launched) {
-                    val cachedIntent = service.getCachedContentIntent(notification.notificationKey)
-                    if (cachedIntent != null) {
-                        val options = ActivityOptions.makeBasic()
-                        if (Build.VERSION.SDK_INT >= 34) {
-                            options.pendingIntentBackgroundActivityStartMode = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                    val activeNotifs = service.activeNotifications
+                    for (sbn in activeNotifs) {
+                        if (sbn.key == notification.notificationKey) {
+                            val intent = sbn.notification.contentIntent
+                            if (intent != null) {
+                                val options = ActivityOptions.makeBasic()
+                                if (Build.VERSION.SDK_INT >= 34) {
+                                    options.pendingIntentBackgroundActivityStartMode = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                                }
+                                intent.send(context, 0, null, null, null, null, options.toBundle())
+                                launched = true
+                            }
+                            break
                         }
-                        cachedIntent.send(context, 0, null, null, null, null, options.toBundle())
-                        launched = true
                     }
                 }
             } catch (e: Exception) {
