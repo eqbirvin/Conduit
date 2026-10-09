@@ -15,100 +15,17 @@ data class ChangelogRelease(
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
         versionName = "2.33.08",
-        date = "October 8, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Conversation Threading & Launch Optimizations",
-                description = "Fixed group chat sub-count to accurately reflect child sender groups, ensured thread archiving/selection on primary cards applies to all rolled-up messages, hoisted regex patterns, and added fast-path in-memory intent dispatch.",
-                iconName = "CheckCircle"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.33.07",
-        date = "October 8, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Refined Rollup Badge & Conversation Indent",
-                description = "Updated conversation rollup count to a clean text-based design with divider ('time | + #') and indented sub-messages under the parent notification by 16dp for clear visual threading.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.33.06",
-        date = "October 8, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "3-State Conversation Rollup",
-                description = "Added a 3-state expand/collapse flow for combined conversations: Default partially expanded (most recent message visible with +N count badge and double boundary divider), All expanded (thread messages shown and expanded), and Fully collapsed (compact single-line view with badge and divider).",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.33.05",
-        date = "October 8, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Clean Single-Line Conversation Entries",
-                description = "Removed the expand chevron toggle from conversation rollup messages that fit completely on a single line, keeping expand buttons exclusively on messages that spill into multiple lines.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.33.04",
-        date = "October 6, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Seamless Conversation Message Placement",
-                description = "Removed empty header gap above expanded 1-on-1 messages. Message text now starts immediately on the top line beside the timestamp and flows downward naturally when expanded, eliminating blank vertical spacing.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.33.03",
-        date = "October 6, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Streamlined Single-Line Conversation Messages",
-                description = "Reverted expanded vertical spacing for combined 1-on-1 messages to keep conversation lists compact. Collapsed messages now render on a clean single line extending edge-to-edge right up to the timestamp, expanding only when tapped.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.33.02",
-        date = "October 6, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Expanded Space for Combined Messages",
-                description = "Combined conversation messages now render across their own dedicated full-width lines with up to 3 lines of preview when collapsed, preventing single-line messages from being squeezed or truncated by the timestamp.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.33.01",
-        date = "October 6, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Group Chat Sender Combining & Clean Action Chips",
-                description = "Group chat messages from the same sender are now bundled into clean, self-contained cards showing the sender name once with all of their consecutive messages together. Action chips (Mark as read, Reply) now appear exclusively on the top conversation entry, removing repetitive buttons from child messages.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.33.00",
-        date = "October 1, 2026",
+        date = "October 9, 2026",
         highlights = listOf(
             ChangelogItem(
                 title = "Combine Conversations",
-                description = "Streamlines adjacent messages from the same conversation into a clean thread, showing only the message content, timestamp, and expand controls while removing redundant app icons, names, and titles.",
+                description = "New setting to group adjacent messages from the same conversation or group chat into seamless threads, removing duplicate app icons, titles, and redundant action buttons.",
                 iconName = "Forum"
+            ),
+            ChangelogItem(
+                title = "3-State Conversation Threading",
+                description = "Thread chevrons now cycle through three interactive states: partially expanded (latest message active with a '+ #' count badge and double boundary divider), fully expanded (all thread messages shown with indented replies), and fully collapsed.",
+                iconName = "UnfoldMore"
             )
         )
     ),
