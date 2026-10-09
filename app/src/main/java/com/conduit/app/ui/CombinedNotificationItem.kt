@@ -65,6 +65,10 @@ fun CombinedNotificationItem(
         }
     }
 
+    var canExpand by remember(displayText) {
+        mutableStateOf(displayText.contains('\n') || displayText.contains('\r'))
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,22 +161,24 @@ fun CombinedNotificationItem(
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                        onClick = onExpandToggle
+                            if (canExpand) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null,
+                                            onClick = onExpandToggle
+                                        )
+                                        .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp))
+                                ) {
+                                    Icon(
+                                        imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
-                                    .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp))
-                            ) {
-                                Icon(
-                                    imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                                    contentDescription = if (isExpanded) "Collapse" else "Expand",
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
+                                }
                             }
                         }
                     }
@@ -186,7 +192,12 @@ fun CombinedNotificationItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = if (isExpanded) 12 else 2,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        onTextLayout = { result ->
+                            if (!canExpand && (result.hasVisualOverflow || result.lineCount > 1 || (result.lineCount > 0 && result.isLineEllipsized(0)))) {
+                                canExpand = true
+                            }
+                        }
                     )
                 } else {
                     // 1-on-1 chat: Text starts directly on the top line beside the timestamp
@@ -201,7 +212,12 @@ fun CombinedNotificationItem(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = if (isExpanded) 12 else 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onTextLayout = { result ->
+                                if (!canExpand && (result.hasVisualOverflow || result.lineCount > 1 || (result.lineCount > 0 && result.isLineEllipsized(0)))) {
+                                    canExpand = true
+                                }
+                            }
                         )
 
                         Spacer(modifier = Modifier.width(6.dp))
@@ -215,22 +231,24 @@ fun CombinedNotificationItem(
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                        onClick = onExpandToggle
+                            if (canExpand) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null,
+                                            onClick = onExpandToggle
+                                        )
+                                        .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp))
+                                ) {
+                                    Icon(
+                                        imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
-                                    .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp))
-                            ) {
-                                Icon(
-                                    imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                                    contentDescription = if (isExpanded) "Collapse" else "Expand",
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
+                                }
                             }
                         }
                     }

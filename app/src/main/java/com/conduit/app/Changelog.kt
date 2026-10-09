@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.33.05",
+        date = "October 8, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Clean Single-Line Conversation Entries",
+                description = "Removed the expand chevron toggle from conversation rollup messages that fit completely on a single line, keeping expand buttons exclusively on messages that spill into multiple lines.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.33.04",
         date = "October 6, 2026",
         highlights = listOf(
