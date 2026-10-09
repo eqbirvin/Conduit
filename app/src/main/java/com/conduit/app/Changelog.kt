@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.33.07",
+        date = "October 8, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Refined Rollup Badge & Conversation Indent",
+                description = "Updated conversation rollup count to a clean text-based design with divider ('time | + #') and indented sub-messages under the parent notification by 16dp for clear visual threading.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.33.06",
         date = "October 8, 2026",
         highlights = listOf(

@@ -134,6 +134,7 @@ fun CombinedNotificationItem(
             Column(
                 modifier = Modifier
                     .weight(1f)
+                    .padding(start = 16.dp)
                     .padding(vertical = 2.dp)
             ) {
                 if (isGroupChat && !senderName.isNullOrBlank()) {

@@ -262,21 +262,19 @@ fun NotificationItem(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         if (subNotificationCount > 0 && (conversationRollupState == ConversationRollupState.PARTIALLY_EXPANDED || conversationRollupState == ConversationRollupState.FULLY_COLLAPSED)) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Surface(
-                                color = MaterialTheme.colorScheme.secondaryContainer,
-                                shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
-                            ) {
-                                Text(
-                                    text = "+$subNotificationCount",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                                )
-                            }
+                            Text(
+                                text = " | ",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                            Text(
+                                text = "+ $subNotificationCount",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Box(
                             modifier = Modifier
                                 .clickable(
@@ -533,21 +531,19 @@ fun NotificationItem(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 if (subNotificationCount > 0 && (conversationRollupState == ConversationRollupState.PARTIALLY_EXPANDED || conversationRollupState == ConversationRollupState.FULLY_COLLAPSED)) {
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
-                                    ) {
-                                        Text(
-                                            text = "+$subNotificationCount",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                                        )
-                                    }
+                                    Text(
+                                        text = " | ",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                    Text(
+                                        text = "+ $subNotificationCount",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier
                                         .clickable(
