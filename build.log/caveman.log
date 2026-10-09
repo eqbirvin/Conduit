@@ -361,3 +361,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-10-08T22:51] [v2.33.06] implemented 3-state conversation rollup ux with default partially expanded (primary message shown with +n badge and double divider), all expanded (thread messages shown and expanded with double divider boundary), and fully collapsed states.
 [2026-10-08T23:45] [v2.33.07] updated conversation rollup count to text-based design with divider and indented sub-messages under parent card by 16dp.
 [2026-10-09T00:04] [v2.33.08] fixed group chat sub-count to match child sender groups, set allnotifications to cluster on primary cards, hoisted regex patterns, prioritized in-memory cached contentintent, replaced deprecated divider, and optimized unread date header count.
+[2026-10-09T00:53] [v2.33.09] verified combine conversations setting enabled by default and consolidated changelog entries into single public release highlights.
