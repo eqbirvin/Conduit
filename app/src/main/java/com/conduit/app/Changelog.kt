@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.33.06",
+        date = "October 8, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "3-State Conversation Rollup",
+                description = "Added a 3-state expand/collapse flow for combined conversations: Default partially expanded (most recent message visible with +N count badge and double boundary divider), All expanded (thread messages shown and expanded), and Fully collapsed (compact single-line view with badge and divider).",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.33.05",
         date = "October 8, 2026",
         highlights = listOf(

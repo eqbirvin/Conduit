@@ -177,6 +177,25 @@ fun HubScreen(
     
     val masterExpandedState = settings.masterExpandedState
     val individualToggles = remember { androidx.compose.runtime.mutableStateMapOf<Int, Boolean>() }
+    val conversationRollupStates = remember { androidx.compose.runtime.mutableStateMapOf<Int, ConversationRollupState>() }
+
+    fun getRollupState(clusterId: Int): ConversationRollupState {
+        return conversationRollupStates[clusterId] ?: if (!masterExpandedState) {
+            ConversationRollupState.FULLY_COLLAPSED
+        } else {
+            ConversationRollupState.PARTIALLY_EXPANDED
+        }
+    }
+
+    fun cycleRollupState(clusterId: Int) {
+        val currentState = getRollupState(clusterId)
+        val nextState = when (currentState) {
+            ConversationRollupState.PARTIALLY_EXPANDED -> ConversationRollupState.ALL_EXPANDED
+            ConversationRollupState.ALL_EXPANDED -> ConversationRollupState.FULLY_COLLAPSED
+            ConversationRollupState.FULLY_COLLAPSED -> ConversationRollupState.PARTIALLY_EXPANDED
+        }
+        conversationRollupStates[clusterId] = nextState
+    }
     
     var selectedDockPackage by remember { mutableStateOf<String?>(null) }
     
@@ -402,6 +421,7 @@ fun HubScreen(
                             val newState = !masterExpandedState
                             settingsViewModel.updateMasterExpandedState(newState)
                             individualToggles.clear()
+                            conversationRollupStates.clear()
                             performHapticClick(context)
                         }) {
                             Icon(
@@ -1210,6 +1230,22 @@ fun HubScreen(
                 val groupedPinned = remember(pinnedNotifications, settings.combineConversations) {
                     ConversationCombineHelper.groupConversationItems(context, pinnedNotifications, settings.combineConversations)
                 }
+                val visiblePinned by remember(groupedPinned, masterExpandedState) {
+                    derivedStateOf {
+                        groupedPinned.filter { item ->
+                            !item.isChildInConversation || getRollupState(item.conversationClusterId) == ConversationRollupState.ALL_EXPANDED
+                        }
+                    }
+                }
+                val visibleGroupedNotifications by remember(groupedNotifications, masterExpandedState) {
+                    derivedStateOf {
+                        groupedNotifications.mapValues { (_, itemsList) ->
+                            itemsList.filter { item ->
+                                !item.isChildInConversation || getRollupState(item.conversationClusterId) == ConversationRollupState.ALL_EXPANDED
+                            }
+                        }.filterValues { it.isNotEmpty() }
+                    }
+                }
                 
                 val currentViewConfig = LocalViewConfiguration.current
                 val customViewConfig = remember(currentViewConfig) {
@@ -1252,8 +1288,9 @@ fun HubScreen(
                                 }
                             }
                         }
-                        items(groupedPinned, key = { "pinned_${it.primaryNotification.id}" }) { item ->
+                        items(visiblePinned, key = { "pinned_${it.primaryNotification.id}" }) { item ->
                             val notification = item.primaryNotification
+                            val rollupState = getRollupState(item.conversationClusterId)
                             Box(modifier = Modifier.animateItem(
                                 placementSpec = tween(durationMillis = 300)
                             )) {
@@ -1274,10 +1311,10 @@ fun HubScreen(
                                         },
                                         minimizeIcons = settings.minimizeIcons,
                                         isExpanded = individualToggles[notification.id]
-                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
+                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else true,
                                         onExpandToggle = {
                                             val currentState = individualToggles[notification.id]
-                                                ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                                ?: if (settings.autoCollapseRead && notification.isArchived) false else true
                                             individualToggles[notification.id] = !currentState
                                             performHapticTick(context)
                                         }
@@ -1301,26 +1338,46 @@ fun HubScreen(
                                         showActionChips = showActionChips,
                                         minimizeIcons = settings.minimizeIcons,
                                         allActions = actionsByKey[notification.notificationKey],
-                                        isExpanded = individualToggles[notification.id] 
-                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
-                                        onExpandToggle = {
-                                            val currentState = individualToggles[notification.id] 
+                                        isExpanded = if (settings.combineConversations && item.subNotificationCount > 0) {
+                                            rollupState != ConversationRollupState.FULLY_COLLAPSED
+                                        } else {
+                                            individualToggles[notification.id] 
                                                 ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
-                                            individualToggles[notification.id] = !currentState
+                                        },
+                                        onExpandToggle = {
+                                            if (settings.combineConversations && item.subNotificationCount > 0) {
+                                                cycleRollupState(item.conversationClusterId)
+                                            } else {
+                                                val currentState = individualToggles[notification.id] 
+                                                    ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                                individualToggles[notification.id] = !currentState
+                                            }
                                             performHapticTick(context)
                                         },
                                         onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
                                         onReply = { text, action -> viewModel.sendReply(context, notification, text, action) },
-                                        overrideText = if (settings.combineConversations) item.combinedText else null
+                                        overrideText = if (settings.combineConversations) item.combinedText else null,
+                                        subNotificationCount = if (settings.combineConversations) item.subNotificationCount else 0,
+                                        conversationRollupState = if (settings.combineConversations && item.subNotificationCount > 0) rollupState else null
                                     )
                                 }
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                if (settings.combineConversations && item.isChildInConversation) {
+                                    if (item.isLastInConversation) {
+                                        DoubleDivider()
+                                    } else {
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                    }
+                                } else if (settings.combineConversations && item.subNotificationCount > 0 && (rollupState == ConversationRollupState.PARTIALLY_EXPANDED || rollupState == ConversationRollupState.FULLY_COLLAPSED)) {
+                                    DoubleDivider()
+                                } else {
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                }
                             }
                         }
                     }
                     
                     // Unpinned date-grouped section
-                    groupedNotifications.forEach { (dateHeader, itemsList) ->
+                    visibleGroupedNotifications.forEach { (dateHeader, itemsList) ->
                         stickyHeader {
                             Box(
                                 modifier = Modifier
@@ -1341,7 +1398,7 @@ fun HubScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                     if (unifiedView) {
-                                        val allNotifsInDate = itemsList.flatMap { it.allNotifications }
+                                        val allNotifsInDate = remember(itemsList) { itemsList.flatMap { it.allNotifications }.distinctBy { it.id } }
                                         val pendingCount = allNotifsInDate.count { notifications.contains(it) }
                                         val chipText = if (pendingCount > 0) "${itemsList.size} | UNREAD $pendingCount" else "${itemsList.size}"
                                         
@@ -1528,6 +1585,7 @@ fun HubScreen(
                                 },
                                 content = {
                                     Column {
+                                        val rollupState = getRollupState(item.conversationClusterId)
                                         if (item.isChildInConversation) {
                                             CombinedNotificationItem(
                                                 notification = notification,
@@ -1545,10 +1603,10 @@ fun HubScreen(
                                                 },
                                                 minimizeIcons = settings.minimizeIcons,
                                                 isExpanded = individualToggles[notification.id]
-                                                    ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
+                                                    ?: if (settings.autoCollapseRead && notification.isArchived) false else true,
                                                 onExpandToggle = {
                                                     val currentState = individualToggles[notification.id]
-                                                        ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                                        ?: if (settings.autoCollapseRead && notification.isArchived) false else true
                                                     individualToggles[notification.id] = !currentState
                                                     performHapticTick(context)
                                                 }
@@ -1572,20 +1630,40 @@ fun HubScreen(
                                                 showActionChips = showActionChips,
                                                 minimizeIcons = settings.minimizeIcons,
                                                 allActions = actionsByKey[notification.notificationKey],
-                                                isExpanded = individualToggles[notification.id] 
-                                                    ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState,
-                                                onExpandToggle = {
-                                                    val currentState = individualToggles[notification.id] 
+                                                isExpanded = if (settings.combineConversations && item.subNotificationCount > 0) {
+                                                    rollupState != ConversationRollupState.FULLY_COLLAPSED
+                                                } else {
+                                                    individualToggles[notification.id] 
                                                         ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
-                                                    individualToggles[notification.id] = !currentState
+                                                },
+                                                onExpandToggle = {
+                                                    if (settings.combineConversations && item.subNotificationCount > 0) {
+                                                        cycleRollupState(item.conversationClusterId)
+                                                    } else {
+                                                        val currentState = individualToggles[notification.id] 
+                                                            ?: if (settings.autoCollapseRead && notification.isArchived) false else masterExpandedState
+                                                        individualToggles[notification.id] = !currentState
+                                                    }
                                                     performHapticTick(context)
                                                 },
                                                 onTriggerAction = { action -> viewModel.triggerAction(context, notification, action) },
                                                 onReply = { text, action -> viewModel.sendReply(context, notification, text, action) },
-                                                overrideText = if (settings.combineConversations) item.combinedText else null
+                                                overrideText = if (settings.combineConversations) item.combinedText else null,
+                                                subNotificationCount = if (settings.combineConversations) item.subNotificationCount else 0,
+                                                conversationRollupState = if (settings.combineConversations && item.subNotificationCount > 0) rollupState else null
                                             )
                                         }
-                                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                        if (settings.combineConversations && item.isChildInConversation) {
+                                            if (item.isLastInConversation) {
+                                                DoubleDivider()
+                                            } else {
+                                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                            }
+                                        } else if (settings.combineConversations && item.subNotificationCount > 0 && (rollupState == ConversationRollupState.PARTIALLY_EXPANDED || rollupState == ConversationRollupState.FULLY_COLLAPSED)) {
+                                            DoubleDivider()
+                                        } else {
+                                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                                        }
                                     }
                                 }
                             )

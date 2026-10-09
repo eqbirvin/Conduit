@@ -94,7 +94,9 @@ fun NotificationItem(
     allActions: List<Notification.Action>? = null,
     onTriggerAction: (Notification.Action) -> Unit = {},
     onReply: (String, Notification.Action) -> Unit = { _, _ -> },
-    overrideText: String? = null
+    overrideText: String? = null,
+    subNotificationCount: Int = 0,
+    conversationRollupState: ConversationRollupState? = null
 ) {
     val context = LocalContext.current
     var isReplying by remember { mutableStateOf(false) }
@@ -259,6 +261,21 @@ fun NotificationItem(
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (subNotificationCount > 0 && (conversationRollupState == ConversationRollupState.PARTIALLY_EXPANDED || conversationRollupState == ConversationRollupState.FULLY_COLLAPSED)) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Surface(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "+$subNotificationCount",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.width(4.dp))
                         Box(
                             modifier = Modifier
@@ -269,9 +286,14 @@ fun NotificationItem(
                                 )
                                 .background(MaterialTheme.colorScheme.secondaryContainer, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
                         ) {
+                            val chevronIcon = if (conversationRollupState == ConversationRollupState.ALL_EXPANDED || (conversationRollupState == null && isExpanded)) {
+                                Icons.Filled.KeyboardArrowUp
+                            } else {
+                                Icons.Filled.KeyboardArrowDown
+                            }
                             Icon(
-                                imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                imageVector = chevronIcon,
+                                contentDescription = if (chevronIcon == Icons.Filled.KeyboardArrowUp) "Collapse" else "Expand",
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer
                             )
@@ -510,6 +532,21 @@ fun NotificationItem(
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                if (subNotificationCount > 0 && (conversationRollupState == ConversationRollupState.PARTIALLY_EXPANDED || conversationRollupState == ConversationRollupState.FULLY_COLLAPSED)) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "+$subNotificationCount",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                        )
+                                    }
+                                }
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Box(
                                     modifier = Modifier
@@ -520,9 +557,14 @@ fun NotificationItem(
                                         )
                                         .background(MaterialTheme.colorScheme.secondaryContainer, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
                                 ) {
+                                    val chevronIcon = if (conversationRollupState == ConversationRollupState.ALL_EXPANDED || (conversationRollupState == null && isExpanded)) {
+                                        Icons.Filled.KeyboardArrowUp
+                                    } else {
+                                        Icons.Filled.KeyboardArrowDown
+                                    }
                                     Icon(
-                                        imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                        imageVector = chevronIcon,
+                                        contentDescription = if (chevronIcon == Icons.Filled.KeyboardArrowUp) "Collapse" else "Expand",
                                         modifier = Modifier.size(16.dp),
                                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )

@@ -358,3 +358,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-10-06T23:50] [v2.33.03] reverted expanded vertical spacing on combined 1-on-1 messages to single line extending up to the timestamp, keeping feeds compact.
 [2026-10-07T00:20] [v2.33.04] removed empty header line above expanded 1-on-1 messages, placing text directly on top line next to timestamp.
 [2026-10-08T20:38] [v2.33.05] removed expand chevron toggle on conversation rollup messages that fit on a single line and do not spill into multiple lines.
+[2026-10-08T22:51] [v2.33.06] implemented 3-state conversation rollup ux with default partially expanded (primary message shown with +n badge and double divider), all expanded (thread messages shown and expanded with double divider boundary), and fully collapsed states.

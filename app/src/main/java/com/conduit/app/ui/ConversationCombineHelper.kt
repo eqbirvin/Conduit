@@ -105,7 +105,10 @@ object ConversationCombineHelper {
                     isChildInConversation = false,
                     senderName = null,
                     isGroupChat = isGroupChat(notif.title),
-                    combinedText = notif.text.orEmpty()
+                    combinedText = notif.text.orEmpty(),
+                    subNotificationCount = 0,
+                    isLastInConversation = false,
+                    conversationClusterId = notif.id
                 )
             }
         }
@@ -121,6 +124,8 @@ object ConversationCombineHelper {
             val clusterEnd = i // inclusive
             val cluster = items.subList(clusterStart, clusterEnd + 1)
             val isGroup = cluster.any { isGroupChat(it.title) }
+            val clusterPrimaryId = cluster.first().id
+            val subCount = cluster.size - 1
 
             if (!isGroup) {
                 // 1-on-1 chat: Each notification is its own item; first is primary, rest are children without action chips
@@ -132,14 +137,17 @@ object ConversationCombineHelper {
                             isChildInConversation = index > 0,
                             senderName = null,
                             isGroupChat = false,
-                            combinedText = notif.text.orEmpty()
+                            combinedText = notif.text.orEmpty(),
+                            subNotificationCount = if (index == 0) subCount else 0,
+                            isLastInConversation = index == cluster.size - 1 && cluster.size > 1,
+                            conversationClusterId = clusterPrimaryId
                         )
                     )
                 }
             } else {
                 // Group chat: Partition consecutive messages within the cluster by sender
                 var s = 0
-                var isFirstSenderGroupInCluster = true
+                val senderGroups = mutableListOf<List<HubNotification>>()
                 while (s < cluster.size) {
                     val senderGroupStart = s
                     val currentSender = extractSenderName(cluster[s].title)
@@ -153,10 +161,12 @@ object ConversationCombineHelper {
                             break
                         }
                     }
-                    val senderGroupEnd = s // inclusive
-                    val senderGroup = cluster.subList(senderGroupStart, senderGroupEnd + 1)
+                    senderGroups.add(cluster.subList(senderGroupStart, s + 1))
+                    s++
+                }
 
-                    // Sort chronological (oldest to newest) for message bubble display
+                senderGroups.forEachIndexed { groupIdx, senderGroup ->
+                    val currentSender = extractSenderName(senderGroup.first().title)
                     val chronological = senderGroup.sortedBy { it.timestamp }
                     val combinedText = chronological.mapNotNull { it.text?.trim() }
                         .filter { it.isNotEmpty() }
@@ -164,7 +174,8 @@ object ConversationCombineHelper {
                         .ifEmpty { senderGroup.first().text.orEmpty() }
 
                     val primaryNotif = senderGroup.maxByOrNull { it.timestamp } ?: senderGroup.first()
-                    val isChild = !isFirstSenderGroupInCluster
+                    val isChild = groupIdx > 0
+                    val isLast = groupIdx == senderGroups.size - 1 && cluster.size > 1
 
                     result.add(
                         GroupedConversationItem(
@@ -173,12 +184,12 @@ object ConversationCombineHelper {
                             isChildInConversation = isChild,
                             senderName = currentSender,
                             isGroupChat = true,
-                            combinedText = combinedText
+                            combinedText = combinedText,
+                            subNotificationCount = if (groupIdx == 0) subCount else 0,
+                            isLastInConversation = isLast,
+                            conversationClusterId = clusterPrimaryId
                         )
                     )
-
-                    isFirstSenderGroupInCluster = false
-                    s++
                 }
             }
 
@@ -188,11 +199,20 @@ object ConversationCombineHelper {
     }
 }
 
+enum class ConversationRollupState {
+    PARTIALLY_EXPANDED, // State 1: Top card expanded, children hidden, [v], +N pill, double divider
+    ALL_EXPANDED,        // State 2: Top card expanded, children shown & expanded, [^], double divider at end
+    FULLY_COLLAPSED     // State 3: Top card collapsed, children hidden, [v], +N pill, double divider
+}
+
 data class GroupedConversationItem(
     val primaryNotification: HubNotification,
     val allNotifications: List<HubNotification>,
     val isChildInConversation: Boolean,
     val senderName: String?,
     val isGroupChat: Boolean,
-    val combinedText: String
+    val combinedText: String,
+    val subNotificationCount: Int = 0,
+    val isLastInConversation: Boolean = false,
+    val conversationClusterId: Int = primaryNotification.id
 )
