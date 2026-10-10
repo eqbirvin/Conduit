@@ -59,6 +59,8 @@ data class ConduitSettings(
     val dockExpandPosition: String = "LEFT",
     val transparentBundlePills: Boolean = false,
     val bundleMenuBlur: Boolean = true,
-    val combineConversations: Boolean = true
+    val combineConversations: Boolean = true,
+    val scrollTopBarWithFeed: Boolean = false,
+    val topBarScrollBehavior: String = "NATURAL"
 )
 

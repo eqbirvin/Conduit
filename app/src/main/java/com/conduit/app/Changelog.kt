@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.34.00",
+        date = "October 9, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Scroll Top Bar with Feed",
+                description = "New appearance option allowing the top bar and custom view strip to scroll off-screen with the notification log to maximize reading space, while sticky date headers remain pinned beneath the status bar. Includes choice between Natural Scroll and Quick Return modes.",
+                iconName = "VerticalAlignTop"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.33.09",
         date = "October 9, 2026",
         highlights = listOf(

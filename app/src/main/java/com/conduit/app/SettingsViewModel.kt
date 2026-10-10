@@ -67,6 +67,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateIngestionDiagnosticsEnabled(enabled: Boolean) = viewModelScope.launch { repository.updateIngestionDiagnosticsEnabled(enabled) }
     fun updateCustomViewsExpanded(enabled: Boolean) = viewModelScope.launch { repository.updateCustomViewsExpanded(enabled) }
     fun updateCombineConversations(enabled: Boolean) = viewModelScope.launch { repository.updateCombineConversations(enabled) }
+    fun updateScrollTopBarWithFeed(enabled: Boolean) = viewModelScope.launch { repository.updateScrollTopBarWithFeed(enabled) }
+    fun updateTopBarScrollBehavior(behavior: String) = viewModelScope.launch { repository.updateTopBarScrollBehavior(behavior) }
 
     class Factory(private val repository: SettingsRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

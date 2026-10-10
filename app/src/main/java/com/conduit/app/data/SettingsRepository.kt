@@ -106,7 +106,9 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             dockExpandPosition = prefs.getString("dock_expand_position", "LEFT") ?: "LEFT",
             transparentBundlePills = prefs.getBoolean("transparent_bundle_pills", false),
             bundleMenuBlur = prefs.getBoolean("bundle_menu_blur", true),
-            combineConversations = prefs.getBoolean("combine_conversations", true)
+            combineConversations = prefs.getBoolean("combine_conversations", true),
+            scrollTopBarWithFeed = prefs.getBoolean("scroll_top_bar_with_feed", false),
+            topBarScrollBehavior = prefs.getString("top_bar_scroll_behavior", "NATURAL") ?: "NATURAL"
         )
     }
 
@@ -428,6 +430,16 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun updateCombineConversations(enabled: Boolean) {
         prefs.edit().putBoolean("combine_conversations", enabled).apply()
         _settings.update { it.copy(combineConversations = enabled) }
+    }
+
+    fun updateScrollTopBarWithFeed(enabled: Boolean) {
+        prefs.edit().putBoolean("scroll_top_bar_with_feed", enabled).apply()
+        _settings.update { it.copy(scrollTopBarWithFeed = enabled) }
+    }
+
+    fun updateTopBarScrollBehavior(behavior: String) {
+        prefs.edit().putString("top_bar_scroll_behavior", behavior).apply()
+        _settings.update { it.copy(topBarScrollBehavior = behavior) }
     }
 }
 

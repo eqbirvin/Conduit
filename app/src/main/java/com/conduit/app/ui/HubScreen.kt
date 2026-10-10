@@ -83,6 +83,15 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlin.math.roundToInt
 
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -260,209 +269,149 @@ fun HubScreen(
         }
     }
 
+    val mainListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    var headerHeightPx by remember { mutableFloatStateOf(0f) }
+    var headerOffsetPx by remember { mutableFloatStateOf(0f) }
+
+    val nestedScrollConnection = remember(settings.scrollTopBarWithFeed, settings.topBarScrollBehavior) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (!settings.scrollTopBarWithFeed || isSelectionMode || isSearchMode) {
+                    return Offset.Zero
+                }
+                val delta = available.y
+                if (delta < 0f) {
+                    val newOffset = (headerOffsetPx + delta).coerceIn(-headerHeightPx, 0f)
+                    val consumed = newOffset - headerOffsetPx
+                    headerOffsetPx = newOffset
+                    return Offset(0f, consumed)
+                } else if (delta > 0f) {
+                    if (settings.topBarScrollBehavior == "QUICK_RETURN") {
+                        val newOffset = (headerOffsetPx + delta).coerceIn(-headerHeightPx, 0f)
+                        val consumed = newOffset - headerOffsetPx
+                        headerOffsetPx = newOffset
+                        return Offset(0f, consumed)
+                    } else {
+                        if (mainListState.firstVisibleItemIndex == 0) {
+                            val newOffset = (headerOffsetPx + delta).coerceIn(-headerHeightPx, 0f)
+                            val consumed = newOffset - headerOffsetPx
+                            headerOffsetPx = newOffset
+                            return Offset(0f, consumed)
+                        }
+                    }
+                }
+                return Offset.Zero
+            }
+        }
+    }
+
+    LaunchedEffect(isSelectionMode, isSearchMode, settings.scrollTopBarWithFeed) {
+        if (isSelectionMode || isSearchMode || !settings.scrollTopBarWithFeed) {
+            headerOffsetPx = 0f
+        }
+    }
+
+    LaunchedEffect(mainListState.firstVisibleItemIndex, mainListState.firstVisibleItemScrollOffset) {
+        if (mainListState.firstVisibleItemIndex == 0 && mainListState.firstVisibleItemScrollOffset == 0) {
+            headerOffsetPx = 0f
+        }
+    }
+
+    val topBarState = remember(
+        isSelectionMode, isSearchMode, selectedIds, notifications, archivedNotifications,
+        searchQuery, hasUpdateAvailable, masterExpandedState, unifiedView
+    ) {
+        val singleNotif = if (selectedIds.size == 1) {
+            val notifId = selectedIds.first()
+            notifications.find { it.id == notifId } ?: archivedNotifications.find { it.id == notifId }
+        } else null
+        HubTopBarState(
+            isSelectionMode = isSelectionMode,
+            isSearchMode = isSearchMode,
+            selectedCount = selectedIds.size,
+            selectedNotification = singleNotif,
+            searchQuery = searchQuery,
+            hasUpdateAvailable = hasUpdateAvailable,
+            masterExpandedState = masterExpandedState,
+            unifiedView = unifiedView
+        )
+    }
+
+    val topBarCallbacks = remember(
+        context, viewModel, settingsViewModel, onNavigateToSettings, onNavigateToManageViews,
+        onNavigateToArchive, onUnifiedViewChanged
+    ) {
+        object : HubTopBarCallbacks {
+            override fun onClearSelection() {
+                selectedIds = emptySet()
+            }
+            override fun onBlockNotification(notification: HubNotification) {
+                notificationToBlock = notification
+            }
+            override fun onSnoozeNotification(notification: HubNotification) {
+                notificationToSnooze = notification
+            }
+            override fun onPinSelected() {
+                val idsToPin = selectedIds.toList()
+                val anyUnpinned = notifications.filter { it.id in selectedIds }.any { !it.isPinned }
+                viewModel.viewModelScope.launch(Dispatchers.IO) {
+                    val database = AppDatabase.getDatabase(context)
+                    database.notificationDao().pinNotifications(idsToPin, anyUnpinned)
+                    com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
+                }
+                performHapticClick(context)
+                selectedIds = emptySet()
+            }
+            override fun onMarkSelectedAsRead() {
+                val selectedNotifs = notifications.filter { it.id in selectedIds }
+                if (selectedNotifs.isNotEmpty()) {
+                    viewModel.markNotificationsAsRead(selectedNotifs)
+                }
+                performHapticClick(context)
+                selectedIds = emptySet()
+            }
+            override fun onSearchQueryChanged(query: String) {
+                searchQuery = query
+                viewModel.setSearchQuery(query)
+            }
+            override fun onExitSearch() {
+                isSearchMode = false
+                searchQuery = ""
+                viewModel.setSearchQuery("")
+            }
+            override fun onShowUpdateDialog() {
+                showUpdateDialog = true
+            }
+            override fun onNavigateToSettings() {
+                onNavigateToSettings()
+            }
+            override fun onNavigateToManageViews() {
+                onNavigateToManageViews()
+            }
+            override fun onToggleMasterExpand() {
+                val newState = !masterExpandedState
+                settingsViewModel.updateMasterExpandedState(newState)
+                individualToggles.clear()
+                conversationRollupStates.clear()
+            }
+            override fun onNavigateToArchive() {
+                onNavigateToArchive()
+            }
+            override fun onToggleUnifiedView() {
+                onUnifiedViewChanged(!unifiedView)
+            }
+            override fun onEnterSearch() {
+                isSearchMode = true
+                searchQuery = ""
+                viewModel.setSearchQuery("")
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
-            if (isSelectionMode) {
-                TopAppBar(
-                    title = { Text("${selectedIds.size} selected", fontSize = 20.sp, fontWeight = FontWeight.Medium) },
-                    navigationIcon = {
-                        IconButton(onClick = { selectedIds = emptySet() }) {
-                            Icon(Icons.Filled.Close, contentDescription = "Clear selection")
-                        }
-                    },
-                    actions = {
-                        if (selectedIds.size == 1) {
-                            IconButton(onClick = {
-                                val notifId = selectedIds.first()
-                                val notif = notifications.find { it.id == notifId } ?: archivedNotifications.find { it.id == notifId }
-                                if (notif != null) {
-                                    notificationToBlock = notif
-                                }
-                            }) {
-                                Icon(Icons.Filled.Block, contentDescription = "Block notification")
-                            }
-
-                            IconButton(onClick = {
-                                val notifId = selectedIds.first()
-                                val notif = notifications.find { it.id == notifId } ?: archivedNotifications.find { it.id == notifId }
-                                if (notif != null) {
-                                    notificationToSnooze = notif
-                                }
-                            }) {
-                                Icon(Icons.Filled.Snooze, contentDescription = "Snooze notification")
-                            }
-                            
-                            Box(
-                                modifier = Modifier
-                                    .height(24.dp)
-                                    .width(1.dp)
-                                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
-
-
-                        IconButton(onClick = {
-                            val idsToPin = selectedIds.toList()
-                            val anyUnpinned = notifications.filter { it.id in selectedIds }.any { !it.isPinned }
-                            kotlinx.coroutines.GlobalScope.launch {
-                                val database = AppDatabase.getDatabase(context)
-                                database.notificationDao().pinNotifications(idsToPin, anyUnpinned)
-                                com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
-                            }
-                            performHapticClick(context)
-                            selectedIds = emptySet()
-                        }) {
-                            Icon(Icons.Filled.PushPin, contentDescription = "Pin/Unpin selected")
-                        }
-
-                        IconButton(onClick = {
-                            val selectedNotifs = notifications.filter { it.id in selectedIds }
-                            if (selectedNotifs.isNotEmpty()) {
-                                viewModel.markNotificationsAsRead(selectedNotifs)
-                            }
-                            performHapticClick(context)
-                            selectedIds = emptySet()
-                        }) {
-                            Icon(Icons.Filled.CheckCircle, contentDescription = "Mark selected as read")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-                    )
-                )
-            } else if (isSearchMode) {
-                TopAppBar(
-                    title = {
-                        TextField(
-                            value = searchQuery,
-                            onValueChange = {
-                                searchQuery = it
-                                viewModel.setSearchQuery(it)
-                            },
-                            placeholder = { Text("Search notifications...") },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                disabledContainerColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                            singleLine = true,
-                            leadingIcon = {
-                                IconButton(onClick = { 
-                                    performHapticTick(context)
-                                    isSearchMode = false
-                                    searchQuery = ""
-                                    viewModel.setSearchQuery("")
-                                }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Exit search")
-                                }
-                            },
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = {
-                                        searchQuery = ""
-                                        viewModel.setSearchQuery("")
-                                    }) {
-                                        Icon(Icons.Filled.Close, contentDescription = "Clear search")
-                                    }
-                                }
-                            }
-                        )
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-                    )
-                )
-            } else {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (hasUpdateAvailable) {
-                                IconButton(
-                                    onClick = { 
-                                        performHapticClick(context)
-                                        showUpdateDialog = true 
-                                    },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Filled.SystemUpdate,
-                                        contentDescription = "Update Available",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                            }
-                            Text("Conduit", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
-                        }
-                    },
-                    navigationIcon = {
-                        Row {
-                            IconButton(onClick = {
-                                performHapticTick(context)
-                                onNavigateToSettings()
-                            }) {
-                                Icon(Icons.Filled.SettingsIcon, contentDescription = "Settings", tint = MaterialTheme.colorScheme.onSurface)
-                            }
-                            IconButton(onClick = {
-                                performHapticTick(context)
-                                onNavigateToManageViews()
-                            }) {
-                                Icon(Icons.Filled.FilterList, contentDescription = "Manage Views", tint = MaterialTheme.colorScheme.onSurface)
-                            }
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = {
-                            val newState = !masterExpandedState
-                            settingsViewModel.updateMasterExpandedState(newState)
-                            individualToggles.clear()
-                            conversationRollupStates.clear()
-                            performHapticClick(context)
-                        }) {
-                            Icon(
-                                imageVector = if (masterExpandedState) Icons.Filled.Compress else Icons.Filled.Expand,
-                                contentDescription = "Toggle Master Expand",
-                                tint = if (masterExpandedState) MaterialTheme.colorScheme.secondary else LocalContentColor.current
-                            )
-                        }
-
-                        if (!unifiedView) {
-                            IconButton(onClick = onNavigateToArchive) {
-                                Icon(Icons.Filled.History, contentDescription = "Actioned")
-                            }
-                        }
-
-                        IconButton(onClick = { 
-                            onUnifiedViewChanged(!unifiedView)
-                            performHapticTick(context)
-                        }) {
-                            Icon(
-                                if (unifiedView) Icons.Filled.Checklist else Icons.Filled.DynamicFeed,
-                                contentDescription = if (unifiedView) "Switch to Todo Mode" else "Switch to Unified View"
-                            )
-                        }
-                        
-                        IconButton(onClick = {
-                            performHapticTick(context)
-                            isSearchMode = true
-                            searchQuery = ""
-                            viewModel.setSearchQuery("")
-                        }) {
-                            Icon(Icons.Filled.Search, contentDescription = "Search")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
+            if (isSelectionMode || isSearchMode || !settings.scrollTopBarWithFeed) {
+                HubTopBar(state = topBarState, callbacks = topBarCallbacks)
             }
         },
         bottomBar = {
@@ -926,55 +875,92 @@ fun HubScreen(
             Modifier
         }
         
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode)
+                        Modifier.nestedScroll(nestedScrollConnection)
+                    else Modifier
+                )
+        ) {
+            val density = LocalDensity.current
+            val visibleHeaderPx = (headerHeightPx + headerOffsetPx).coerceAtLeast(0f)
+            val statusBarHeightPx = WindowInsets.statusBars.getTop(density).toFloat()
+            val contentTopPaddingDp = with(density) {
+                if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
+                    maxOf(statusBarHeightPx, visibleHeaderPx).toDp()
+                } else {
+                    padding.calculateTopPadding()
+                }
+            }
+
+            if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .windowInsetsTopHeight(WindowInsets.statusBars)
+                        .background(MaterialTheme.colorScheme.background)
+                        .zIndex(1f)
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(0, headerOffsetPx.roundToInt()) }
+                        .onSizeChanged { headerHeightPx = it.height.toFloat() }
+                        .background(MaterialTheme.colorScheme.background)
+                        .statusBarsPadding()
+                        .zIndex(2f)
+                ) {
+                    HubTopBar(state = topBarState, callbacks = topBarCallbacks)
+                    if (views.isNotEmpty()) {
+                        CustomViewChipsBar(
+                            views = views,
+                            activeViewId = activeViewId,
+                            onSelectView = { newId ->
+                                viewModel.setActiveViewId(newId)
+                                if (newId != null) {
+                                    selectedDockPackage = null
+                                }
+                            },
+                            isExpanded = settings.customViewsExpanded,
+                            onToggleExpanded = {
+                                settingsViewModel.updateCustomViewsExpanded(!settings.customViewsExpanded)
+                            }
+                        )
+                    }
+                    androidx.compose.animation.AnimatedVisibility(visible = !unifiedView) {
+                        TodoModeBanner()
+                    }
+                }
+            }
+
             Column(
                 modifier = Modifier
-                    .padding(top = padding.calculateTopPadding())
+                    .padding(top = contentTopPaddingDp)
                     .fillMaxSize()
                     .then(blurModifier)
             ) {
-            if (views.isNotEmpty() && !isSearchMode) {
-                CustomViewChipsBar(
-                    views = views,
-                    activeViewId = activeViewId,
-                    onSelectView = { newId ->
-                        viewModel.setActiveViewId(newId)
-                        if (newId != null) {
-                            selectedDockPackage = null
+            if (!settings.scrollTopBarWithFeed || isSelectionMode || isSearchMode) {
+                if (views.isNotEmpty() && !isSearchMode) {
+                    CustomViewChipsBar(
+                        views = views,
+                        activeViewId = activeViewId,
+                        onSelectView = { newId ->
+                            viewModel.setActiveViewId(newId)
+                            if (newId != null) {
+                                selectedDockPackage = null
+                            }
+                        },
+                        isExpanded = settings.customViewsExpanded,
+                        onToggleExpanded = {
+                            settingsViewModel.updateCustomViewsExpanded(!settings.customViewsExpanded)
                         }
-                    },
-                    isExpanded = settings.customViewsExpanded,
-                    onToggleExpanded = {
-                        settingsViewModel.updateCustomViewsExpanded(!settings.customViewsExpanded)
-                    }
-                )
-            }
+                    )
+                }
 
-            androidx.compose.animation.AnimatedVisibility(visible = !unifiedView) {
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Todo Mode (showing pending items only)",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
+                androidx.compose.animation.AnimatedVisibility(visible = !unifiedView) {
+                    TodoModeBanner()
                 }
             }
 
@@ -1259,6 +1245,7 @@ fun HubScreen(
                 CompositionLocalProvider(LocalViewConfiguration provides customViewConfig) {
                     val screenWidthPx = with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
                     LazyColumn(
+                        state = mainListState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)
                     ) {
@@ -1923,6 +1910,35 @@ fun HubScreen(
 
     }
 
+}
+
+@Composable
+private fun TodoModeBanner() {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Info,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Todo Mode (showing pending items only)",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
 }
 
 

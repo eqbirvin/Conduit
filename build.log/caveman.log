@@ -362,3 +362,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-10-08T23:45] [v2.33.07] updated conversation rollup count to text-based design with divider and indented sub-messages under parent card by 16dp.
 [2026-10-09T00:04] [v2.33.08] fixed group chat sub-count to match child sender groups, set allnotifications to cluster on primary cards, hoisted regex patterns, prioritized in-memory cached contentintent, replaced deprecated divider, and optimized unread date header count.
 [2026-10-09T00:53] [v2.33.09] verified combine conversations setting enabled by default and consolidated changelog entries into single public release highlights.
+[2026-10-09T23:23] [v2.34.00] added scroll top bar with feed appearance setting with natural scroll and quick return modes, extracted hubtopbar, and preserved sticky date headers below status bar.

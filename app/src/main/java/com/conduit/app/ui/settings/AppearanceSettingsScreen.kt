@@ -35,6 +35,8 @@ interface AppearanceSettingsScreenCallbacks {
     fun onAutoCollapseReadChanged(enabled: Boolean)
     fun onDefaultToTodoModeChanged(enabled: Boolean)
     fun onCombineConversationsChanged(enabled: Boolean)
+    fun onScrollTopBarWithFeedChanged(enabled: Boolean)
+    fun onTopBarScrollBehaviorChanged(behavior: String)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -235,6 +237,57 @@ fun AppearanceSettingsScreen(
                 checked = settings.combineConversations,
                 onCheckedChange = callbacks::onCombineConversationsChanged
             )
+
+            SettingsSwitchRow(
+                title = "Scroll Top Bar with Feed",
+                description = "Allow the top bar and custom view strip to scroll off-screen with the notification log",
+                checked = settings.scrollTopBarWithFeed,
+                onCheckedChange = callbacks::onScrollTopBarWithFeedChanged
+            )
+
+            androidx.compose.animation.AnimatedVisibility(visible = settings.scrollTopBarWithFeed) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 8.dp, bottom = 8.dp)
+                ) {
+                    val scrollOptions = listOf(
+                        "NATURAL" to ("Natural Scroll" to "Returns only when scrolled all the way to the top of the feed"),
+                        "QUICK_RETURN" to ("Quick Return" to "Slides back into view whenever scrolling up anywhere in the feed")
+                    )
+
+                    scrollOptions.forEach { (key, info) ->
+                        val (title, description) = info
+                        val isSelected = settings.topBarScrollBehavior == key
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { callbacks.onTopBarScrollBehaviorChanged(key) }
+                                .padding(vertical = 8.dp, horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = { callbacks.onTopBarScrollBehaviorChanged(key) }
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
         }
