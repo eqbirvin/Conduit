@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.34.01",
+        date = "October 13, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Mark All Read in Todo Mode",
+                description = "Added the date header split chip to Todo Mode, showing the item count and enabling one-tap mark all from this date as read.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.34.00",
         date = "October 9, 2026",
         highlights = listOf(

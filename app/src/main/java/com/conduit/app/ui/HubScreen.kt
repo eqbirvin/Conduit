@@ -1385,56 +1385,60 @@ fun HubScreen(
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    if (unifiedView) {
-                                        val allNotifsInDate = remember(itemsList) { itemsList.flatMap { it.allNotifications }.distinctBy { it.id } }
-                                        val pendingCount = allNotifsInDate.count { activeNotificationIds.contains(it.id) }
-                                        val chipText = if (pendingCount > 0) "${itemsList.size} | UNREAD $pendingCount" else "${itemsList.size}"
-                                        
-                                        Row(
-                                            modifier = Modifier.height(androidx.compose.foundation.layout.IntrinsicSize.Min),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(1.dp)
+                                    val allNotifsInDate = remember(itemsList) { itemsList.flatMap { it.allNotifications }.distinctBy { it.id } }
+                                    val pendingCount = remember(allNotifsInDate, activeNotificationIds) { allNotifsInDate.count { activeNotificationIds.contains(it.id) } }
+                                    val chipText = remember(unifiedView, pendingCount, itemsList.size) {
+                                        if (unifiedView) {
+                                            if (pendingCount > 0) "${itemsList.size} | UNREAD $pendingCount" else "${itemsList.size}"
+                                        } else {
+                                            "${itemsList.size}"
+                                        }
+                                    }
+                                    
+                                    Row(
+                                        modifier = Modifier.height(androidx.compose.foundation.layout.IntrinsicSize.Min),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(1.dp)
+                                    ) {
+                                        Surface(
+                                            modifier = Modifier.fillMaxHeight(),
+                                            shape = if (pendingCount > 0) androidx.compose.foundation.shape.RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp) else MaterialTheme.shapes.small,
+                                            color = MaterialTheme.colorScheme.secondaryContainer
                                         ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = chipText,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                )
+                                            }
+                                        }
+                                        
+                                        if (pendingCount > 0) {
+                                            val rightShape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
                                             Surface(
-                                                modifier = Modifier.fillMaxHeight(),
-                                                shape = if (pendingCount > 0) androidx.compose.foundation.shape.RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp) else MaterialTheme.shapes.small,
-                                                color = MaterialTheme.colorScheme.secondaryContainer
+                                                shape = rightShape,
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                modifier = Modifier
+                                                    .fillMaxHeight()
+                                                    .clip(rightShape)
+                                                    .clickable {
+                                                        performHapticClick(context)
+                                                        val itemsToArchive = allNotifsInDate.filter { activeNotificationIds.contains(it.id) }
+                                                        if (itemsToArchive.isNotEmpty()) {
+                                                            viewModel.markNotificationsAsRead(itemsToArchive)
+                                                        }
+                                                    }
                                             ) {
                                                 Box(contentAlignment = Alignment.Center) {
-                                                    Text(
-                                                        text = chipText,
-                                                        fontSize = 10.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-                                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    Icon(
+                                                        imageVector = Icons.Filled.DoneAll,
+                                                        contentDescription = "Mark all as read",
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp).size(14.dp),
+                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                                                     )
-                                                }
-                                            }
-                                            
-                                            if (pendingCount > 0) {
-                                                val rightShape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
-                                                Surface(
-                                                    shape = rightShape,
-                                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                                    modifier = Modifier
-                                                        .fillMaxHeight()
-                                                        .clip(rightShape)
-                                                        .clickable {
-                                                            performHapticClick(context)
-                                                            val itemsToArchive = allNotifsInDate.filter { activeNotificationIds.contains(it.id) }
-                                                            if (itemsToArchive.isNotEmpty()) {
-                                                                viewModel.markNotificationsAsRead(itemsToArchive)
-                                                            }
-                                                        }
-                                                ) {
-                                                    Box(contentAlignment = Alignment.Center) {
-                                                        Icon(
-                                                            imageVector = Icons.Filled.DoneAll,
-                                                            contentDescription = "Mark all as read",
-                                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp).size(14.dp),
-                                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                                        )
-                                                    }
                                                 }
                                             }
                                         }
