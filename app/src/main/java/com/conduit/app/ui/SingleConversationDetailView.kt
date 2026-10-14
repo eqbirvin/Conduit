@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DoneAll
@@ -96,14 +97,8 @@ fun SingleConversationStickyHeader(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    val countText = if (rollup.hasActiveUnread && rollup.activeMessages.isNotEmpty()) {
-                        "${rollup.activeMessages.size} unread • ${rollup.allHistoryMessages.size} messages"
-                    } else {
-                        "$appName • ${rollup.allHistoryMessages.size} messages"
-                    }
-
                     Text(
-                        text = countText,
+                        text = appName,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -111,20 +106,64 @@ fun SingleConversationStickyHeader(
                     )
                 }
 
-                if (rollup.hasActiveUnread && onMarkAllRead != null) {
-                    IconButton(
-                        onClick = {
-                            performHapticClick(context)
-                            onMarkAllRead()
-                        }
+                val totalCount = rollup.allHistoryMessages.size
+                val pendingCount = rollup.activeMessages.size
+                val chipText = if (pendingCount > 0) "$totalCount | UNREAD $pendingCount" else "$totalCount"
+
+                Row(
+                    modifier = Modifier.height(IntrinsicSize.Min),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(1.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier.fillMaxHeight(),
+                        shape = if (pendingCount > 0 && onMarkAllRead != null) {
+                            RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
+                        } else {
+                            MaterialTheme.shapes.small
+                        },
+                        color = MaterialTheme.colorScheme.secondaryContainer
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.DoneAll,
-                            contentDescription = "Mark all as read",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = chipText,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
+
+                    if (pendingCount > 0 && onMarkAllRead != null) {
+                        val rightShape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
+                        Surface(
+                            shape = rightShape,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .clip(rightShape)
+                                .clickable {
+                                    performHapticClick(context)
+                                    onMarkAllRead()
+                                }
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.DoneAll,
+                                    contentDescription = "Mark all read",
+                                    modifier = Modifier.size(12.dp),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.width(4.dp))
 
                 IconButton(
                     onClick = {

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.01",
+        date = "October 13, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Conversation Header Action Chip",
+                description = "Replaced the header double-check icon with a Material 3 split action chip displaying total and unread message counts, with a one-tap mark all as read button.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.00",
         date = "October 13, 2026",
         highlights = listOf(
