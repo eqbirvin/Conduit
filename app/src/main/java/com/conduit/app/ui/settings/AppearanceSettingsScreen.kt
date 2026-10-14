@@ -35,6 +35,7 @@ interface AppearanceSettingsScreenCallbacks {
     fun onAutoCollapseReadChanged(enabled: Boolean)
     fun onDefaultToTodoModeChanged(enabled: Boolean)
     fun onCombineConversationsChanged(enabled: Boolean)
+    fun onSingleConversationViewChanged(enabled: Boolean)
     fun onScrollTopBarWithFeedChanged(enabled: Boolean)
     fun onTopBarScrollBehaviorChanged(behavior: String)
 }
@@ -236,6 +237,13 @@ fun AppearanceSettingsScreen(
                 description = "Group adjacent messages from the same conversation into a streamlined thread, hiding duplicate titles and app icons",
                 checked = settings.combineConversations,
                 onCheckedChange = callbacks::onCombineConversationsChanged
+            )
+
+            SettingsSwitchRow(
+                title = "Single Conversation View",
+                description = "Roll all notifications per conversation across messaging apps into a single entry in the feed. Tapping expand opens a dedicated view of that conversation's entire history.",
+                checked = settings.singleConversationView,
+                onCheckedChange = callbacks::onSingleConversationViewChanged
             )
 
             SettingsSwitchRow(

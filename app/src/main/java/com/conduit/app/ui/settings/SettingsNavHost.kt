@@ -65,6 +65,7 @@ fun SettingsNavHost(
                 override fun onAutoCollapseReadChanged(enabled: Boolean) { settingsViewModel.updateAutoCollapseRead(enabled) }
                 override fun onDefaultToTodoModeChanged(enabled: Boolean) { settingsViewModel.updateDefaultToTodoMode(enabled) }
                 override fun onCombineConversationsChanged(enabled: Boolean) { settingsViewModel.updateCombineConversations(enabled) }
+                override fun onSingleConversationViewChanged(enabled: Boolean) { settingsViewModel.updateSingleConversationView(enabled) }
                 override fun onScrollTopBarWithFeedChanged(enabled: Boolean) { settingsViewModel.updateScrollTopBarWithFeed(enabled) }
                 override fun onTopBarScrollBehaviorChanged(behavior: String) { settingsViewModel.updateTopBarScrollBehavior(behavior) }
             },

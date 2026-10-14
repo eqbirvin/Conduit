@@ -242,10 +242,18 @@ fun HubScreen(
     val searchItems = viewModel.searchResults.collectAsLazyPagingItems()
     val searchCorrection by viewModel.searchCorrectionState.collectAsStateWithLifecycle()
 
-    // Clear selection or exit search on back press
-    BackHandler(enabled = isSelectionMode || isSearchMode) {
+    var activeSingleConversationKey by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(selectedDockPackage, activeViewId, isSearchMode) {
+        activeSingleConversationKey = null
+    }
+
+    // Clear selection, conversation view, or exit search on back press
+    BackHandler(enabled = isSelectionMode || isSearchMode || activeSingleConversationKey != null) {
         if (isSelectionMode) {
             selectedIds = emptySet()
+        } else if (activeSingleConversationKey != null) {
+            activeSingleConversationKey = null
         } else {
             isSearchMode = false
             searchQuery = ""
@@ -1233,6 +1241,58 @@ fun HubScreen(
                         }.filterValues { it.isNotEmpty() }
                     }
                 }
+
+                val allNotificationsCombined = remember(notifications, archivedNotifications) {
+                    (notifications + archivedNotifications).sortedByDescending { it.timestamp }
+                }
+                val activeSingleConversation = remember(activeSingleConversationKey, allNotificationsCombined) {
+                    if (activeSingleConversationKey == null) null
+                    else {
+                        val messages = allNotificationsCombined.filter {
+                            SingleConversationHelper.isMessagingNotification(it, context) &&
+                            SingleConversationHelper.getConversationKey(context, it) == activeSingleConversationKey
+                        }
+                        if (messages.isEmpty()) null
+                        else {
+                            val primary = messages.first()
+                            val active = messages.filter { !it.isArchived }
+                            val isGroup = messages.any { ConversationCombineHelper.isGroupChat(it.title) }
+                            val title = if (isGroup) {
+                                ConversationCombineHelper.extractConversationName(primary.title) ?: primary.title.orEmpty()
+                            } else {
+                                SingleConversationHelper.normalizeTitle(primary.title)
+                            }
+                            SingleConversationRollup(
+                                convoKey = activeSingleConversationKey!!,
+                                primaryNotification = primary,
+                                allHistoryMessages = messages,
+                                activeMessages = active,
+                                subNotificationCount = if (messages.size > 1) messages.size - 1 else 0,
+                                isGroupChat = isGroup,
+                                conversationTitle = if (title.isBlank()) primary.title.orEmpty() else title,
+                                appPackage = getRepresentativePackage(context, primary.packageName),
+                                hasActiveUnread = active.isNotEmpty(),
+                                isPinned = messages.any { it.isPinned }
+                            )
+                        }
+                    }
+                }
+                val singleConvoFeedItems = remember(displayNotifications, allNotificationsCombined, settings.singleConversationView) {
+                    if (settings.singleConversationView) {
+                        SingleConversationHelper.groupFeedForSingleConversation(context, displayNotifications, allNotificationsCombined)
+                    } else {
+                        emptyList()
+                    }
+                }
+                val singleConvoPinned = remember(singleConvoFeedItems) {
+                    singleConvoFeedItems.filter { it.isPinned }
+                }
+                val singleConvoUnpinned = remember(singleConvoFeedItems) {
+                    singleConvoFeedItems.filter { !it.isPinned }
+                }
+                val singleConvoGroupedUnpinned = remember(singleConvoUnpinned) {
+                    singleConvoUnpinned.groupBy { formatDateHeader(it.timestamp) }
+                }
                 
                 val currentViewConfig = LocalViewConfiguration.current
                 val customViewConfig = remember(currentViewConfig) {
@@ -1249,6 +1309,84 @@ fun HubScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)
                     ) {
+                    if (activeSingleConversation != null) {
+                        singleConversationDetail(
+                            rollup = activeSingleConversation,
+                            onCollapse = { activeSingleConversationKey = null },
+                            onMarkAllRead = {
+                                viewModel.markNotificationsAsRead(activeSingleConversation.activeMessages)
+                            },
+                            actionsByKey = actionsByKey,
+                            unifiedView = unifiedView,
+                            isSelectionMode = isSelectionMode,
+                            selectedIds = selectedIds,
+                            onSelectToggle = { id ->
+                                val becomingSelected = !selectedIds.contains(id)
+                                if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                selectedIds = if (becomingSelected) selectedIds + id else selectedIds - id
+                            },
+                            showActionChips = showActionChips,
+                            settings = settings,
+                            onArchiveNotification = onArchiveNotification,
+                            onPinNotification = onPinNotification,
+                            onTriggerAction = { notif, action ->
+                                val actionTitle = action.title?.toString()?.lowercase() ?: ""
+                                if (actionTitle.contains("read") || actionTitle.contains("done") || actionTitle.contains("seen")) {
+                                    viewModel.markNotificationsAsRead(activeSingleConversation.activeMessages)
+                                } else {
+                                    viewModel.triggerAction(context, notif, action)
+                                }
+                            },
+                            onReply = { notif, text, action ->
+                                viewModel.sendReply(context, notif, text, action)
+                            }
+                        )
+                    } else if (settings.singleConversationView) {
+                        singleConversationFeed(
+                            context = context,
+                            pinnedItems = singleConvoPinned,
+                            groupedUnpinnedItems = singleConvoGroupedUnpinned,
+                            onOpenConversation = { convoKey ->
+                                activeSingleConversationKey = convoKey
+                            },
+                            onArchiveNotification = onArchiveNotification,
+                            onPinNotification = onPinNotification,
+                            actionsByKey = actionsByKey,
+                            unifiedView = unifiedView,
+                            isSelectionMode = isSelectionMode,
+                            selectedIds = selectedIds,
+                            onSelectToggleIds = { ids ->
+                                val anySelected = ids.any { selectedIds.contains(it) }
+                                val becomingSelected = !anySelected
+                                if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                selectedIds = if (becomingSelected) selectedIds + ids else selectedIds - ids
+                            },
+                            showActionChips = showActionChips,
+                            settings = settings,
+                            individualToggles = individualToggles,
+                            onToggleIndividual = { id ->
+                                val currentState = individualToggles[id]
+                                    ?: if (settings.autoCollapseRead) false else settings.masterExpandedState
+                                individualToggles[id] = !currentState
+                                performHapticTick(context)
+                            },
+                            onTriggerAction = { notif, activeMsgs, action ->
+                                val actionTitle = action.title?.toString()?.lowercase() ?: ""
+                                if (actionTitle.contains("read") || actionTitle.contains("done") || actionTitle.contains("seen")) {
+                                    viewModel.markNotificationsAsRead(activeMsgs)
+                                } else {
+                                    viewModel.triggerAction(context, notif, action)
+                                }
+                            },
+                            onReply = { notif, text, action ->
+                                viewModel.sendReply(context, notif, text, action)
+                            },
+                            activeNotificationIds = activeNotificationIds,
+                            onArchiveAllInDate = { ids ->
+                                viewModel.archiveMany(ids)
+                            }
+                        )
+                    } else {
                     // Pinned section
                     if (pinnedNotifications.isNotEmpty()) {
                         stickyHeader {
@@ -1661,6 +1799,7 @@ fun HubScreen(
                             )
                             }
                         }
+                    }
                     }
                     }
                 }

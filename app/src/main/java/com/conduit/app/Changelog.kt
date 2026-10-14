@@ -14,6 +14,22 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.00",
+        date = "October 13, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Single Conversation View",
+                description = "New presentation mode that groups all notifications per sender or conversation across messaging apps into a single card at the latest message's timestamp. Tapping expand focuses solely on that conversation's complete recorded history with an anchored header card.",
+                iconName = "Forum"
+            ),
+            ChangelogItem(
+                title = "Mutual Exclusion & Smart Action Chips",
+                description = "Seamlessly switch between Stock, Combine Conversations, and Single Conversation views in Appearance Settings. Action chips automatically hide when all messages in a conversation are read.",
+                iconName = "Tune"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.34.01",
         date = "October 13, 2026",
         highlights = listOf(

@@ -67,6 +67,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateIngestionDiagnosticsEnabled(enabled: Boolean) = viewModelScope.launch { repository.updateIngestionDiagnosticsEnabled(enabled) }
     fun updateCustomViewsExpanded(enabled: Boolean) = viewModelScope.launch { repository.updateCustomViewsExpanded(enabled) }
     fun updateCombineConversations(enabled: Boolean) = viewModelScope.launch { repository.updateCombineConversations(enabled) }
+    fun updateSingleConversationView(enabled: Boolean) = viewModelScope.launch { repository.updateSingleConversationView(enabled) }
     fun updateScrollTopBarWithFeed(enabled: Boolean) = viewModelScope.launch { repository.updateScrollTopBarWithFeed(enabled) }
     fun updateTopBarScrollBehavior(behavior: String) = viewModelScope.launch { repository.updateTopBarScrollBehavior(behavior) }
 

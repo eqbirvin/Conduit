@@ -60,6 +60,7 @@ data class ConduitSettings(
     val transparentBundlePills: Boolean = false,
     val bundleMenuBlur: Boolean = true,
     val combineConversations: Boolean = true,
+    val singleConversationView: Boolean = false,
     val scrollTopBarWithFeed: Boolean = false,
     val topBarScrollBehavior: String = "NATURAL"
 )

@@ -106,7 +106,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             dockExpandPosition = prefs.getString("dock_expand_position", "LEFT") ?: "LEFT",
             transparentBundlePills = prefs.getBoolean("transparent_bundle_pills", false),
             bundleMenuBlur = prefs.getBoolean("bundle_menu_blur", true),
-            combineConversations = prefs.getBoolean("combine_conversations", true),
+            combineConversations = if (prefs.getBoolean("single_conversation_view", false)) false else prefs.getBoolean("combine_conversations", true),
+            singleConversationView = prefs.getBoolean("single_conversation_view", false),
             scrollTopBarWithFeed = prefs.getBoolean("scroll_top_bar_with_feed", false),
             topBarScrollBehavior = prefs.getString("top_bar_scroll_behavior", "NATURAL") ?: "NATURAL"
         )
@@ -428,8 +429,31 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     }
 
     fun updateCombineConversations(enabled: Boolean) {
-        prefs.edit().putBoolean("combine_conversations", enabled).apply()
-        _settings.update { it.copy(combineConversations = enabled) }
+        val editor = prefs.edit().putBoolean("combine_conversations", enabled)
+        if (enabled) {
+            editor.putBoolean("single_conversation_view", false)
+        }
+        editor.apply()
+        _settings.update {
+            it.copy(
+                combineConversations = enabled,
+                singleConversationView = if (enabled) false else it.singleConversationView
+            )
+        }
+    }
+
+    fun updateSingleConversationView(enabled: Boolean) {
+        val editor = prefs.edit().putBoolean("single_conversation_view", enabled)
+        if (enabled) {
+            editor.putBoolean("combine_conversations", false)
+        }
+        editor.apply()
+        _settings.update {
+            it.copy(
+                singleConversationView = enabled,
+                combineConversations = if (enabled) false else it.combineConversations
+            )
+        }
     }
 
     fun updateScrollTopBarWithFeed(enabled: Boolean) {
