@@ -366,5 +366,6 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-10-13T15:46] [v2.34.01] added date header split chip to todo mode displaying item count and enabling mark all from date as read.
 [2026-10-13T20:36] [v2.35.00] implemented single conversation view rolling non-email messaging notifications into a single feed card with expand count badge, dedicated conversation view with sticky anchored header, and appearance settings mutual exclusion.
 [2026-10-13T21:00] [v2.35.01] converted single conversation header mark all read button to material 3 split action chip displaying total and unread message counts.
+[2026-10-13T21:15] [v2.35.02] removed app icon, app name, and read chip from single conversation messages, and conditionally hid matching sender name.
 
 

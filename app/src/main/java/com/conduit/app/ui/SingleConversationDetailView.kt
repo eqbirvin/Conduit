@@ -218,31 +218,16 @@ fun LazyListScope.singleConversationDetail(
         val isLatest = index == 0
         val showChipsForThisItem = showActionChips && isLatest && rollup.hasActiveUnread
 
-        val displayText = if (rollup.isGroupChat) {
-            ConversationCombineHelper.getChildDisplayText(msg, rollup.primaryNotification)
-        } else {
-            msg.text
-        }
-
-        NotificationItem(
+        SingleConversationMessageItem(
             notification = msg,
-            isArchivedView = false,
-            isUnifiedView = unifiedView,
-            onArchiveNotification = onArchiveNotification,
-            onPinNotification = onPinNotification,
+            headerTitle = rollup.conversationTitle,
             isSelected = selectedIds.contains(msg.id),
             isSelectionMode = isSelectionMode,
             onSelectToggle = { onSelectToggle(msg.id) },
-            isExpanded = true,
-            onExpandToggle = {},
             showActionChips = showChipsForThisItem,
-            minimizeIcons = settings.minimizeIcons,
             allActions = if (showChipsForThisItem) actionsByKey[msg.notificationKey] else null,
             onTriggerAction = { action -> onTriggerAction(msg, action) },
-            onReply = { text, action -> onReply(msg, text, action) },
-            overrideText = displayText,
-            subNotificationCount = 0,
-            conversationRollupState = null
+            onReply = { text, action -> onReply(msg, text, action) }
         )
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outlineVariant,

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.02",
+        date = "October 13, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Streamlined Conversation Messages",
+                description = "Removed redundant app icons, channel names, and read status chips from messages in the single conversation view. In 1-on-1 chats, duplicate sender titles are hidden for a cleaner message stream, while group chats clearly display individual senders.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.01",
         date = "October 13, 2026",
         highlights = listOf(
