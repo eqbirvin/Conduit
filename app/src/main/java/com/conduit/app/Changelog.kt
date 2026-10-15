@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.06",
+        date = "October 15, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Refined Conversation Header Spacing & Chip Dimensions",
+                description = "Proportioned the Single Conversation collapse button to a 1:1 aspect ratio square chip with rounded M3 corners and increased spacing from the mark-all-read chip for a cleaner visual layout.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.05",
         date = "October 15, 2026",
         highlights = listOf(

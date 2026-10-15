@@ -153,7 +153,7 @@ fun SingleConversationStickyHeader(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
 
                     val collapseShape = RoundedCornerShape(8.dp)
                     Surface(
@@ -161,6 +161,7 @@ fun SingleConversationStickyHeader(
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         modifier = Modifier
                             .fillMaxHeight()
+                            .aspectRatio(1f, matchHeightConstraintsFirst = true)
                             .clip(collapseShape)
                             .clickable {
                                 performHapticTick(context)
@@ -169,7 +170,7 @@ fun SingleConversationStickyHeader(
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.KeyboardArrowUp,
