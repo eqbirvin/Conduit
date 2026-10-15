@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.07",
+        date = "October 15, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Clean Single Conversation Header & Double Divider",
+                description = "Removed background shading and tonal elevation from the Single Conversation header so it seamlessly matches the feed background, and added a double-line boundary divider below the header.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.06",
         date = "October 15, 2026",
         highlights = listOf(

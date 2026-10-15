@@ -55,8 +55,8 @@ fun SingleConversationStickyHeader(
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp
+        color = MaterialTheme.colorScheme.background,
+        tonalElevation = 0.dp
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
@@ -183,10 +183,7 @@ fun SingleConversationStickyHeader(
                 }
             }
 
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant,
-                thickness = 0.5.dp
-            )
+            DoubleDivider()
         }
     }
 }

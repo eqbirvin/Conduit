@@ -371,5 +371,6 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-10-14T22:20] [v2.35.04] removed redundant top-left back button from single conversation header.
 [2026-10-15T08:45] [v2.35.05] styled single conversation header collapse button with material 3 secondarycontainer shading matching message count chip.
 [2026-10-15T09:07] [v2.35.06] set single conversation collapse button to 1:1 aspect ratio square chip and increased spacing from mark-all-read chip.
+[2026-10-15T13:14] [v2.35.07] removed background shading and tonal elevation from single conversation header and applied double line divider below header.
 
 
