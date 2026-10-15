@@ -369,5 +369,6 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-10-13T21:15] [v2.35.02] removed app icon, app name, and read chip from single conversation messages, and conditionally hid matching sender name.
 [2026-10-14T21:08] [v2.35.03] hid top bar, custom view strip, and bottom dock when expanding a conversation in single conversation view, anchoring conversation header to top.
 [2026-10-14T22:20] [v2.35.04] removed redundant top-left back button from single conversation header.
+[2026-10-15T08:45] [v2.35.05] styled single conversation header collapse button with material 3 secondarycontainer shading matching message count chip.
 
 

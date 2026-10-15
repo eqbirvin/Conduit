@@ -62,7 +62,7 @@ fun SingleConversationStickyHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 12.dp, top = 6.dp, end = 6.dp, bottom = 6.dp),
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppIcon(packageName = rollup.appPackage, size = 38.dp)
@@ -98,70 +98,87 @@ fun SingleConversationStickyHeader(
 
                 Row(
                     modifier = Modifier.height(IntrinsicSize.Min),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(1.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
+                    Row(
                         modifier = Modifier.fillMaxHeight(),
-                        shape = if (pendingCount > 0 && onMarkAllRead != null) {
-                            RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
-                        } else {
-                            MaterialTheme.shapes.small
-                        },
-                        color = MaterialTheme.colorScheme.secondaryContainer
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(1.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = chipText,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-
-                    if (pendingCount > 0 && onMarkAllRead != null) {
-                        val rightShape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
                         Surface(
-                            shape = rightShape,
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .clip(rightShape)
-                                .clickable {
-                                    performHapticClick(context)
-                                    onMarkAllRead()
-                                }
+                            modifier = Modifier.fillMaxHeight(),
+                            shape = if (pendingCount > 0 && onMarkAllRead != null) {
+                                RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
+                            } else {
+                                MaterialTheme.shapes.small
+                            },
+                            color = MaterialTheme.colorScheme.secondaryContainer
                         ) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.DoneAll,
-                                    contentDescription = "Mark all read",
-                                    modifier = Modifier.size(12.dp),
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = chipText,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }
-                    }
-                }
 
-                Spacer(modifier = Modifier.width(4.dp))
-
-                IconButton(
-                    onClick = {
-                        performHapticTick(context)
-                        onCollapse()
+                        if (pendingCount > 0 && onMarkAllRead != null) {
+                            val rightShape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
+                            Surface(
+                                shape = rightShape,
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .clip(rightShape)
+                                    .clickable {
+                                        performHapticClick(context)
+                                        onMarkAllRead()
+                                    }
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.DoneAll,
+                                        contentDescription = "Mark all read",
+                                        modifier = Modifier.size(12.dp),
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardArrowUp,
-                        contentDescription = "Collapse",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    val collapseShape = RoundedCornerShape(8.dp)
+                    Surface(
+                        shape = collapseShape,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .clip(collapseShape)
+                            .clickable {
+                                performHapticTick(context)
+                                onCollapse()
+                            }
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowUp,
+                                contentDescription = "Collapse",
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
                 }
             }
 

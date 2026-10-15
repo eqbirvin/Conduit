@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.05",
+        date = "October 15, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Material 3 Collapse Action Chip",
+                description = "Updated the collapse chevron button in Single Conversation View with Material 3 container shading and styling, perfectly matching the height and corner rounding of the adjacent message count and mark-all-read chip.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.04",
         date = "October 14, 2026",
         highlights = listOf(
