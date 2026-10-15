@@ -281,10 +281,10 @@ fun HubScreen(
     var headerHeightPx by remember { mutableFloatStateOf(0f) }
     var headerOffsetPx by remember { mutableFloatStateOf(0f) }
 
-    val nestedScrollConnection = remember(settings.scrollTopBarWithFeed, settings.topBarScrollBehavior) {
+    val nestedScrollConnection = remember(settings.scrollTopBarWithFeed, settings.topBarScrollBehavior, activeSingleConversationKey) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (!settings.scrollTopBarWithFeed || isSelectionMode || isSearchMode) {
+                if (!settings.scrollTopBarWithFeed || isSelectionMode || isSearchMode || activeSingleConversationKey != null) {
                     return Offset.Zero
                 }
                 val delta = available.y
@@ -418,12 +418,12 @@ fun HubScreen(
 
     Scaffold(
         topBar = {
-            if (isSelectionMode || isSearchMode || !settings.scrollTopBarWithFeed) {
+            if ((isSelectionMode || isSearchMode || !settings.scrollTopBarWithFeed) && activeSingleConversationKey == null) {
                 HubTopBar(state = topBarState, callbacks = topBarCallbacks)
             }
         },
         bottomBar = {
-            if (!isSelectionMode && !isSearchMode) {
+            if (!isSelectionMode && !isSearchMode && activeSingleConversationKey == null) {
                 val pm = context.packageManager
                 val enabledApps = remember(unifiedView, channelStates.toMap()) {
                     if (!unifiedView) emptyList<String>()
@@ -896,14 +896,16 @@ fun HubScreen(
             val visibleHeaderPx = (headerHeightPx + headerOffsetPx).coerceAtLeast(0f)
             val statusBarHeightPx = WindowInsets.statusBars.getTop(density).toFloat()
             val contentTopPaddingDp = with(density) {
-                if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
+                if (activeSingleConversationKey != null) {
+                    statusBarHeightPx.toDp()
+                } else if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
                     maxOf(statusBarHeightPx, visibleHeaderPx).toDp()
                 } else {
                     padding.calculateTopPadding()
                 }
             }
 
-            if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
+            if ((settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) || activeSingleConversationKey != null) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -911,6 +913,9 @@ fun HubScreen(
                         .background(MaterialTheme.colorScheme.background)
                         .zIndex(1f)
                 )
+            }
+
+            if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode && activeSingleConversationKey == null) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -949,7 +954,7 @@ fun HubScreen(
                     .fillMaxSize()
                     .then(blurModifier)
             ) {
-            if (!settings.scrollTopBarWithFeed || isSelectionMode || isSearchMode) {
+            if ((!settings.scrollTopBarWithFeed || isSelectionMode || isSearchMode) && activeSingleConversationKey == null) {
                 if (views.isNotEmpty() && !isSearchMode) {
                     CustomViewChipsBar(
                         views = views,

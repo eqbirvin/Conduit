@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.03",
+        date = "October 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Full-Screen Conversation View",
+                description = "Expanding a conversation in Single Conversation View now hides the top bar, custom view strip, and bottom dock, anchoring the conversation header directly at the top for an immersive, distraction-free view.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.02",
         date = "October 13, 2026",
         highlights = listOf(
