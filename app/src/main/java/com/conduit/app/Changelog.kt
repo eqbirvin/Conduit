@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.04",
+        date = "October 14, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Clean Single Conversation Header",
+                description = "Removed the redundant top-left back button from the conversation header, letting the app icon and sender title take prominence while retaining the right-hand collapse arrow and system back navigation.",
+                iconName = "Forum"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.03",
         date = "October 14, 2026",
         highlights = listOf(
