@@ -23,17 +23,20 @@ object SingleConversationHelper {
     fun isMessagingNotification(notif: HubNotification, context: Context): Boolean {
         if (notif.kind != "MESSAGE") return false
         val repPkg = getRepresentativePackage(context, notif.packageName)
-        val channelKey = ChannelRegistry.supportedApps[repPkg]?.first 
-            ?: ChannelRegistry.supportedApps[notif.packageName]?.first 
+        val channelKey = ChannelRegistry.supportedApps[repPkg]?.first
+            ?: ChannelRegistry.supportedApps[notif.packageName]?.first
             ?: ""
         if (EMAIL_CHANNELS.contains(channelKey)) return false
-        
-        val channelUpper = notif.channel.uppercase()
-        if (channelUpper.contains("GMAIL") || channelUpper.contains("OUTLOOK") || 
-            channelUpper.contains("SPARK") || channelUpper.contains("EMAIL") || 
-            channelUpper.contains("MAIL") || channelUpper.contains("THUNDERBIRD") ||
-            channelUpper.contains("PROTON") || channelUpper.contains("K-9") || 
-            channelUpper.contains("EDISON")) {
+
+        val ch = notif.channel
+        if (ch.contains("MAIL", ignoreCase = true) ||
+            ch.contains("OUTLOOK", ignoreCase = true) ||
+            ch.contains("SPARK", ignoreCase = true) ||
+            ch.contains("THUNDERBIRD", ignoreCase = true) ||
+            ch.contains("PROTON", ignoreCase = true) ||
+            ch.contains("K-9", ignoreCase = true) ||
+            ch.contains("EDISON", ignoreCase = true)
+        ) {
             return false
         }
         return true
@@ -42,7 +45,7 @@ object SingleConversationHelper {
     fun normalizeTitle(title: String?): String {
         if (title.isNullOrBlank()) return ""
         var t = title.trim()
-        if (t.endsWith(" - Replied", ignoreCase = true)) {
+        while (t.endsWith(" - Replied", ignoreCase = true)) {
             t = t.substring(0, t.length - 10).trim()
         }
         return t
@@ -50,11 +53,12 @@ object SingleConversationHelper {
 
     fun getConversationKey(context: Context, notif: HubNotification): String {
         val repPkg = getRepresentativePackage(context, notif.packageName)
-        val isGroup = ConversationCombineHelper.isGroupChat(notif.title)
+        val normalized = normalizeTitle(notif.title)
+        val isGroup = ConversationCombineHelper.isGroupChat(normalized)
         val convoName = if (isGroup) {
-            ConversationCombineHelper.extractConversationName(notif.title).orEmpty()
+            ConversationCombineHelper.extractConversationName(normalized).orEmpty()
         } else {
-            normalizeTitle(notif.title)
+            normalized
         }
         if (convoName.isBlank() && notif.notificationKey.isNotBlank()) {
             return "$repPkg::key::${notif.notificationKey}"
@@ -65,6 +69,64 @@ object SingleConversationHelper {
         return "$repPkg::${convoName.lowercase()}"
     }
 
+    fun buildRollup(
+        context: Context,
+        convoKey: String,
+        primaryNotification: HubNotification,
+        allHistory: List<HubNotification>
+    ): SingleConversationRollup {
+        val activeMsgs = allHistory.filter { !it.isArchived }
+        val hasActiveUnread = activeMsgs.isNotEmpty()
+        val isGroup = allHistory.any { ConversationCombineHelper.isGroupChat(normalizeTitle(it.title)) }
+        val normalizedPrimaryTitle = normalizeTitle(primaryNotification.title)
+        val title = if (isGroup) {
+            val groupMatchSource = allHistory.firstOrNull {
+                ConversationCombineHelper.isGroupChat(normalizeTitle(it.title))
+            } ?: primaryNotification
+            ConversationCombineHelper.extractConversationName(normalizeTitle(groupMatchSource.title))
+                ?: normalizedPrimaryTitle
+        } else {
+            normalizedPrimaryTitle
+        }
+        val subCount = if (allHistory.size > 1) allHistory.size - 1 else 0
+
+        return SingleConversationRollup(
+            convoKey = convoKey,
+            primaryNotification = primaryNotification,
+            allHistoryMessages = allHistory,
+            activeMessages = activeMsgs,
+            subNotificationCount = subCount,
+            isGroupChat = isGroup,
+            conversationTitle = title.ifBlank { primaryNotification.title.orEmpty() },
+            appPackage = getRepresentativePackage(context, primaryNotification.packageName),
+            hasActiveUnread = hasActiveUnread,
+            isPinned = primaryNotification.isPinned || allHistory.any { it.isPinned }
+        )
+    }
+
+    fun buildRollupForKey(
+        context: Context,
+        convoKey: String,
+        allNotifications: List<HubNotification>
+    ): SingleConversationRollup? {
+        val seenIds = HashSet<Int>()
+        val messages = mutableListOf<HubNotification>()
+        for (notif in allNotifications) {
+            if (!seenIds.add(notif.id)) continue
+            if (isMessagingNotification(notif, context) && getConversationKey(context, notif) == convoKey) {
+                messages.add(notif)
+            }
+        }
+        if (messages.isEmpty()) return null
+        messages.sortByDescending { it.timestamp }
+        return buildRollup(
+            context = context,
+            convoKey = convoKey,
+            primaryNotification = messages.first(),
+            allHistory = messages
+        )
+    }
+
     fun groupFeedForSingleConversation(
         context: Context,
         displayNotifications: List<HubNotification>,
@@ -72,11 +134,16 @@ object SingleConversationHelper {
     ): List<SingleConversationFeedItem> {
         if (displayNotifications.isEmpty()) return emptyList()
 
-        // Index all notifications by conversation key for fast full history lookups
-        val allConvoMap = mutableMapOf<String, MutableList<HubNotification>>()
+        // Index all notifications by conversation key once and cache per-ID keys
+        val allConvoMap = HashMap<String, MutableList<HubNotification>>()
+        val convoKeyById = HashMap<Int, String>(allNotifications.size)
+        val seenIds = HashSet<Int>(allNotifications.size)
+
         for (notif in allNotifications) {
+            if (!seenIds.add(notif.id)) continue
             if (isMessagingNotification(notif, context)) {
                 val key = getConversationKey(context, notif)
+                convoKeyById[notif.id] = key
                 allConvoMap.getOrPut(key) { mutableListOf() }.add(notif)
             }
         }
@@ -85,43 +152,34 @@ object SingleConversationHelper {
             list.sortByDescending { it.timestamp }
         }
 
-        val result = mutableListOf<SingleConversationFeedItem>()
-        val seenConvoKeys = mutableSetOf<String>()
+        val result = ArrayList<SingleConversationFeedItem>(displayNotifications.size)
+        val seenConvoKeys = HashSet<String>()
+        val seenDisplayIds = HashSet<Int>(displayNotifications.size)
 
         for (notif in displayNotifications) {
-            if (!isMessagingNotification(notif, context)) {
-                result.add(SingleConversationFeedItem.Standalone(notif))
+            if (!seenDisplayIds.add(notif.id)) continue
+            val key = if (seenIds.contains(notif.id)) {
+                convoKeyById[notif.id]
+            } else if (isMessagingNotification(notif, context)) {
+                getConversationKey(context, notif)
             } else {
-                val key = getConversationKey(context, notif)
-                if (seenConvoKeys.add(key)) {
-                    val allHistory = allConvoMap[key] ?: listOf(notif)
-                    val activeMsgs = allHistory.filter { !it.isArchived }
-                    val hasActiveUnread = activeMsgs.isNotEmpty()
-                    val isGroup = allHistory.any { ConversationCombineHelper.isGroupChat(it.title) }
-                    val title = if (isGroup) {
-                        ConversationCombineHelper.extractConversationName(notif.title) ?: notif.title.orEmpty()
-                    } else {
-                        normalizeTitle(notif.title)
-                    }
-                    val subCount = if (allHistory.size > 1) allHistory.size - 1 else 0
+                null
+            }
 
-                    val rollup = SingleConversationRollup(
-                        convoKey = key,
-                        primaryNotification = notif,
-                        allHistoryMessages = allHistory,
-                        activeMessages = activeMsgs,
-                        subNotificationCount = subCount,
-                        isGroupChat = isGroup,
-                        conversationTitle = if (title.isBlank()) notif.title.orEmpty() else title,
-                        appPackage = getRepresentativePackage(context, notif.packageName),
-                        hasActiveUnread = hasActiveUnread,
-                        isPinned = notif.isPinned || allHistory.any { it.isPinned }
+            if (key == null) {
+                result.add(SingleConversationFeedItem.Standalone(notif))
+            } else if (seenConvoKeys.add(key)) {
+                val allHistory = allConvoMap[key] ?: listOf(notif)
+                result.add(
+                    SingleConversationFeedItem.Conversation(
+                        buildRollup(
+                            context = context,
+                            convoKey = key,
+                            primaryNotification = notif,
+                            allHistory = allHistory
+                        )
                     )
-                    result.add(SingleConversationFeedItem.Conversation(rollup))
-                } else {
-                    // Suppressed from feed; already rolled into the conversation entry
-                    continue
-                }
+                )
             }
         }
 

@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.09",
+        date = "October 15, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Single Conversation Header Anchoring & Backend Audit",
+                description = "Fixed the Single Conversation View header so it is always anchored cleanly at the top of the screen regardless of feed scroll offset, fixed date-header Mark All Read sync and replied-message title normalization, and optimized conversation grouping performance.",
+                iconName = "BugReport"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.08",
         date = "October 15, 2026",
         highlights = listOf(

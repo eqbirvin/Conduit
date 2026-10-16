@@ -28,6 +28,9 @@ import com.conduit.app.data.HubNotification
 import com.conduit.app.performHapticClick
 import com.conduit.app.performHapticTick
 
+private val ActionChipShape = RoundedCornerShape(8.dp)
+private val ReplyInputShape = RoundedCornerShape(12.dp)
+
 @Composable
 fun SingleConversationMessageItem(
     notification: HubNotification,
@@ -48,13 +51,19 @@ fun SingleConversationMessageItem(
         allActions?.find { it.remoteInputs != null && it.remoteInputs.isNotEmpty() }
     }
 
-    val sender = remember(notification.title) {
-        ConversationCombineHelper.extractSenderName(notification.title) ?: notification.title.orEmpty()
+    val normalizedTitle = remember(notification.title) {
+        SingleConversationHelper.normalizeTitle(notification.title)
     }
-    val isSameAsHeader = remember(sender, headerTitle, notification.title) {
+    val sender = remember(normalizedTitle) {
+        ConversationCombineHelper.extractSenderName(normalizedTitle) ?: normalizedTitle
+    }
+    val isSameAsHeader = remember(sender, headerTitle, normalizedTitle) {
         sender.isBlank() ||
         sender.equals(headerTitle, ignoreCase = true) ||
-        notification.title.orEmpty().equals(headerTitle, ignoreCase = true)
+        normalizedTitle.equals(headerTitle, ignoreCase = true)
+    }
+    val formattedTimestamp = remember(notification.timestamp) {
+        formatTimestamp(notification.timestamp)
     }
 
     val replyPrimaryColor = MaterialTheme.colorScheme.primary
@@ -139,7 +148,7 @@ fun SingleConversationMessageItem(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = formatTimestamp(notification.timestamp),
+                            text = formattedTimestamp,
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -166,7 +175,7 @@ fun SingleConversationMessageItem(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = formatTimestamp(notification.timestamp),
+                            text = formattedTimestamp,
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -194,7 +203,7 @@ fun SingleConversationMessageItem(
                                         onTriggerAction(action)
                                     }
                                 },
-                                shape = RoundedCornerShape(8.dp),
+                                shape = ActionChipShape,
                                 color = MaterialTheme.colorScheme.secondaryContainer
                             ) {
                                 Text(
@@ -217,7 +226,7 @@ fun SingleConversationMessageItem(
                             onValueChange = { replyText = it },
                             placeholder = { Text("Type a reply...") },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = ReplyInputShape,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.Sentences
                             ),
@@ -247,7 +256,7 @@ fun SingleConversationMessageItem(
                                     replyText = ""
                                 },
                                 enabled = replyText.isNotBlank(),
-                                shape = RoundedCornerShape(12.dp)
+                                shape = ReplyInputShape
                             ) {
                                 Text("Send")
                             }

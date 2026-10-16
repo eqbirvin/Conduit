@@ -373,5 +373,4 @@ Investigating Recents animation deadlock. Found that recents_animation_input_con
 [2026-10-15T09:07] [v2.35.06] set single conversation collapse button to 1:1 aspect ratio square chip and increased spacing from mark-all-read chip.
 [2026-10-15T13:14] [v2.35.07] removed background shading and tonal elevation from single conversation header and applied double line divider below header.
 [2026-10-15T20:35] [v2.35.08] added slide-down and vertical reveal animation when entering single conversation view and preserved feed scroll position.
-
-
+[2026-10-15T21:17] [v2.35.09] fixed single conversation header top anchoring when scroll top bar with feed is active, split singleconversationdetailview and singleconversationfeed for rule 2 compliance, fixed date-header mark read sync and autocollapseread toggle, normalized replied titles, and optimized single conversation grouping and recomposition performance.
