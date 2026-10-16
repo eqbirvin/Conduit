@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.08",
+        date = "October 15, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Animated Conversation Slide-Down & Reveal",
+                description = "Expanding a conversation now smoothly reveals and slides downward over the feed with a spring-damped transition. Collapsing slides upward, seamlessly preserving your exact feed scroll position.",
+                iconName = "Animation"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.07",
         date = "October 15, 2026",
         highlights = listOf(

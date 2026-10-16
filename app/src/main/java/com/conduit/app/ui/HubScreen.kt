@@ -883,6 +883,46 @@ fun HubScreen(
             Modifier
         }
         
+        val allNotificationsCombined = remember(notifications, archivedNotifications) {
+            (notifications + archivedNotifications).sortedByDescending { it.timestamp }
+        }
+        var lastActiveConversation by remember { mutableStateOf<SingleConversationRollup?>(null) }
+        val activeSingleConversation = remember(activeSingleConversationKey, allNotificationsCombined) {
+            if (activeSingleConversationKey == null) null
+            else {
+                val messages = allNotificationsCombined.filter {
+                    SingleConversationHelper.isMessagingNotification(it, context) &&
+                    SingleConversationHelper.getConversationKey(context, it) == activeSingleConversationKey
+                }
+                if (messages.isEmpty()) null
+                else {
+                    val primary = messages.first()
+                    val active = messages.filter { !it.isArchived }
+                    val isGroup = messages.any { ConversationCombineHelper.isGroupChat(it.title) }
+                    val title = if (isGroup) {
+                        ConversationCombineHelper.extractConversationName(primary.title) ?: primary.title.orEmpty()
+                    } else {
+                        SingleConversationHelper.normalizeTitle(primary.title)
+                    }
+                    SingleConversationRollup(
+                        convoKey = activeSingleConversationKey!!,
+                        primaryNotification = primary,
+                        allHistoryMessages = messages,
+                        activeMessages = active,
+                        subNotificationCount = if (messages.size > 1) messages.size - 1 else 0,
+                        isGroupChat = isGroup,
+                        conversationTitle = if (title.isBlank()) primary.title.orEmpty() else title,
+                        appPackage = getRepresentativePackage(context, primary.packageName),
+                        hasActiveUnread = active.isNotEmpty(),
+                        isPinned = messages.any { it.isPinned }
+                    )
+                }
+            }
+        }
+        if (activeSingleConversation != null) {
+            lastActiveConversation = activeSingleConversation
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -896,9 +936,7 @@ fun HubScreen(
             val visibleHeaderPx = (headerHeightPx + headerOffsetPx).coerceAtLeast(0f)
             val statusBarHeightPx = WindowInsets.statusBars.getTop(density).toFloat()
             val contentTopPaddingDp = with(density) {
-                if (activeSingleConversationKey != null) {
-                    statusBarHeightPx.toDp()
-                } else if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
+                if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
                     maxOf(statusBarHeightPx, visibleHeaderPx).toDp()
                 } else {
                     padding.calculateTopPadding()
@@ -1247,41 +1285,6 @@ fun HubScreen(
                     }
                 }
 
-                val allNotificationsCombined = remember(notifications, archivedNotifications) {
-                    (notifications + archivedNotifications).sortedByDescending { it.timestamp }
-                }
-                val activeSingleConversation = remember(activeSingleConversationKey, allNotificationsCombined) {
-                    if (activeSingleConversationKey == null) null
-                    else {
-                        val messages = allNotificationsCombined.filter {
-                            SingleConversationHelper.isMessagingNotification(it, context) &&
-                            SingleConversationHelper.getConversationKey(context, it) == activeSingleConversationKey
-                        }
-                        if (messages.isEmpty()) null
-                        else {
-                            val primary = messages.first()
-                            val active = messages.filter { !it.isArchived }
-                            val isGroup = messages.any { ConversationCombineHelper.isGroupChat(it.title) }
-                            val title = if (isGroup) {
-                                ConversationCombineHelper.extractConversationName(primary.title) ?: primary.title.orEmpty()
-                            } else {
-                                SingleConversationHelper.normalizeTitle(primary.title)
-                            }
-                            SingleConversationRollup(
-                                convoKey = activeSingleConversationKey!!,
-                                primaryNotification = primary,
-                                allHistoryMessages = messages,
-                                activeMessages = active,
-                                subNotificationCount = if (messages.size > 1) messages.size - 1 else 0,
-                                isGroupChat = isGroup,
-                                conversationTitle = if (title.isBlank()) primary.title.orEmpty() else title,
-                                appPackage = getRepresentativePackage(context, primary.packageName),
-                                hasActiveUnread = active.isNotEmpty(),
-                                isPinned = messages.any { it.isPinned }
-                            )
-                        }
-                    }
-                }
                 val singleConvoFeedItems = remember(displayNotifications, allNotificationsCombined, settings.singleConversationView) {
                     if (settings.singleConversationView) {
                         SingleConversationHelper.groupFeedForSingleConversation(context, displayNotifications, allNotificationsCombined)
@@ -1314,39 +1317,7 @@ fun HubScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)
                     ) {
-                    if (activeSingleConversation != null) {
-                        singleConversationDetail(
-                            rollup = activeSingleConversation,
-                            onCollapse = { activeSingleConversationKey = null },
-                            onMarkAllRead = {
-                                viewModel.markNotificationsAsRead(activeSingleConversation.activeMessages)
-                            },
-                            actionsByKey = actionsByKey,
-                            unifiedView = unifiedView,
-                            isSelectionMode = isSelectionMode,
-                            selectedIds = selectedIds,
-                            onSelectToggle = { id ->
-                                val becomingSelected = !selectedIds.contains(id)
-                                if (becomingSelected) performHapticClick(context) else performHapticTick(context)
-                                selectedIds = if (becomingSelected) selectedIds + id else selectedIds - id
-                            },
-                            showActionChips = showActionChips,
-                            settings = settings,
-                            onArchiveNotification = onArchiveNotification,
-                            onPinNotification = onPinNotification,
-                            onTriggerAction = { notif, action ->
-                                val actionTitle = action.title?.toString()?.lowercase() ?: ""
-                                if (actionTitle.contains("read") || actionTitle.contains("done") || actionTitle.contains("seen")) {
-                                    viewModel.markNotificationsAsRead(activeSingleConversation.activeMessages)
-                                } else {
-                                    viewModel.triggerAction(context, notif, action)
-                                }
-                            },
-                            onReply = { notif, text, action ->
-                                viewModel.sendReply(context, notif, text, action)
-                            }
-                        )
-                    } else if (settings.singleConversationView) {
+                    if (settings.singleConversationView) {
                         singleConversationFeed(
                             context = context,
                             pinnedItems = singleConvoPinned,
@@ -1811,6 +1782,87 @@ fun HubScreen(
             }
             
             // The Floating Dock (moved to bottomBar)
+            }
+
+            androidx.compose.animation.AnimatedVisibility(
+                visible = activeSingleConversation != null,
+                enter = slideInVertically(
+                    initialOffsetY = { -it / 3 },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + expandVertically(
+                    expandFrom = Alignment.Top,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeIn(animationSpec = tween(durationMillis = 200)),
+                exit = slideOutVertically(
+                    targetOffsetY = { -it / 3 },
+                    animationSpec = tween(durationMillis = 200, easing = FastOutLinearInEasing)
+                ) + shrinkVertically(
+                    shrinkTowards = Alignment.Top,
+                    animationSpec = tween(durationMillis = 200, easing = FastOutLinearInEasing)
+                ) + fadeOut(animationSpec = tween(durationMillis = 150)),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(10f)
+            ) {
+                val convoToDisplay = activeSingleConversation ?: lastActiveConversation
+                if (convoToDisplay != null) {
+                    val singleConvoListState = androidx.compose.foundation.lazy.rememberLazyListState()
+                    LaunchedEffect(activeSingleConversationKey) {
+                        if (activeSingleConversationKey != null) {
+                            singleConvoListState.scrollToItem(0)
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
+                            .statusBarsPadding()
+                    ) {
+                        LazyColumn(
+                            state = singleConvoListState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 16.dp)
+                        ) {
+                            singleConversationDetail(
+                                rollup = convoToDisplay,
+                                onCollapse = { activeSingleConversationKey = null },
+                                onMarkAllRead = {
+                                    viewModel.markNotificationsAsRead(convoToDisplay.activeMessages)
+                                },
+                                actionsByKey = actionsByKey,
+                                unifiedView = unifiedView,
+                                isSelectionMode = isSelectionMode,
+                                selectedIds = selectedIds,
+                                onSelectToggle = { id ->
+                                    val becomingSelected = !selectedIds.contains(id)
+                                    if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                    selectedIds = if (becomingSelected) selectedIds + id else selectedIds - id
+                                },
+                                showActionChips = showActionChips,
+                                settings = settings,
+                                onArchiveNotification = onArchiveNotification,
+                                onPinNotification = onPinNotification,
+                                onTriggerAction = { notif, action ->
+                                    val actionTitle = action.title?.toString()?.lowercase() ?: ""
+                                    if (actionTitle.contains("read") || actionTitle.contains("done") || actionTitle.contains("seen")) {
+                                        viewModel.markNotificationsAsRead(convoToDisplay.activeMessages)
+                                    } else {
+                                        viewModel.triggerAction(context, notif, action)
+                                    }
+                                },
+                                onReply = { notif, text, action ->
+                                    viewModel.sendReply(context, notif, text, action)
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
 
