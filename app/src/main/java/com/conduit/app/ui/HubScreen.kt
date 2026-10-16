@@ -93,7 +93,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlin.math.roundToInt
 
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Outline
@@ -243,6 +245,7 @@ fun HubScreen(
     val searchCorrection by viewModel.searchCorrectionState.collectAsStateWithLifecycle()
 
     var activeSingleConversationKey by remember { mutableStateOf<String?>(null) }
+    var activeSingleConversationOriginY by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(selectedDockPackage, activeViewId, isSearchMode) {
         activeSingleConversationKey = null
@@ -913,13 +916,18 @@ fun HubScreen(
             val density = LocalDensity.current
             val visibleHeaderPx = (headerHeightPx + headerOffsetPx).coerceAtLeast(0f)
             val statusBarHeightPx = WindowInsets.statusBars.getTop(density).toFloat()
-            val contentTopPaddingDp = with(density) {
+            val rawTopPaddingDp = with(density) {
                 if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
                     maxOf(statusBarHeightPx, visibleHeaderPx).toDp()
                 } else {
                     padding.calculateTopPadding()
                 }
             }
+            var savedTopPaddingDp by remember { mutableStateOf(0.dp) }
+            if (activeSingleConversationKey == null) {
+                savedTopPaddingDp = rawTopPaddingDp
+            }
+            val contentTopPaddingDp = if (activeSingleConversationKey != null) savedTopPaddingDp else rawTopPaddingDp
 
             if ((settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) || activeSingleConversationKey != null) {
                 Box(
@@ -1301,7 +1309,8 @@ fun HubScreen(
                             context = context,
                             pinnedItems = singleConvoPinned,
                             groupedUnpinnedItems = singleConvoGroupedUnpinned,
-                            onOpenConversation = { convoKey ->
+                            onOpenConversation = { convoKey, originY ->
+                                activeSingleConversationOriginY = originY
                                 activeSingleConversationKey = convoKey
                             },
                             onArchiveNotification = onArchiveNotification,
@@ -1764,33 +1773,39 @@ fun HubScreen(
             }
             }
 
-            androidx.compose.animation.AnimatedVisibility(
-                visible = activeSingleConversation != null,
-                enter = slideInVertically(
-                    initialOffsetY = { -it / 3 },
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    )
-                ) + expandVertically(
-                    expandFrom = Alignment.Top,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    )
-                ) + fadeIn(animationSpec = tween(durationMillis = 200)),
-                exit = slideOutVertically(
-                    targetOffsetY = { -it / 3 },
-                    animationSpec = tween(durationMillis = 200, easing = FastOutLinearInEasing)
-                ) + shrinkVertically(
-                    shrinkTowards = Alignment.Top,
-                    animationSpec = tween(durationMillis = 200, easing = FastOutLinearInEasing)
-                ) + fadeOut(animationSpec = tween(durationMillis = 150)),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .align(Alignment.TopCenter)
-                    .zIndex(10f)
-            ) {
+            val singleConvoTransition = updateTransition(
+                targetState = activeSingleConversation != null,
+                label = "SingleConvoTransition"
+            )
+            if (singleConvoTransition.currentState || singleConvoTransition.targetState) {
+                val expandProgress by singleConvoTransition.animateFloat(
+                    transitionSpec = {
+                        if (targetState) {
+                            spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                stiffness = Spring.StiffnessMediumLow
+                            )
+                        } else {
+                            tween(durationMillis = 240, easing = FastOutSlowInEasing)
+                        }
+                    },
+                    label = "SingleConvoExpandProgress"
+                ) { isExpanded ->
+                    if (isExpanded) 1f else 0f
+                }
+                val overlayAlpha by singleConvoTransition.animateFloat(
+                    transitionSpec = {
+                        if (targetState) {
+                            tween(durationMillis = 120, easing = LinearOutSlowInEasing)
+                        } else {
+                            tween(durationMillis = 220, easing = FastOutLinearInEasing)
+                        }
+                    },
+                    label = "SingleConvoOverlayAlpha"
+                ) { isExpanded ->
+                    if (isExpanded) 1f else 0f
+                }
+
                 val convoToDisplay = activeSingleConversation ?: lastActiveConversation
                 if (convoToDisplay != null) {
                     val singleConvoListState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -1799,49 +1814,104 @@ fun HubScreen(
                             singleConvoListState.scrollToItem(0)
                         }
                     }
+
+                    val screenHeightPx = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+                    val initialHeaderOffsetPx = (activeSingleConversationOriginY - statusBarHeightPx)
+                        .coerceIn(0f, (screenHeightPx * 0.85f).coerceAtLeast(0f))
+                    val unfurlSlidePx = with(density) { 28.dp.toPx() }
+                    val bgColor = MaterialTheme.colorScheme.background
+
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background)
+                            .align(Alignment.TopCenter)
+                            .zIndex(10f)
+                            .drawBehind {
+                                drawRect(color = bgColor.copy(alpha = expandProgress.coerceIn(0f, 1f)))
+                            }
                             .statusBarsPadding()
+                            .pointerInput(Unit) {
+                                detectTapGestures { }
+                            }
                     ) {
                         SingleConversationStickyHeader(
                             rollup = convoToDisplay,
                             onCollapse = { activeSingleConversationKey = null },
                             onMarkAllRead = {
                                 viewModel.markNotificationsAsRead(convoToDisplay.activeMessages)
-                            }
+                            },
+                            modifier = Modifier
+                                .zIndex(2f)
+                                .graphicsLayer {
+                                    val p = expandProgress.coerceIn(0f, 1f)
+                                    translationY = initialHeaderOffsetPx * (1f - p)
+                                    alpha = overlayAlpha.coerceIn(0f, 1f)
+                                }
                         )
-                        LazyColumn(
-                            state = singleConvoListState,
+                        Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .fillMaxWidth(),
-                            contentPadding = PaddingValues(bottom = 16.dp)
-                        ) {
-                            singleConversationDetail(
-                                rollup = convoToDisplay,
-                                actionsByKey = actionsByKey,
-                                isSelectionMode = isSelectionMode,
-                                selectedIds = selectedIds,
-                                onSelectToggle = { id ->
-                                    val becomingSelected = !selectedIds.contains(id)
-                                    if (becomingSelected) performHapticClick(context) else performHapticTick(context)
-                                    selectedIds = if (becomingSelected) selectedIds + id else selectedIds - id
-                                },
-                                showActionChips = showActionChips,
-                                onTriggerAction = { notif, action ->
-                                    val actionTitle = action.title?.toString()?.lowercase() ?: ""
-                                    if (actionTitle.contains("read") || actionTitle.contains("done") || actionTitle.contains("seen")) {
-                                        viewModel.markNotificationsAsRead(convoToDisplay.activeMessages)
-                                    } else {
-                                        viewModel.triggerAction(context, notif, action)
-                                    }
-                                },
-                                onReply = { notif, text, action ->
-                                    viewModel.sendReply(context, notif, text, action)
+                                .fillMaxWidth()
+                                .zIndex(1f)
+                                .graphicsLayer {
+                                    val p = expandProgress.coerceIn(0f, 1f)
+                                    translationY = initialHeaderOffsetPx * (1f - p)
+                                    alpha = overlayAlpha.coerceIn(0f, 1f)
                                 }
-                            )
+                                .drawWithContent {
+                                    val p = expandProgress.coerceIn(0f, 1f)
+                                    val revealH = (size.height * p).coerceIn(0f, size.height)
+                                    if (revealH > 0f) {
+                                        drawRect(
+                                            color = bgColor,
+                                            topLeft = Offset.Zero,
+                                            size = Size(size.width, revealH)
+                                        )
+                                        clipRect(
+                                            left = 0f,
+                                            top = 0f,
+                                            right = size.width,
+                                            bottom = revealH
+                                        ) {
+                                            this@drawWithContent.drawContent()
+                                        }
+                                    }
+                                }
+                        ) {
+                            LazyColumn(
+                                state = singleConvoListState,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer {
+                                        val p = expandProgress.coerceIn(0f, 1f)
+                                        translationY = -unfurlSlidePx * (1f - p)
+                                    },
+                                contentPadding = PaddingValues(bottom = 16.dp)
+                            ) {
+                                singleConversationDetail(
+                                    rollup = convoToDisplay,
+                                    actionsByKey = actionsByKey,
+                                    isSelectionMode = isSelectionMode,
+                                    selectedIds = selectedIds,
+                                    onSelectToggle = { id ->
+                                        val becomingSelected = !selectedIds.contains(id)
+                                        if (becomingSelected) performHapticClick(context) else performHapticTick(context)
+                                        selectedIds = if (becomingSelected) selectedIds + id else selectedIds - id
+                                    },
+                                    showActionChips = showActionChips,
+                                    onTriggerAction = { notif, action ->
+                                        val actionTitle = action.title?.toString()?.lowercase() ?: ""
+                                        if (actionTitle.contains("read") || actionTitle.contains("done") || actionTitle.contains("seen")) {
+                                            viewModel.markNotificationsAsRead(convoToDisplay.activeMessages)
+                                        } else {
+                                            viewModel.triggerAction(context, notif, action)
+                                        }
+                                    },
+                                    onReply = { notif, text, action ->
+                                        viewModel.sendReply(context, notif, text, action)
+                                    }
+                                )
+                            }
                         }
                     }
                 }

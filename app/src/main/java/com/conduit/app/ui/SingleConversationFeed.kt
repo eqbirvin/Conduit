@@ -13,10 +13,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +48,7 @@ private val FeedSplitChipRightShape = RoundedCornerShape(
 private fun SingleConversationFeedRow(
     context: Context,
     item: SingleConversationFeedItem,
-    onOpenConversation: (String) -> Unit,
+    onOpenConversation: (String, Float) -> Unit,
     onArchiveNotification: (Int, Long) -> Unit,
     onPinNotification: (HubNotification) -> Unit,
     actionsByKey: Map<String, List<Notification.Action>>,
@@ -68,46 +73,55 @@ private fun SingleConversationFeedRow(
             } else {
                 selectedIds.contains(notification.id)
             }
+            var itemTopYPx by remember { mutableFloatStateOf(0f) }
 
-            NotificationItem(
-                notification = notification,
-                isArchivedView = false,
-                isUnifiedView = unifiedView,
-                onArchiveNotification = onArchiveNotification,
-                onPinNotification = onPinNotification,
-                isSelected = isSelected,
-                isSelectionMode = isSelectionMode,
-                onSelectToggle = {
-                    val allIds = if (isMultiMessage) {
-                        rollup.allHistoryMessages.mapTo(HashSet(rollup.allHistoryMessages.size)) { it.id }
-                    } else {
-                        setOf(notification.id)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coords ->
+                        itemTopYPx = coords.positionInRoot().y
                     }
-                    onSelectToggleIds(allIds)
-                },
-                showActionChips = showActionChips && rollup.hasActiveUnread,
-                minimizeIcons = settings.minimizeIcons,
-                allActions = actionsByKey[notification.notificationKey],
-                isExpanded = individualToggles[notification.id]
-                    ?: if (settings.autoCollapseRead && notification.isArchived) false else settings.masterExpandedState,
-                onExpandToggle = {
-                    if (isMultiMessage) {
-                        performHapticTick(context)
-                        onOpenConversation(rollup.convoKey)
-                    } else {
-                        onToggleIndividual(notification)
-                    }
-                },
-                onTriggerAction = { action -> onTriggerAction(notification, rollup.activeMessages, action) },
-                onReply = { text, action -> onReply(notification, text, action) },
-                overrideText = null,
-                subNotificationCount = rollup.subNotificationCount,
-                conversationRollupState = if (isMultiMessage) ConversationRollupState.PARTIALLY_EXPANDED else null
-            )
-            if (isMultiMessage) {
-                DoubleDivider()
-            } else {
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+            ) {
+                NotificationItem(
+                    notification = notification,
+                    isArchivedView = false,
+                    isUnifiedView = unifiedView,
+                    onArchiveNotification = onArchiveNotification,
+                    onPinNotification = onPinNotification,
+                    isSelected = isSelected,
+                    isSelectionMode = isSelectionMode,
+                    onSelectToggle = {
+                        val allIds = if (isMultiMessage) {
+                            rollup.allHistoryMessages.mapTo(HashSet(rollup.allHistoryMessages.size)) { it.id }
+                        } else {
+                            setOf(notification.id)
+                        }
+                        onSelectToggleIds(allIds)
+                    },
+                    showActionChips = showActionChips && rollup.hasActiveUnread,
+                    minimizeIcons = settings.minimizeIcons,
+                    allActions = actionsByKey[notification.notificationKey],
+                    isExpanded = individualToggles[notification.id]
+                        ?: if (settings.autoCollapseRead && notification.isArchived) false else settings.masterExpandedState,
+                    onExpandToggle = {
+                        if (isMultiMessage) {
+                            performHapticTick(context)
+                            onOpenConversation(rollup.convoKey, itemTopYPx)
+                        } else {
+                            onToggleIndividual(notification)
+                        }
+                    },
+                    onTriggerAction = { action -> onTriggerAction(notification, rollup.activeMessages, action) },
+                    onReply = { text, action -> onReply(notification, text, action) },
+                    overrideText = null,
+                    subNotificationCount = rollup.subNotificationCount,
+                    conversationRollupState = if (isMultiMessage) ConversationRollupState.PARTIALLY_EXPANDED else null
+                )
+                if (isMultiMessage) {
+                    DoubleDivider()
+                } else {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                }
             }
         }
         is SingleConversationFeedItem.Standalone -> {
@@ -142,7 +156,7 @@ fun LazyListScope.singleConversationFeed(
     context: Context,
     pinnedItems: List<SingleConversationFeedItem>,
     groupedUnpinnedItems: Map<String, List<SingleConversationFeedItem>>,
-    onOpenConversation: (String) -> Unit,
+    onOpenConversation: (String, Float) -> Unit,
     onArchiveNotification: (Int, Long) -> Unit,
     onPinNotification: (HubNotification) -> Unit,
     actionsByKey: Map<String, List<Notification.Action>>,

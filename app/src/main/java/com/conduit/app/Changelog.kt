@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.10",
+        date = "October 15, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Spatial Conversation Expand Animation",
+                description = "Expanding a conversation now smoothly lifts the conversation header from its tapped feed position up to the top of the screen while unfurling its messages downward underneath.",
+                iconName = "Animation"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.09",
         date = "October 15, 2026",
         highlights = listOf(
