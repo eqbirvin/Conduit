@@ -14,139 +14,23 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
-        versionName = "2.35.11",
+        versionName = "2.35.12",
         date = "October 15, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Top Bar Conversation View Mode Switcher",
-                description = "Added a quick toggle in the top bar to cycle instantly between Stock View, Combine Conversations, and Single Conversation View, complete with dynamic mode icons, haptics, and instant feed updates.",
-                iconName = "ViewStream"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.10",
-        date = "October 15, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Spatial Conversation Expand Animation",
-                description = "Expanding a conversation now smoothly lifts the conversation header from its tapped feed position up to the top of the screen while unfurling its messages downward underneath.",
-                iconName = "Animation"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.09",
-        date = "October 15, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Single Conversation Header Anchoring & Backend Audit",
-                description = "Fixed the Single Conversation View header so it is always anchored cleanly at the top of the screen regardless of feed scroll offset, fixed date-header Mark All Read sync and replied-message title normalization, and optimized conversation grouping performance.",
-                iconName = "BugReport"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.08",
-        date = "October 15, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Animated Conversation Slide-Down & Reveal",
-                description = "Expanding a conversation now smoothly reveals and slides downward over the feed with a spring-damped transition. Collapsing slides upward, seamlessly preserving your exact feed scroll position.",
-                iconName = "Animation"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.07",
-        date = "October 15, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Clean Single Conversation Header & Double Divider",
-                description = "Removed background shading and tonal elevation from the Single Conversation header so it seamlessly matches the feed background, and added a double-line boundary divider below the header.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.06",
-        date = "October 15, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Refined Conversation Header Spacing & Chip Dimensions",
-                description = "Proportioned the Single Conversation collapse button to a 1:1 aspect ratio square chip with rounded M3 corners and increased spacing from the mark-all-read chip for a cleaner visual layout.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.05",
-        date = "October 15, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Material 3 Collapse Action Chip",
-                description = "Updated the collapse chevron button in Single Conversation View with Material 3 container shading and styling, perfectly matching the height and corner rounding of the adjacent message count and mark-all-read chip.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.04",
-        date = "October 14, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Clean Single Conversation Header",
-                description = "Removed the redundant top-left back button from the conversation header, letting the app icon and sender title take prominence while retaining the right-hand collapse arrow and system back navigation.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.03",
-        date = "October 14, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Full-Screen Conversation View",
-                description = "Expanding a conversation in Single Conversation View now hides the top bar, custom view strip, and bottom dock, anchoring the conversation header directly at the top for an immersive, distraction-free view.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.02",
-        date = "October 13, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Streamlined Conversation Messages",
-                description = "Removed redundant app icons, channel names, and read status chips from messages in the single conversation view. In 1-on-1 chats, duplicate sender titles are hidden for a cleaner message stream, while group chats clearly display individual senders.",
-                iconName = "Forum"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.01",
-        date = "October 13, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Conversation Header Action Chip",
-                description = "Replaced the header double-check icon with a Material 3 split action chip displaying total and unread message counts, with a one-tap mark all as read button.",
-                iconName = "Check"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.35.00",
-        date = "October 13, 2026",
         highlights = listOf(
             ChangelogItem(
                 title = "Single Conversation View",
-                description = "New presentation mode that groups all notifications per sender or conversation across messaging apps into a single card at the latest message's timestamp. Tapping expand focuses solely on that conversation's complete recorded history with an anchored header card.",
+                description = "Group all notifications per conversation across messaging apps into a single card in your feed. Expanding reveals that conversation's complete history in a streamlined view, free of clutter, redundant app icons, or duplicate sender headers.",
                 iconName = "Forum"
             ),
             ChangelogItem(
-                title = "Mutual Exclusion & Smart Action Chips",
-                description = "Seamlessly switch between Stock, Combine Conversations, and Single Conversation views in Appearance Settings. Action chips automatically hide when all messages in a conversation are read.",
-                iconName = "Tune"
+                title = "Spatial Transitions & Anchored Header",
+                description = "Smoothly lifts the conversation header from its feed position to the top of the screen while unfurling messages below. Includes an anchored header with an M3 split total/unread message count chip, one-tap Mark All as Read, and double divider boundaries.",
+                iconName = "Animation"
+            ),
+            ChangelogItem(
+                title = "Top Bar View Mode Switcher",
+                description = "Cycle instantly between Stock View, Combine Conversations, and Single Conversation View using the new top bar toggle, complete with dynamic icons, haptic feedback, and real-time feed updates.",
+                iconName = "ViewStream"
             )
         )
     ),
