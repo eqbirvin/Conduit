@@ -465,5 +465,26 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         prefs.edit().putString("top_bar_scroll_behavior", behavior).apply()
         _settings.update { it.copy(topBarScrollBehavior = behavior) }
     }
+
+    fun cycleConversationViewMode(): ConversationViewMode {
+        val currentSingle = _settings.value.singleConversationView
+        val currentCombine = _settings.value.combineConversations
+        val (nextCombine, nextSingle, nextMode) = when {
+            !currentSingle && !currentCombine -> Triple(true, false, ConversationViewMode.COMBINE_CONVERSATIONS)
+            currentCombine && !currentSingle -> Triple(false, true, ConversationViewMode.SINGLE_CONVERSATION)
+            else -> Triple(false, false, ConversationViewMode.STOCK)
+        }
+        prefs.edit()
+            .putBoolean("combine_conversations", nextCombine)
+            .putBoolean("single_conversation_view", nextSingle)
+            .apply()
+        _settings.update {
+            it.copy(
+                combineConversations = nextCombine,
+                singleConversationView = nextSingle
+            )
+        }
+        return nextMode
+    }
 }
 

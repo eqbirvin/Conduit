@@ -3,7 +3,7 @@ package com.conduit.app.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.*
@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.conduit.app.data.HubNotification
+import com.conduit.app.data.ConversationViewMode
 import com.conduit.app.performHapticClick
 import com.conduit.app.performHapticTick
 
@@ -27,7 +28,8 @@ data class HubTopBarState(
     val searchQuery: String = "",
     val hasUpdateAvailable: Boolean = false,
     val masterExpandedState: Boolean = false,
-    val unifiedView: Boolean = true
+    val unifiedView: Boolean = true,
+    val conversationViewMode: ConversationViewMode = ConversationViewMode.COMBINE_CONVERSATIONS
 )
 
 interface HubTopBarCallbacks {
@@ -41,6 +43,7 @@ interface HubTopBarCallbacks {
     fun onShowUpdateDialog()
     fun onNavigateToSettings()
     fun onNavigateToManageViews()
+    fun onCycleConversationView()
     fun onToggleMasterExpand()
     fun onNavigateToArchive()
     fun onToggleUnifiedView()
@@ -170,6 +173,21 @@ fun HubTopBar(
                             callbacks.onNavigateToManageViews()
                         }) {
                             Icon(Icons.Filled.FilterList, contentDescription = "Manage Views", tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                        IconButton(onClick = {
+                            performHapticTick(context)
+                            callbacks.onCycleConversationView()
+                        }) {
+                            val (icon, description) = when (state.conversationViewMode) {
+                                ConversationViewMode.STOCK -> Icons.Filled.ViewStream to "Stock View"
+                                ConversationViewMode.COMBINE_CONVERSATIONS -> Icons.Filled.Forum to "Combine Conversations"
+                                ConversationViewMode.SINGLE_CONVERSATION -> Icons.AutoMirrored.Filled.Chat to "Single Conversation View"
+                            }
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = "Conversation View: $description (tap to cycle)",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                 },

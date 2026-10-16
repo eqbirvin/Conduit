@@ -63,5 +63,17 @@ data class ConduitSettings(
     val singleConversationView: Boolean = false,
     val scrollTopBarWithFeed: Boolean = false,
     val topBarScrollBehavior: String = "NATURAL"
-)
+) {
+    val conversationViewMode: ConversationViewMode
+        get() = when {
+            singleConversationView -> ConversationViewMode.SINGLE_CONVERSATION
+            combineConversations -> ConversationViewMode.COMBINE_CONVERSATIONS
+            else -> ConversationViewMode.STOCK
+        }
+}
 
+enum class ConversationViewMode {
+    STOCK,
+    COMBINE_CONVERSATIONS,
+    SINGLE_CONVERSATION
+}

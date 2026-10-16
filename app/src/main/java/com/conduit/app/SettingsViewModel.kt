@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.conduit.app.data.ConduitSettings
+import com.conduit.app.data.ConversationViewMode
 import com.conduit.app.data.SettingsRepository
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -70,6 +71,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateSingleConversationView(enabled: Boolean) = viewModelScope.launch { repository.updateSingleConversationView(enabled) }
     fun updateScrollTopBarWithFeed(enabled: Boolean) = viewModelScope.launch { repository.updateScrollTopBarWithFeed(enabled) }
     fun updateTopBarScrollBehavior(behavior: String) = viewModelScope.launch { repository.updateTopBarScrollBehavior(behavior) }
+    fun cycleConversationViewMode(): ConversationViewMode = repository.cycleConversationViewMode()
 
     class Factory(private val repository: SettingsRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

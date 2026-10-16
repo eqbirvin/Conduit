@@ -325,7 +325,7 @@ fun HubScreen(
 
     val topBarState = remember(
         isSelectionMode, isSearchMode, selectedIds, notifications, archivedNotifications,
-        searchQuery, hasUpdateAvailable, masterExpandedState, unifiedView
+        searchQuery, hasUpdateAvailable, masterExpandedState, unifiedView, settings.conversationViewMode
     ) {
         val singleNotif = if (selectedIds.size == 1) {
             val notifId = selectedIds.first()
@@ -339,7 +339,8 @@ fun HubScreen(
             searchQuery = searchQuery,
             hasUpdateAvailable = hasUpdateAvailable,
             masterExpandedState = masterExpandedState,
-            unifiedView = unifiedView
+            unifiedView = unifiedView,
+            conversationViewMode = settings.conversationViewMode
         )
     }
 
@@ -393,6 +394,17 @@ fun HubScreen(
             }
             override fun onNavigateToManageViews() {
                 onNavigateToManageViews()
+            }
+            override fun onCycleConversationView() {
+                activeSingleConversationKey = null
+                conversationRollupStates.clear()
+                val nextMode = settingsViewModel.cycleConversationViewMode()
+                val toastText = when (nextMode) {
+                    com.conduit.app.data.ConversationViewMode.STOCK -> "Stock View"
+                    com.conduit.app.data.ConversationViewMode.COMBINE_CONVERSATIONS -> "Combine Conversations"
+                    com.conduit.app.data.ConversationViewMode.SINGLE_CONVERSATION -> "Single Conversation View"
+                }
+                android.widget.Toast.makeText(context, toastText, android.widget.Toast.LENGTH_SHORT).show()
             }
             override fun onToggleMasterExpand() {
                 val newState = !masterExpandedState

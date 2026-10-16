@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.11",
+        date = "October 15, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Top Bar Conversation View Mode Switcher",
+                description = "Added a quick toggle in the top bar to cycle instantly between Stock View, Combine Conversations, and Single Conversation View, complete with dynamic mode icons, haptics, and instant feed updates.",
+                iconName = "ViewStream"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.10",
         date = "October 15, 2026",
         highlights = listOf(
