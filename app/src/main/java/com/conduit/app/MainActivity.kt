@@ -177,6 +177,7 @@ class MainActivity : ComponentActivity() {
             }
 
             var currentScreen by remember { mutableStateOf(Screen.HOME) }
+            var whatsNewOriginScreen by remember { mutableStateOf(Screen.SETTINGS_ABOUT) }
             var isPermissionGranted by remember { mutableStateOf(isNotificationServiceEnabled()) }
             var isRestricted by remember { mutableStateOf(isRestrictedSettingsGuarded(context)) }
             var showSuccessState by remember { mutableStateOf(false) }
@@ -220,7 +221,8 @@ class MainActivity : ComponentActivity() {
             if (currentScreen != Screen.HOME) {
                 BackHandler {
                     currentScreen = when (currentScreen) {
-                        Screen.DEV_SETTINGS, Screen.WHATS_NEW -> Screen.SETTINGS_ABOUT
+                        Screen.DEV_SETTINGS -> Screen.SETTINGS_ABOUT
+                        Screen.WHATS_NEW -> whatsNewOriginScreen
                         Screen.CHANNELS,
                         Screen.SETTINGS_APPEARANCE,
                         Screen.SETTINGS_DOCK,
@@ -286,13 +288,18 @@ class MainActivity : ComponentActivity() {
                                 onNavigateBack = { currentScreen = Screen.HOME }
                             )
                             Screen.WHATS_NEW -> WhatsNewScreen(
-                                onNavigateBack = { currentScreen = Screen.SETTINGS_ABOUT }
+                                onNavigateBack = { currentScreen = whatsNewOriginScreen }
                             )
                             else -> SettingsNavHost(
                                 currentScreen = currentScreen,
                                 settings = settings,
                                 settingsViewModel = settingsViewModel,
-                                onNavigateToScreen = { currentScreen = it },
+                                onNavigateToScreen = {
+                                    if (it == Screen.WHATS_NEW) {
+                                        whatsNewOriginScreen = currentScreen
+                                    }
+                                    currentScreen = it
+                                },
                                 onNavigateBackToSettings = { currentScreen = Screen.SETTINGS },
                                 onNavigateHome = { currentScreen = Screen.HOME }
                             )

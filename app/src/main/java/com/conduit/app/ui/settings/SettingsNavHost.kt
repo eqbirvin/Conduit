@@ -47,6 +47,7 @@ fun SettingsNavHost(
                 override fun onNavigateToData() { onNavigateToScreen(Screen.SETTINGS_DATA) }
                 override fun onNavigateToBracket() { onNavigateToScreen(Screen.SETTINGS_BRACKET) }
                 override fun onNavigateToAbout() { onNavigateToScreen(Screen.SETTINGS_ABOUT) }
+                override fun onShowWhatsNew() { onNavigateToScreen(Screen.WHATS_NEW) }
             },
             onNavigateBack = onNavigateHome
         )

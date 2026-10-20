@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.35.13",
+        date = "October 20, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "What's New Card in Settings",
+                description = "Quickly view recent release highlights and your current app version directly from the top of the settings page.",
+                iconName = "Info"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.12",
         date = "October 15, 2026",
         highlights = listOf(
