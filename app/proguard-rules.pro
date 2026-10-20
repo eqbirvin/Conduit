@@ -17,3 +17,6 @@
 
 # Notification Listener Service keep rules
 -keep class com.conduit.app.HubNotificationListenerService { *; }
+
+# Shizuku user service: instantiated by class name in the Shizuku-spawned process
+-keep class com.conduit.app.shizuku.** { *; }

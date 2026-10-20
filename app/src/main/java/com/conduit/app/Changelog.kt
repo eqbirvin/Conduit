@@ -14,6 +14,22 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.36.00",
+        date = "October 20, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Shizuku Support for OTPs",
+                description = "Have Shizuku? Grant Conduit access to verification codes (OTPs) and other sensitive notifications in one tap from Settings, right on your device with no PC or ADB needed.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Live Access Status",
+                description = "The Read Sensitive Notifications card now shows whether access is granted and guides you through starting or authorizing Shizuku. The ADB command is still available under Manual (ADB).",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.35.13",
         date = "October 20, 2026",
         highlights = listOf(

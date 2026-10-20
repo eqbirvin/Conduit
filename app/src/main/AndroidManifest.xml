@@ -125,6 +125,9 @@
         <package android:name="com.microsoft.office.onenote" />
         <package android:name="com.notion.id" />
         <package android:name="md.obsidian" />
+
+        <!-- Shizuku manager (privileged on-device grants) -->
+        <package android:name="moe.shizuku.privileged.api" />
         
         <!-- Intent queries for native Compose actions -->
         <intent>
@@ -301,6 +304,14 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
+
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
     </application>
 

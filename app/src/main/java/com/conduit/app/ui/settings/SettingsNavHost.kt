@@ -7,9 +7,14 @@ import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.conduit.app.Screen
+import com.conduit.app.SensitiveAccessViewModel
 import com.conduit.app.SettingsViewModel
 import com.conduit.app.changeAppIcon
 import com.conduit.app.data.ConduitSettings
@@ -37,20 +42,32 @@ fun SettingsNavHost(
     val scope = rememberCoroutineScope()
 
     when (currentScreen) {
-        Screen.SETTINGS -> SettingsScreen(
-            settings = settings,
-            callbacks = object : SettingsScreenCallbacks {
-                override fun onNavigateToChannels() { onNavigateToScreen(Screen.CHANNELS) }
-                override fun onNavigateToAppearance() { onNavigateToScreen(Screen.SETTINGS_APPEARANCE) }
-                override fun onNavigateToDock() { onNavigateToScreen(Screen.SETTINGS_DOCK) }
-                override fun onNavigateToNotifications() { onNavigateToScreen(Screen.SETTINGS_NOTIFICATIONS) }
-                override fun onNavigateToData() { onNavigateToScreen(Screen.SETTINGS_DATA) }
-                override fun onNavigateToBracket() { onNavigateToScreen(Screen.SETTINGS_BRACKET) }
-                override fun onNavigateToAbout() { onNavigateToScreen(Screen.SETTINGS_ABOUT) }
-                override fun onShowWhatsNew() { onNavigateToScreen(Screen.WHATS_NEW) }
-            },
-            onNavigateBack = onNavigateHome
-        )
+        Screen.SETTINGS -> {
+            val sensitiveAccessViewModel: SensitiveAccessViewModel = viewModel()
+            val sensitiveAccess by sensitiveAccessViewModel.uiState.collectAsStateWithLifecycle()
+            // Re-check on return from the Shizuku app or after running the ADB command elsewhere.
+            LifecycleResumeEffect(Unit) {
+                sensitiveAccessViewModel.refresh()
+                onPauseOrDispose { }
+            }
+            SettingsScreen(
+                settings = settings,
+                sensitiveAccess = sensitiveAccess,
+                callbacks = object : SettingsScreenCallbacks {
+                    override fun onNavigateToChannels() { onNavigateToScreen(Screen.CHANNELS) }
+                    override fun onNavigateToAppearance() { onNavigateToScreen(Screen.SETTINGS_APPEARANCE) }
+                    override fun onNavigateToDock() { onNavigateToScreen(Screen.SETTINGS_DOCK) }
+                    override fun onNavigateToNotifications() { onNavigateToScreen(Screen.SETTINGS_NOTIFICATIONS) }
+                    override fun onNavigateToData() { onNavigateToScreen(Screen.SETTINGS_DATA) }
+                    override fun onNavigateToBracket() { onNavigateToScreen(Screen.SETTINGS_BRACKET) }
+                    override fun onNavigateToAbout() { onNavigateToScreen(Screen.SETTINGS_ABOUT) }
+                    override fun onShowWhatsNew() { onNavigateToScreen(Screen.WHATS_NEW) }
+                    override fun onGrantSensitiveWithShizuku() { sensitiveAccessViewModel.onGrantWithShizuku() }
+                    override fun onOpenShizuku() { sensitiveAccessViewModel.onOpenShizuku() }
+                },
+                onNavigateBack = onNavigateHome
+            )
+        }
 
         Screen.SETTINGS_APPEARANCE -> AppearanceSettingsScreen(
             settings = settings,
