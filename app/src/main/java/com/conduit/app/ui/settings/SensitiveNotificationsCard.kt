@@ -108,7 +108,7 @@ private fun GrantSection(
     Spacer(modifier = Modifier.height(14.dp))
 
     when (state.shizukuStatus) {
-        ShizukuStatus.READY, ShizukuStatus.PERMISSION_REQUIRED -> {
+        ShizukuStatus.READY, ShizukuStatus.PERMISSION_REQUIRED, ShizukuStatus.PERMISSION_DENIED -> {
             Button(
                 onClick = {
                     performHapticClick(context)
@@ -131,11 +131,14 @@ private fun GrantSection(
                 Spacer(modifier = Modifier.height(6.dp))
                 CardBodyText("Shizuku will ask you to allow Conduit first.")
             }
+            if (state.shizukuStatus == ShizukuStatus.PERMISSION_DENIED) {
+                Spacer(modifier = Modifier.height(10.dp))
+                ShizukuActionRow(
+                    message = "Shizuku denied access for Conduit. Tap Grant to ask again, or allow Conduit in the Shizuku app.",
+                    onOpenShizuku = onOpenShizuku
+                )
+            }
         }
-        ShizukuStatus.PERMISSION_DENIED -> ShizukuActionRow(
-            message = "Conduit was denied in Shizuku. Allow it in the Shizuku app, then come back.",
-            onOpenShizuku = onOpenShizuku
-        )
         ShizukuStatus.NOT_RUNNING -> ShizukuActionRow(
             message = "Shizuku is installed but not running. Start it, then come back.",
             onOpenShizuku = onOpenShizuku

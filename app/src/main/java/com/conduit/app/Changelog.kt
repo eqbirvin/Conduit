@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.36.01",
+        date = "October 20, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Shizuku+ Compatibility Fix",
+                description = "Granting sensitive notification access now works with Shizuku+ drop-in builds. Conduit no longer asks for Shizuku permission just by opening Settings, and it recognizes Shizuku approval right away without restarting the app.",
+                iconName = "Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.36.00",
         date = "October 20, 2026",
         highlights = listOf(

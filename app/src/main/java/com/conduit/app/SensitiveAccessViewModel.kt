@@ -54,7 +54,7 @@ class SensitiveAccessViewModel(application: Application) : AndroidViewModel(appl
     fun onGrantWithShizuku() {
         when (_uiState.value.shizukuStatus) {
             ShizukuStatus.READY -> grant()
-            ShizukuStatus.PERMISSION_REQUIRED -> {
+            ShizukuStatus.PERMISSION_REQUIRED, ShizukuStatus.PERMISSION_DENIED -> {
                 grantAfterPermission = true
                 _uiState.update { it.copy(errorMessage = null) }
                 viewModelScope.launch { shizuku.requestPermission() }

@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <!-- ShizukuPlus drop-in builds before r2760 shift every binder call by one for apps that only
+         declare Shizuku's original API_V23 permission (added by the Shizuku provider library).
+         Declaring ShizukuPlus's own permission opts out of that. Ignored by official Shizuku. -->
+    <uses-permission android:name="af.shizuku.plus.permission.API_V23" />
 
     <!-- Requires this permission if the app wants to read its own notifications. But NotificationListenerService needs BIND_NOTIFICATION_LISTENER_SERVICE on the service itself -->
 

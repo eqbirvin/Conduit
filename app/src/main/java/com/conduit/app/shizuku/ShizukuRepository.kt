@@ -30,7 +30,7 @@ enum class ShizukuStatus {
     OUTDATED,
     /** Running; Conduit has not been authorized yet and Shizuku can prompt for it. */
     PERMISSION_REQUIRED,
-    /** Running; the user denied Conduit permanently, so it must be allowed from the Shizuku app. */
+    /** Running; the user denied Conduit's last request. Can ask again or allow it in the Shizuku app. */
     PERMISSION_DENIED,
     /** Running and Conduit is authorized. */
     READY
@@ -44,11 +44,21 @@ class ShizukuRepository(context: Context) {
 
     private val appContext = context.applicationContext
 
+    // Denial is tracked from the request result rather than Shizuku.shouldShowRequestPermissionRationale():
+    // ShizukuPlus builds before r2760 answer that call's transaction code as attachApplication.
+    @Volatile
+    private var lastRequestDenied = false
+
     /** Emits whenever Shizuku's binder arrives or dies, or a permission request is answered. */
     fun statusChanges(): Flow<Unit> = callbackFlow {
         val binderReceived = Shizuku.OnBinderReceivedListener { trySend(Unit) }
         val binderDead = Shizuku.OnBinderDeadListener { trySend(Unit) }
-        val permissionResult = Shizuku.OnRequestPermissionResultListener { _, _ -> trySend(Unit) }
+        val permissionResult = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+            if (requestCode == PERMISSION_REQUEST_CODE) {
+                lastRequestDenied = grantResult != PackageManager.PERMISSION_GRANTED
+            }
+            trySend(Unit)
+        }
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
         Shizuku.addRequestPermissionResultListener(permissionResult)
@@ -68,7 +78,7 @@ class ShizukuRepository(context: Context) {
             when {
                 Shizuku.isPreV11() -> ShizukuStatus.OUTDATED
                 Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED -> ShizukuStatus.READY
-                Shizuku.shouldShowRequestPermissionRationale() -> ShizukuStatus.PERMISSION_DENIED
+                lastRequestDenied -> ShizukuStatus.PERMISSION_DENIED
                 else -> ShizukuStatus.PERMISSION_REQUIRED
             }
         } catch (e: CancellationException) {
