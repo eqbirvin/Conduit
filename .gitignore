@@ -57,3 +57,7 @@ build.log/dumpsys_notifs.txt
 
 # Certificates
 *.der
+
+# Agent config (local-only; shared between Antigravity and Claude Code)
+CLAUDE.md
+.claude/
