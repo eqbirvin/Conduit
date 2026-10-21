@@ -48,6 +48,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     private val scope = CoroutineScope(Dispatchers.IO)
     private val notificationMutex = Mutex()
     private lateinit var database: AppDatabase
+    private lateinit var callTracker: CallNotificationTracker
     private val actionCache = java.util.concurrent.ConcurrentHashMap<String, List<Notification.Action>>()
     private val contentIntentCache = java.util.concurrent.ConcurrentHashMap<String, PendingIntent>()
     private val DISMISS_ORIGINAL_NOTIFICATIONS = false
@@ -193,6 +194,10 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     override fun onCreate() {
         super.onCreate()
         database = AppDatabase.getDatabase(applicationContext)
+        callTracker = CallNotificationTracker(applicationContext, database.notificationDao(), scope) {
+            com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
+            scheduleUpdatePersistentNotification()
+        }
         val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
         prefs.registerOnSharedPreferenceChangeListener(this)
         
@@ -838,6 +843,13 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             val channel = appInfo?.second ?: if (isSystemPhoneFallback) "Phone" else null
             
             if (channel != null) {
+                // Answered and outgoing calls arrive as ongoing call notifications
+                if (callTracker.isOngoingCall(it)) {
+                    callTracker.onCallPosted(it, channel, appInfo?.first ?: "channel_phone")
+                    logIngestionDiagnostic(it, "call-tracked")
+                    return@let
+                }
+
                 // Ignore ongoing notifications (like background services)
                 if (it.isOngoing) {
                     logIngestionDiagnostic(it, "discarded-ongoing")
@@ -1137,6 +1149,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     override fun onNotificationRemoved(sbn: StatusBarNotification?, rankingMap: NotificationListenerService.RankingMap?, reason: Int) {
         super.onNotificationRemoved(sbn, rankingMap, reason)
         sbn?.let {
+            callTracker.onNotificationRemoved(it)
             actionCache[it.key] = emptyList()
             val prefs = getSharedPreferences("conduit_prefs", android.content.Context.MODE_PRIVATE)
             val syncDismissal = prefs.getBoolean("sync_dismissal", true)

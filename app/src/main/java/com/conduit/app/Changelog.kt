@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.37.00",
+        date = "October 20, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Answered & Outgoing Calls",
+                description = "Conduit now records calls you answer or place, not just missed calls, from your phone app and supported calling apps like WhatsApp, Signal, and Telegram. Each call appears once in your feed and shows how long it lasted after you hang up.",
+                iconName = "Call"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.36.02",
         date = "October 20, 2026",
         highlights = listOf(
