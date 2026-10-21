@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.37.02",
+        date = "October 20, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Calls Logged as Read",
+                description = "Answered and outgoing calls are now saved straight to your history as read, like a call log, so they no longer add to your unread notifications. Missed calls still show as unread.",
+                iconName = "Call"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.37.00",
         date = "October 20, 2026",
         highlights = listOf(

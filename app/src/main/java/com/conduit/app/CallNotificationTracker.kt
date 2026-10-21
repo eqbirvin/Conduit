@@ -19,8 +19,8 @@ import kotlinx.coroutines.launch
  *
  * One call updates its tray notification many times (ringing, active, hold, mute), so each
  * call is tracked as a session per tray key and produces a single CALL entry. The entry gets
- * its own "<tray key>#call@<start>" key so the dialer cancelling its notification at hang-up
- * does not archive it, and its text gains the call duration when the call ends.
+ * its own "<tray key>#call@<start>" key so tray events for the dialer's notification never
+ * touch it, and its text gains the call duration when the call ends.
  * Missed calls are not handled here: they arrive as regular notifications.
  */
 class CallNotificationTracker(
@@ -118,6 +118,8 @@ class CallNotificationTracker(
 
         val startedAt = sbn.postTime
         val entryKey = "${sbn.key}$ENTRY_KEY_MARKER$startedAt"
+        // Answered and outgoing calls are a call log, not something to catch up on, so they are
+        // stored already read (archived). Missed calls still arrive unread through regular ingestion.
         dao.insert(
             HubNotification(
                 packageName = sbn.packageName,
@@ -126,6 +128,8 @@ class CallNotificationTracker(
                 text = if (session.sawIncoming) TEXT_ANSWERED else TEXT_OUTGOING,
                 channel = event.channel,
                 timestamp = startedAt,
+                isArchived = true,
+                archivedTimestamp = startedAt,
                 kind = KIND_CALL
             )
         )
