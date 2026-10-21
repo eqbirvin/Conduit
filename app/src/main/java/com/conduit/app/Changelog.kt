@@ -14,23 +14,12 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
-        versionName = "2.37.02",
-        date = "October 20, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Calls Logged as Read",
-                description = "Answered and outgoing calls are now saved straight to your history as read, like a call log, so they no longer add to your unread notifications. Missed calls still show as unread.",
-                iconName = "Call"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.37.00",
+        versionName = "2.37.03",
         date = "October 20, 2026",
         highlights = listOf(
             ChangelogItem(
                 title = "Answered & Outgoing Calls",
-                description = "Conduit now records calls you answer or place, not just missed calls, from your phone app and supported calling apps like WhatsApp, Signal, and Telegram. Each call appears once in your feed and shows how long it lasted after you hang up.",
+                description = "Conduit now captures the notifications of the phone calls you answer or place, not just missed calls, from your phone app. Includes WhatsApp, Signal, Discord, and Telegram. Each call appears once in your feed and shows how long it lasted after you hang up. They are marked as read automatically since it makes no sense to mark a call you had as \"unread\" :)",
                 iconName = "Call"
             )
         )
