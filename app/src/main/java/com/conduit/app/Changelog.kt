@@ -14,29 +14,13 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
-        versionName = "2.36.01",
-        date = "October 20, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Shizuku+ Compatibility Fix",
-                description = "Granting sensitive notification access now works with Shizuku+ drop-in builds. Conduit no longer asks for Shizuku permission just by opening Settings, and it recognizes Shizuku approval right away without restarting the app.",
-                iconName = "Build"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.36.00",
+        versionName = "2.36.02",
         date = "October 20, 2026",
         highlights = listOf(
             ChangelogItem(
                 title = "Shizuku Support for OTPs",
-                description = "Have Shizuku? Grant Conduit access to verification codes (OTPs) and other sensitive notifications in one tap from Settings, right on your device with no PC or ADB needed.",
+                description = "Have Shizuku or Shizuku+? Grant Conduit access to verification codes (OTPs) and other sensitive notifications in one tap from Settings, right on your device with no PC needed. The card shows live access status and guides you through starting or authorizing Shizuku. The ADB command is still available under Manual (ADB).",
                 iconName = "Build"
-            ),
-            ChangelogItem(
-                title = "Live Access Status",
-                description = "The Read Sensitive Notifications card now shows whether access is granted and guides you through starting or authorizing Shizuku. The ADB command is still available under Manual (ADB).",
-                iconName = "Check"
             )
         )
     ),
