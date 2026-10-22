@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.38.01",
+        date = "October 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Expand All in Settings",
+                description = "The expand/collapse all button now has a matching \"Expand All Notifications\" switch in Settings > Appearance > Home Screen Layout, so you can set it without the top bar.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.38.00",
         date = "October 22, 2026",
         highlights = listOf(

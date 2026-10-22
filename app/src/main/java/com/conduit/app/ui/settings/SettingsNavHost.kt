@@ -95,6 +95,7 @@ fun SettingsNavHost(
                 override fun onShowCustomViewStripChanged(enabled: Boolean) { settingsViewModel.updateShowCustomViewStrip(enabled) }
                 override fun onShowDateMarkAllReadChanged(enabled: Boolean) { settingsViewModel.updateShowDateMarkAllRead(enabled) }
                 override fun onShowActionChipsChanged(enabled: Boolean) { settingsViewModel.updateShowActionChips(enabled) }
+                override fun onMasterExpandedChanged(enabled: Boolean) { settingsViewModel.updateMasterExpandedState(enabled) }
             },
             onNavigateBack = onNavigateBackToSettings
         )

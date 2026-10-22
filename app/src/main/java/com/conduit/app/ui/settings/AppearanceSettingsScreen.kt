@@ -42,6 +42,7 @@ interface AppearanceSettingsScreenCallbacks {
     fun onShowCustomViewStripChanged(enabled: Boolean)
     fun onShowDateMarkAllReadChanged(enabled: Boolean)
     fun onShowActionChipsChanged(enabled: Boolean)
+    fun onMasterExpandedChanged(enabled: Boolean)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

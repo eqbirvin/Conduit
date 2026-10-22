@@ -128,4 +128,11 @@ fun HomeLayoutSettingsSection(
         checked = settings.showActionChips,
         onCheckedChange = callbacks::onShowActionChipsChanged
     )
+
+    SettingsSwitchRow(
+        title = "Expand All Notifications",
+        description = "Show notifications expanded in the feed. Same as the expand/collapse all button in the top bar or dock menu",
+        checked = settings.masterExpandedState,
+        onCheckedChange = callbacks::onMasterExpandedChanged
+    )
 }
