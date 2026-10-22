@@ -3,6 +3,7 @@ package com.conduit.app.ui
 
 import com.conduit.app.*
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.input.pointer.pointerInput
@@ -45,7 +46,9 @@ fun HubDock(
     launchAppOrAction: (String) -> Unit,
     launchBundleAction: (String, List<String>) -> Unit,
     activeView: CustomView?,
-    activeViewDockFilter: Boolean
+    activeViewDockFilter: Boolean,
+    topBarState: HubTopBarState,
+    topBarCallbacks: HubTopBarCallbacks
 ) {
     var isBundleFlyoutExpanded by isBundleFlyoutExpandedState
     var editingBundleTitle by editingBundleTitleState
@@ -65,7 +68,7 @@ fun HubDock(
         }
     }
     val hasDockApps = notifications.isNotEmpty() || (unifiedView && enabledApps.isNotEmpty()) || (activeViewDockFilter && activeView != null && activeView.packageNames.isNotEmpty())
-    if (hasDockApps || settings.enableAppBundles) {
+    if (hasDockApps || settings.dockExpandButtonVisible) {
         val grouped = remember(notifications) {
             notifications.groupBy { getRepresentativePackage(context, it.packageName) }
         }
@@ -150,17 +153,26 @@ fun HubDock(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                val conduitMenu = if (settings.showTopBarActionsInDock) {
+                    remember(topBarState, topBarCallbacks) {
+                        buildConduitMenu(topBarState, topBarCallbacks) {
+                            performHapticTick(context)
+                            isBundleFlyoutExpanded = false
+                        }
+                    }
+                } else null
                 BundleFabMenu(
-                    expanded = isBundleFlyoutExpanded && settings.enableAppBundles,
-                    recorderBundle = recorderBundle,
-                    aiBundle = aiBundle,
-                    notesBundle = notesBundle,
-                    composeBundle = composeBundle,
+                    expanded = isBundleFlyoutExpanded && settings.dockExpandButtonVisible,
+                    recorderBundle = if (settings.enableAppBundles) recorderBundle else emptyList(),
+                    aiBundle = if (settings.enableAppBundles) aiBundle else emptyList(),
+                    notesBundle = if (settings.enableAppBundles) notesBundle else emptyList(),
+                    composeBundle = if (settings.enableAppBundles) composeBundle else emptyList(),
                     bundleMenuSizing = settings.bundleMenuSizing,
                     dockIconSize = dockIconSize,
                     dockExpandPosition = settings.dockExpandPosition,
                     transparentBundlePills = settings.transparentBundlePills,
                     bundleMenuBlur = settings.bundleMenuBlur,
+                    conduitMenu = conduitMenu,
                     onAppClick = { pkg ->
                         launchAppOrAction(pkg)
                     },
@@ -187,7 +199,7 @@ fun HubDock(
                 val rightSplitShape = rememberRightSplitButtonShape(dockCapRadius)
                 val leftSplitShape = rememberLeftSplitButtonShape(dockCapRadius)
 
-                val dockPackagesShape = if (settings.enableAppBundles) {
+                val dockPackagesShape = if (settings.dockExpandButtonVisible) {
                     if (dockPackagesList.isNotEmpty()) {
                         if (isExpandLeft) rightSplitShape else leftSplitShape
                     } else {
@@ -283,6 +295,15 @@ fun HubDock(
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(caretIconSize)
                                 )
+                                // With the top bar hidden, its update icon lives in the bundle menu; flag it here.
+                                if (settings.hideTopBar && topBarState.hasUpdateAvailable && !isBundleFlyoutExpanded) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .size(8.dp)
+                                            .background(MaterialTheme.colorScheme.primary, androidx.compose.foundation.shape.CircleShape)
+                                    )
+                                }
                             }
                         }
                     }
@@ -294,10 +315,10 @@ fun HubDock(
                     modifier = Modifier.wrapContentWidth()
                 ) {
                     if (isExpandLeft) {
-                        if (settings.enableAppBundles) {
+                        if (settings.dockExpandButtonVisible) {
                             expandButtonContent()
                         }
-                        if (dockPackagesList.isNotEmpty() && settings.enableAppBundles) {
+                        if (dockPackagesList.isNotEmpty() && settings.dockExpandButtonVisible) {
                             Spacer(modifier = Modifier.width(3.dp))
                         }
                         if (dockPackagesList.isNotEmpty()) {
@@ -307,10 +328,10 @@ fun HubDock(
                         if (dockPackagesList.isNotEmpty()) {
                             dockPackagesContent()
                         }
-                        if (dockPackagesList.isNotEmpty() && settings.enableAppBundles) {
+                        if (dockPackagesList.isNotEmpty() && settings.dockExpandButtonVisible) {
                             Spacer(modifier = Modifier.width(3.dp))
                         }
-                        if (settings.enableAppBundles) {
+                        if (settings.dockExpandButtonVisible) {
                             expandButtonContent()
                         }
                     }

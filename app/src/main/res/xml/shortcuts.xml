@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press launcher shortcut: a way into Settings that never depends on the top bar or dock. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="open_settings"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_settings"
+        android:shortcutShortLabel="@string/shortcut_settings_short"
+        android:shortcutLongLabel="@string/shortcut_settings_long">
+        <intent
+            android:action="com.conduit.app.OPEN_SETTINGS"
+            android:targetPackage="com.conduit.app"
+            android:targetClass="com.conduit.app.MainActivity" />
+    </shortcut>
+</shortcuts>

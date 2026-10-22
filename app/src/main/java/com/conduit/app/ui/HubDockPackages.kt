@@ -55,7 +55,7 @@ fun RowScope.HubDockPackages(
 ) {
     var selectedDockPackage by selectedDockPackageState
     Surface(
-        modifier = if (settings.enableAppBundles) {
+        modifier = if (settings.dockExpandButtonVisible) {
             Modifier.height(dockHeight).weight(1f, fill = false).wrapContentWidth()
         } else {
             Modifier.height(dockHeight).wrapContentWidth()
@@ -105,8 +105,8 @@ fun RowScope.HubDockPackages(
                         } else Modifier
                     ),
                 contentPadding = PaddingValues(
-                    start = if (settings.enableAppBundles && isExpandLeft) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
-                    end = if (settings.enableAppBundles && !isExpandLeft) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
+                    start = if (settings.dockExpandButtonVisible && isExpandLeft) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
+                    end = if (settings.dockExpandButtonVisible && !isExpandLeft) (dockPaddingHorizontal * 0.65f).coerceAtLeast(8.dp) else dockPaddingHorizontal,
                     top = dockPaddingVertical,
                     bottom = dockPaddingVertical
                 ), 

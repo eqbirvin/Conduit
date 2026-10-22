@@ -281,7 +281,7 @@ fun LazyListScope.singleConversationFeed(
                     ) {
                         Surface(
                             modifier = Modifier.fillMaxHeight(),
-                            shape = if (pendingCount > 0) FeedSplitChipLeftShape else MaterialTheme.shapes.small,
+                            shape = if (pendingCount > 0 && settings.showDateMarkAllRead) FeedSplitChipLeftShape else MaterialTheme.shapes.small,
                             color = MaterialTheme.colorScheme.secondaryContainer
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -295,7 +295,7 @@ fun LazyListScope.singleConversationFeed(
                             }
                         }
 
-                        if (pendingCount > 0) {
+                        if (pendingCount > 0 && settings.showDateMarkAllRead) {
                             Surface(
                                 shape = FeedSplitChipRightShape,
                                 color = MaterialTheme.colorScheme.secondaryContainer,

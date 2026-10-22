@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Conduit</string>
+    <string name="shortcut_settings_short">Settings</string>
+    <string name="shortcut_settings_long">Conduit Settings</string>
 </resources>

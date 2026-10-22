@@ -7,6 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.conduit.app.data.ConduitSettings
 import com.conduit.app.data.ConversationViewMode
 import com.conduit.app.data.SettingsRepository
+import com.conduit.app.data.updateHideTopBar
+import com.conduit.app.data.updateShowCustomViewStrip
+import com.conduit.app.data.updateShowDateMarkAllRead
+import com.conduit.app.data.updateTopBarActionsInDock
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -71,6 +75,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateSingleConversationView(enabled: Boolean) = viewModelScope.launch { repository.updateSingleConversationView(enabled) }
     fun updateScrollTopBarWithFeed(enabled: Boolean) = viewModelScope.launch { repository.updateScrollTopBarWithFeed(enabled) }
     fun updateTopBarScrollBehavior(behavior: String) = viewModelScope.launch { repository.updateTopBarScrollBehavior(behavior) }
+    fun updateHideTopBar(hidden: Boolean) = viewModelScope.launch { repository.updateHideTopBar(hidden) }
+    fun updateTopBarActionsInDock(enabled: Boolean) = viewModelScope.launch { repository.updateTopBarActionsInDock(enabled) }
+    fun updateShowCustomViewStrip(enabled: Boolean) = viewModelScope.launch { repository.updateShowCustomViewStrip(enabled) }
+    fun updateShowDateMarkAllRead(enabled: Boolean) = viewModelScope.launch { repository.updateShowDateMarkAllRead(enabled) }
     fun cycleConversationViewMode(): ConversationViewMode = repository.cycleConversationViewMode()
 
     class Factory(private val repository: SettingsRepository) : ViewModelProvider.Factory {

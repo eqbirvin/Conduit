@@ -14,6 +14,27 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.38.00",
+        date = "October 22, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Home Screen Layout",
+                description = "Make the home screen as minimal as you like from Settings > Appearance > Home Screen Layout. Set the top bar to Shown, Scrolls, or Hidden, and choose whether to show the custom view strip, the mark-all-read button on each day's header, and action chips.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Top Bar Actions in the Dock",
+                description = "With the top bar hidden, tap the dock's expand button to reach Settings, Search, Todo Mode, Expand/Collapse, conversation view, and Manage Views from a new row in the app bundle menu. You can also turn this row on while the top bar is shown. The expand button stays visible even with App Bundles turned off.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Settings Shortcut",
+                description = "Long-press the Conduit app icon on your home screen to jump straight to Settings.",
+                iconName = "Info"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.37.03",
         date = "October 20, 2026",
         highlights = listOf(

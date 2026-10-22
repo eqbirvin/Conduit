@@ -27,7 +27,8 @@ fun HubDateHeader(
     unifiedView: Boolean,
     activeNotificationIds: Set<Int>,
     dateHeader: String,
-    itemsList: List<GroupedConversationItem>
+    itemsList: List<GroupedConversationItem>,
+    showMarkAllRead: Boolean
 ) {
     Box(
         modifier = Modifier
@@ -64,7 +65,7 @@ fun HubDateHeader(
             ) {
                 Surface(
                     modifier = Modifier.fillMaxHeight(),
-                    shape = if (pendingCount > 0) androidx.compose.foundation.shape.RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp) else MaterialTheme.shapes.small,
+                    shape = if (pendingCount > 0 && showMarkAllRead) androidx.compose.foundation.shape.RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp) else MaterialTheme.shapes.small,
                     color = MaterialTheme.colorScheme.secondaryContainer
                 ) {
                     Box(contentAlignment = Alignment.Center) {
@@ -78,7 +79,7 @@ fun HubDateHeader(
                     }
                 }
 
-                if (pendingCount > 0) {
+                if (pendingCount > 0 && showMarkAllRead) {
                     val rightShape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
                     Surface(
                         shape = rightShape,

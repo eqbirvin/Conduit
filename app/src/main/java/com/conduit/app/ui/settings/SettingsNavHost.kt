@@ -84,8 +84,17 @@ fun SettingsNavHost(
                 override fun onDefaultToTodoModeChanged(enabled: Boolean) { settingsViewModel.updateDefaultToTodoMode(enabled) }
                 override fun onCombineConversationsChanged(enabled: Boolean) { settingsViewModel.updateCombineConversations(enabled) }
                 override fun onSingleConversationViewChanged(enabled: Boolean) { settingsViewModel.updateSingleConversationView(enabled) }
-                override fun onScrollTopBarWithFeedChanged(enabled: Boolean) { settingsViewModel.updateScrollTopBarWithFeed(enabled) }
+                override fun onTopBarModeChanged(mode: String) {
+                    settingsViewModel.updateHideTopBar(mode == TOP_BAR_MODE_HIDDEN)
+                    if (mode != TOP_BAR_MODE_HIDDEN) {
+                        settingsViewModel.updateScrollTopBarWithFeed(mode == TOP_BAR_MODE_SCROLL)
+                    }
+                }
                 override fun onTopBarScrollBehaviorChanged(behavior: String) { settingsViewModel.updateTopBarScrollBehavior(behavior) }
+                override fun onTopBarActionsInDockChanged(enabled: Boolean) { settingsViewModel.updateTopBarActionsInDock(enabled) }
+                override fun onShowCustomViewStripChanged(enabled: Boolean) { settingsViewModel.updateShowCustomViewStrip(enabled) }
+                override fun onShowDateMarkAllReadChanged(enabled: Boolean) { settingsViewModel.updateShowDateMarkAllRead(enabled) }
+                override fun onShowActionChipsChanged(enabled: Boolean) { settingsViewModel.updateShowActionChips(enabled) }
             },
             onNavigateBack = onNavigateBackToSettings
         )

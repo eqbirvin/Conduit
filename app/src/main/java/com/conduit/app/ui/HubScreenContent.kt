@@ -99,7 +99,7 @@ fun HubScreenContent(
         showUpdateDialogState = showUpdateDialogState
     )
     val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme() || settings.themePreference == 2
-    val blurModifier = if (isBundleFlyoutExpanded && settings.enableAppBundles && settings.bundleMenuBlur && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+    val blurModifier = if (isBundleFlyoutExpanded && settings.dockExpandButtonVisible && settings.bundleMenuBlur && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
         Modifier.blur(20.dp)
     } else {
         Modifier
@@ -132,7 +132,7 @@ fun HubScreenContent(
         modifier = Modifier
             .fillMaxSize()
             .then(
-                if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode)
+                if (settings.topBarScrollsWithFeed && !isSelectionMode && !isSearchMode)
                     Modifier.nestedScroll(nestedScrollConnection)
                 else Modifier
             )
@@ -141,7 +141,7 @@ fun HubScreenContent(
         val visibleHeaderPx = (headerHeightPx + headerOffsetPx).coerceAtLeast(0f)
         val statusBarHeightPx = WindowInsets.statusBars.getTop(density).toFloat()
         val rawTopPaddingDp = with(density) {
-            if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
+            if (settings.topBarScrollsWithFeed && !isSelectionMode && !isSearchMode) {
                 maxOf(statusBarHeightPx, visibleHeaderPx).toDp()
             } else {
                 padding.calculateTopPadding()
@@ -153,7 +153,7 @@ fun HubScreenContent(
         }
         val contentTopPaddingDp = if (activeSingleConversationKey != null) savedTopPaddingDp else rawTopPaddingDp
 
-        if ((settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) || activeSingleConversationKey != null) {
+        if ((settings.topBarScrollsWithFeed && !isSelectionMode && !isSearchMode) || activeSingleConversationKey != null) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -163,7 +163,7 @@ fun HubScreenContent(
             )
         }
 
-        if (settings.scrollTopBarWithFeed && !isSelectionMode && !isSearchMode) {
+        if (settings.topBarScrollsWithFeed && !isSelectionMode && !isSearchMode) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -174,7 +174,7 @@ fun HubScreenContent(
                     .zIndex(2f)
             ) {
                 HubTopBar(state = topBarState, callbacks = topBarCallbacks)
-                if (views.isNotEmpty()) {
+                if (views.isNotEmpty() && settings.showCustomViewStrip) {
                     CustomViewChipsBar(
                         views = views,
                         activeViewId = activeViewId,
@@ -202,8 +202,8 @@ fun HubScreenContent(
                 .fillMaxSize()
                 .then(blurModifier)
         ) {
-        if (!settings.scrollTopBarWithFeed || isSelectionMode || isSearchMode) {
-            if (views.isNotEmpty() && !isSearchMode) {
+        if (!settings.topBarScrollsWithFeed || isSelectionMode || isSearchMode) {
+            if (views.isNotEmpty() && settings.showCustomViewStrip && !isSearchMode) {
                 CustomViewChipsBar(
                     views = views,
                     activeViewId = activeViewId,
@@ -340,7 +340,7 @@ fun HubScreenContent(
     )
 
         androidx.compose.animation.AnimatedVisibility(
-            visible = isBundleFlyoutExpanded && settings.enableAppBundles,
+            visible = isBundleFlyoutExpanded && settings.dockExpandButtonVisible,
             enter = androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(200)),
             exit = androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(150))
         ) {

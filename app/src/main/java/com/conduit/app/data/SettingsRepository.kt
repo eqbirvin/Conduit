@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
-class SettingsRepository(private val prefs: SharedPreferences) {
+class SettingsRepository(internal val prefs: SharedPreferences) {
 
-    private val _settings = MutableStateFlow(loadInitialSettings())
+    internal val _settings = MutableStateFlow(loadInitialSettings())
     val settings: StateFlow<ConduitSettings> = _settings.asStateFlow()
 
     private fun loadInitialSettings(): ConduitSettings {
@@ -109,7 +109,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             combineConversations = if (prefs.getBoolean("single_conversation_view", false)) false else prefs.getBoolean("combine_conversations", true),
             singleConversationView = prefs.getBoolean("single_conversation_view", false),
             scrollTopBarWithFeed = prefs.getBoolean("scroll_top_bar_with_feed", false),
-            topBarScrollBehavior = prefs.getString("top_bar_scroll_behavior", "NATURAL") ?: "NATURAL"
+            topBarScrollBehavior = prefs.getString("top_bar_scroll_behavior", "NATURAL") ?: "NATURAL",
+            hideTopBar = prefs.getBoolean(KEY_HIDE_TOP_BAR, false),
+            topBarActionsInDock = prefs.getBoolean(KEY_TOP_BAR_ACTIONS_IN_DOCK, false),
+            showCustomViewStrip = prefs.getBoolean(KEY_SHOW_CUSTOM_VIEW_STRIP, true),
+            showDateMarkAllRead = prefs.getBoolean(KEY_SHOW_DATE_MARK_ALL_READ, true)
         )
     }
 

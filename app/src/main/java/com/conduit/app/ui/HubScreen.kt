@@ -134,6 +134,12 @@ fun HubScreen(
     val activeViewId by viewModel.activeViewId.collectAsStateWithLifecycle()
     val activeView = remember(views, activeViewId) { views.find { it.id == activeViewId } }
     val activeViewDockFilter = activeView?.filterDock == true
+    // A hidden strip leaves no way to see or clear the active view, so fall back to All.
+    LaunchedEffect(settings.showCustomViewStrip, activeViewId) {
+        if (!settings.showCustomViewStrip && activeViewId != null) {
+            viewModel.setActiveViewId(null)
+        }
+    }
     LaunchedEffect(notifications, unifiedView) {
         if (!unifiedView && selectedDockPackage != null) {
             val hasActive = notifications.any { getRepresentativePackage(context, it.packageName) == selectedDockPackage }
@@ -205,10 +211,10 @@ fun HubScreen(
     val headerOffsetPxState = remember { mutableFloatStateOf(0f) }
     var headerOffsetPx by headerOffsetPxState
 
-    val nestedScrollConnection = remember(settings.scrollTopBarWithFeed, settings.topBarScrollBehavior, activeSingleConversationKey) {
+    val nestedScrollConnection = remember(settings.topBarScrollsWithFeed, settings.topBarScrollBehavior, activeSingleConversationKey) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (!settings.scrollTopBarWithFeed || isSelectionMode || isSearchMode || activeSingleConversationKey != null) {
+                if (!settings.topBarScrollsWithFeed || isSelectionMode || isSearchMode || activeSingleConversationKey != null) {
                     return Offset.Zero
                 }
                 val delta = available.y
@@ -237,8 +243,8 @@ fun HubScreen(
         }
     }
 
-    LaunchedEffect(isSelectionMode, isSearchMode, settings.scrollTopBarWithFeed) {
-        if (isSelectionMode || isSearchMode || !settings.scrollTopBarWithFeed) {
+    LaunchedEffect(isSelectionMode, isSearchMode, settings.topBarScrollsWithFeed) {
+        if (isSelectionMode || isSearchMode || !settings.topBarScrollsWithFeed) {
             headerOffsetPx = 0f
         }
     }
@@ -294,7 +300,7 @@ fun HubScreen(
 
     Scaffold(
         topBar = {
-            if ((isSelectionMode || isSearchMode || !settings.scrollTopBarWithFeed) && activeSingleConversationKey == null) {
+            if ((isSelectionMode || isSearchMode || (!settings.topBarScrollsWithFeed && !settings.hideTopBar)) && activeSingleConversationKey == null) {
                 HubTopBar(state = topBarState, callbacks = topBarCallbacks)
             }
         },
@@ -319,7 +325,9 @@ fun HubScreen(
                     launchAppOrAction = launchAppOrAction,
                     launchBundleAction = launchBundleAction,
                     activeView = activeView,
-                    activeViewDockFilter = activeViewDockFilter
+                    activeViewDockFilter = activeViewDockFilter,
+                    topBarState = topBarState,
+                    topBarCallbacks = topBarCallbacks
                 )
             }
         },

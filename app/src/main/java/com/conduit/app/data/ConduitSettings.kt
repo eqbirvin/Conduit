@@ -62,8 +62,23 @@ data class ConduitSettings(
     val combineConversations: Boolean = true,
     val singleConversationView: Boolean = false,
     val scrollTopBarWithFeed: Boolean = false,
-    val topBarScrollBehavior: String = "NATURAL"
+    val topBarScrollBehavior: String = "NATURAL",
+    val hideTopBar: Boolean = false,
+    val topBarActionsInDock: Boolean = false,
+    val showCustomViewStrip: Boolean = true,
+    val showDateMarkAllRead: Boolean = true
 ) {
+    // Hidden overrides the scroll setting; the two are presented as one "Top Bar" choice.
+    val topBarScrollsWithFeed: Boolean
+        get() = scrollTopBarWithFeed && !hideTopBar
+
+    // With the top bar hidden, its actions must stay reachable from the dock's bundle menu.
+    val showTopBarActionsInDock: Boolean
+        get() = hideTopBar || topBarActionsInDock
+
+    val dockExpandButtonVisible: Boolean
+        get() = enableAppBundles || showTopBarActionsInDock
+
     val conversationViewMode: ConversationViewMode
         get() = when {
             singleConversationView -> ConversationViewMode.SINGLE_CONVERSATION

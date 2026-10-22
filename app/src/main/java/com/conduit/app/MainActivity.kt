@@ -30,6 +30,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+const val ACTION_OPEN_SETTINGS = "com.conduit.app.OPEN_SETTINGS"
+
 enum class Screen {
     HOME,
     SETTINGS,
@@ -48,11 +50,14 @@ enum class Screen {
 
 class MainActivity : ComponentActivity() {
     private var intentState by mutableStateOf<Intent?>(null)
+    // Set by the "Settings" launcher shortcut; consumed once so recreation doesn't re-open Settings.
+    private var pendingOpenSettings by mutableStateOf(false)
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         intentState = intent
+        if (intent.action == ACTION_OPEN_SETTINGS) pendingOpenSettings = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +69,7 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         intentState = intent
+        if (savedInstanceState == null && intent?.action == ACTION_OPEN_SETTINGS) pendingOpenSettings = true
         setContent {
             val context = LocalContext.current
             val prefs = remember { context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE) }
@@ -178,6 +184,12 @@ class MainActivity : ComponentActivity() {
 
             var currentScreen by remember { mutableStateOf(Screen.HOME) }
             var whatsNewOriginScreen by remember { mutableStateOf(Screen.SETTINGS_ABOUT) }
+            LaunchedEffect(pendingOpenSettings) {
+                if (pendingOpenSettings) {
+                    currentScreen = Screen.SETTINGS
+                    pendingOpenSettings = false
+                }
+            }
             var isPermissionGranted by remember { mutableStateOf(isNotificationServiceEnabled()) }
             var isRestricted by remember { mutableStateOf(isRestrictedSettingsGuarded(context)) }
             var showSuccessState by remember { mutableStateOf(false) }

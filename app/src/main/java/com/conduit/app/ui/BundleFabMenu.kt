@@ -130,6 +130,7 @@ fun BundleFabMenu(
     dockExpandPosition: String = "LEFT",
     transparentBundlePills: Boolean = false,
     bundleMenuBlur: Boolean = true,
+    conduitMenu: ConduitMenu? = null,
     onAppClick: (String) -> Unit,
     onBundleClick: (String, List<String>) -> Unit,
     onBundleLongClick: (String) -> Unit,
@@ -145,7 +146,7 @@ fun BundleFabMenu(
         ).filter { it.packages.isNotEmpty() }
     }
 
-    if (bundleEntries.isEmpty()) return
+    if (bundleEntries.isEmpty() && conduitMenu == null) return
 
     val isLeft = dockExpandPosition == "LEFT"
     val isCompact = bundleMenuSizing == "COMPACT"
@@ -178,28 +179,10 @@ fun BundleFabMenu(
         horizontalAlignment = if (isLeft) Alignment.Start else Alignment.End,
         verticalArrangement = Arrangement.spacedBy(rowSpacing)
     ) {
-        val total = bundleEntries.size
+        // The Conduit actions row (when present) sits below the bundles, nearest the dock
+        val total = bundleEntries.size + if (conduitMenu != null) 1 else 0
         bundleEntries.forEachIndexed { index, entry ->
-            // Bottom row (Compose) has index (total - 1), closest to the dock, enters first
-            val distanceFromBottom = total - 1 - index
-            val enterDelay = distanceFromBottom * 35
-            val exitDelay = index * 25
-
-            AnimatedVisibility(
-                visible = expanded,
-                enter = slideInVertically(
-                    initialOffsetY = { it / 2 },
-                    animationSpec = tween(durationMillis = 220, delayMillis = enterDelay, easing = FastOutSlowInEasing)
-                ) + fadeIn(
-                    animationSpec = tween(durationMillis = 200, delayMillis = enterDelay)
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { it / 2 },
-                    animationSpec = tween(durationMillis = 180, delayMillis = exitDelay)
-                ) + fadeOut(
-                    animationSpec = tween(durationMillis = 150, delayMillis = exitDelay)
-                )
-            ) {
+            BundleMenuRowVisibility(expanded = expanded, index = index, total = total) {
                 BundleMenuRow(
                     entry = entry,
                     isCompact = isCompact,
@@ -217,6 +200,53 @@ fun BundleFabMenu(
                 )
             }
         }
+        if (conduitMenu != null) {
+            BundleMenuRowVisibility(expanded = expanded, index = total - 1, total = total) {
+                ConduitActionsMenuRow(
+                    menu = conduitMenu,
+                    isCompact = isCompact,
+                    isLeft = isLeft,
+                    floatingContainerSize = floatingContainerSize,
+                    floatingAppIconSize = floatingAppIconSize,
+                    pillHeight = pillHeight,
+                    pillIconSize = pillIconSize,
+                    entryButtonColor = entryButtonColor,
+                    transparentBundlePills = transparentBundlePills,
+                    bundleMenuBlur = bundleMenuBlur
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ColumnScope.BundleMenuRowVisibility(
+    expanded: Boolean,
+    index: Int,
+    total: Int,
+    content: @Composable () -> Unit
+) {
+    // Bottom row has index (total - 1), closest to the dock, enters first
+    val distanceFromBottom = total - 1 - index
+    val enterDelay = distanceFromBottom * 35
+    val exitDelay = index * 25
+
+    AnimatedVisibility(
+        visible = expanded,
+        enter = slideInVertically(
+            initialOffsetY = { it / 2 },
+            animationSpec = tween(durationMillis = 220, delayMillis = enterDelay, easing = FastOutSlowInEasing)
+        ) + fadeIn(
+            animationSpec = tween(durationMillis = 200, delayMillis = enterDelay)
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { it / 2 },
+            animationSpec = tween(durationMillis = 180, delayMillis = exitDelay)
+        ) + fadeOut(
+            animationSpec = tween(durationMillis = 150, delayMillis = exitDelay)
+        )
+    ) {
+        content()
     }
 }
 
@@ -359,7 +389,7 @@ private fun BundleMenuRow(
 }
 
 @Composable
-private fun BundlePillText(
+internal fun BundlePillText(
     title: String,
     style: TextStyle,
     color: Color,

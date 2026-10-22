@@ -62,7 +62,8 @@ fun LazyListScope.hubDateGroupedSection(
                 unifiedView = unifiedView,
                 activeNotificationIds = activeNotificationIds,
                 dateHeader = dateHeader,
-                itemsList = itemsList
+                itemsList = itemsList,
+                showMarkAllRead = settings.showDateMarkAllRead
             )
         }
         items(itemsList, key = { it.primaryNotification.id }) { item ->
