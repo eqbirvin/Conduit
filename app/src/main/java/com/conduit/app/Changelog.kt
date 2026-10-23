@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.39.00",
+        date = "October 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Quick Hide for Custom Views",
+                description = "Long-press the Manage Views button in the top bar to hide the custom view strip, and long-press it again to bring it back. This flips the same \"Custom View Strip\" switch in Settings > Appearance > Home Screen Layout.",
+                iconName = "Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.38.01",
         date = "October 22, 2026",
         highlights = listOf(

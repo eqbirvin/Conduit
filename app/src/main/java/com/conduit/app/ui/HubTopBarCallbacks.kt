@@ -98,6 +98,12 @@ fun rememberHubTopBarCallbacks(
             override fun onNavigateToManageViews() {
                 onNavigateToManageViews()
             }
+            override fun onToggleCustomViewStrip() {
+                val show = !settingsViewModel.settings.value.showCustomViewStrip
+                settingsViewModel.updateShowCustomViewStrip(show)
+                val toastText = if (show) "Custom view strip shown" else "Custom view strip hidden"
+                android.widget.Toast.makeText(context, toastText, android.widget.Toast.LENGTH_SHORT).show()
+            }
             override fun onCycleConversationView() {
                 activeSingleConversationKey = null
                 conversationRollupStates.clear()

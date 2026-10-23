@@ -1,7 +1,10 @@
 package com.conduit.app.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
@@ -10,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +47,7 @@ interface HubTopBarCallbacks {
     fun onShowUpdateDialog()
     fun onNavigateToSettings()
     fun onNavigateToManageViews()
+    fun onToggleCustomViewStrip()
     fun onCycleConversationView()
     fun onToggleMasterExpand()
     fun onNavigateToArchive()
@@ -50,7 +55,7 @@ interface HubTopBarCallbacks {
     fun onEnterSearch()
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HubTopBar(
     state: HubTopBarState,
@@ -168,10 +173,26 @@ fun HubTopBar(
                         }) {
                             Icon(Icons.Filled.SettingsIcon, contentDescription = "Settings", tint = MaterialTheme.colorScheme.onSurface)
                         }
-                        IconButton(onClick = {
-                            performHapticTick(context)
-                            callbacks.onNavigateToManageViews()
-                        }) {
+                        // IconButton has no long-press, so this mirrors its 40dp ripple inside a 48dp touch target.
+                        Box(
+                            modifier = Modifier
+                                .minimumInteractiveComponentSize()
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .combinedClickable(
+                                    onClickLabel = "Manage Views",
+                                    onLongClickLabel = "Show or hide custom view strip",
+                                    onClick = {
+                                        performHapticTick(context)
+                                        callbacks.onNavigateToManageViews()
+                                    },
+                                    onLongClick = {
+                                        performHapticClick(context)
+                                        callbacks.onToggleCustomViewStrip()
+                                    }
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Icon(Icons.Filled.FilterList, contentDescription = "Manage Views", tint = MaterialTheme.colorScheme.onSurface)
                         }
                         IconButton(onClick = {
