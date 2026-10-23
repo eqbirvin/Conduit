@@ -59,16 +59,23 @@ class RecurringTextScannerTest {
     }
 
     @Test
-    fun skipsPhrasesShorterThanFourWords() {
-        val bodies = (1..40).map { Body(sms, "Thanks so much! ${message(it)}") } +
+    fun skipsPhrasesShorterThanThreeWords() {
+        val bodies = (1..40).map { Body(sms, "Thanks again! ${message(it)}") } +
             (1..40).map { Body(sms, "${message(it)} EXTERNAL:") }
         assertTrue(RecurringTextScanner.scan(bodies).isEmpty())
     }
 
     @Test
-    fun skipsTextSeenInFewerThan25Notifications() {
-        val bodies = (1..24).map { Body(outlook, "[External sender] Use caution: ${message(it)}") } + chatter.map { Body(sms, it) }
-        assertTrue(RecurringTextScanner.scan(bodies).isEmpty())
+    fun findsThreeWordPhrase() {
+        val bodies = (1..20).map { Body(outlook, "${message(it)}\nGet Outlook mobile") }
+        assertEquals("Get Outlook mobile", RecurringTextScanner.scan(bodies).single().phrase)
+    }
+
+    @Test
+    fun needsMoreThan15Notifications() {
+        fun bodies(count: Int) = (1..count).map { Body(outlook, "[External sender] Use caution: ${message(it)}") } + chatter.map { Body(sms, it) }
+        assertTrue(RecurringTextScanner.scan(bodies(15)).isEmpty())
+        assertEquals(16, RecurringTextScanner.scan(bodies(16)).single().occurrences)
     }
 
     @Test

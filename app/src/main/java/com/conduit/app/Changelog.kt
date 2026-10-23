@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.41.02",
+        date = "October 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "More Recurring Text Results",
+                description = "Find Recurring Text now suggests text of three or more words that appears in more than 15 notifications, so shorter signatures like \"Get Outlook mobile\" are found too.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.41.01",
         date = "October 23, 2026",
         highlights = listOf(

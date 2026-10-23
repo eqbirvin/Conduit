@@ -20,9 +20,10 @@ object RecurringTextScanner {
         val example: String
     )
 
-    const val DEFAULT_MIN_OCCURRENCES = 25
-    // Shorter phrases are mostly everyday wording ("Thanks so much") rather than boilerplate.
-    const val MIN_PHRASE_WORDS = 4
+    // "More than 15 times".
+    const val DEFAULT_MIN_OCCURRENCES = 16
+    // Shorter phrases are mostly everyday wording ("Thanks!") rather than boilerplate.
+    const val MIN_PHRASE_WORDS = 3
     private const val MIN_PHRASE_CHARS = 6
     private const val MAX_PHRASE_CHARS = 1000
     private const val MAX_EDGE_TOKENS = 80
