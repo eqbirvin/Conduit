@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.40.00",
+        date = "October 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Hidden Text",
+                description = "Hide exact phrases from notification titles and messages, like the \"EXTERNAL:\" tag some email apps add. Go to Settings > Hidden Text, add a phrase, and choose whether it matches case, applies to the title, the message, or both, and covers all apps or only the ones you pick. Conduit keeps the original text, so deleting a phrase brings it back. Applies to the feed, archive, search, widgets, and the Bracket.",
+                iconName = "Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.38.01",
         date = "October 22, 2026",
         highlights = listOf(

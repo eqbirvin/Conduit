@@ -13,11 +13,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.conduit.app.HiddenTextAppsViewModel
 import com.conduit.app.Screen
 import com.conduit.app.SensitiveAccessViewModel
 import com.conduit.app.SettingsViewModel
 import com.conduit.app.changeAppIcon
 import com.conduit.app.data.ConduitSettings
+import com.conduit.app.data.HiddenTextRule
 import com.conduit.app.ui.ChannelsSettingsScreen
 import com.conduit.app.ui.ChannelsSettingsScreenCallbacks
 import com.conduit.app.ui.DevSettingsScreen
@@ -25,6 +27,7 @@ import com.conduit.app.ui.DevSettingsScreenCallbacks
 import com.conduit.app.ui.SettingsScreen
 import com.conduit.app.ui.SettingsScreenCallbacks
 import com.conduit.app.updater.UpdateManager
+import com.conduit.app.widget.WidgetUpdater
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,6 +61,7 @@ fun SettingsNavHost(
                     override fun onNavigateToAppearance() { onNavigateToScreen(Screen.SETTINGS_APPEARANCE) }
                     override fun onNavigateToDock() { onNavigateToScreen(Screen.SETTINGS_DOCK) }
                     override fun onNavigateToNotifications() { onNavigateToScreen(Screen.SETTINGS_NOTIFICATIONS) }
+                    override fun onNavigateToHiddenText() { onNavigateToScreen(Screen.SETTINGS_HIDDEN_TEXT) }
                     override fun onNavigateToData() { onNavigateToScreen(Screen.SETTINGS_DATA) }
                     override fun onNavigateToBracket() { onNavigateToScreen(Screen.SETTINGS_BRACKET) }
                     override fun onNavigateToAbout() { onNavigateToScreen(Screen.SETTINGS_ABOUT) }
@@ -136,6 +140,26 @@ fun SettingsNavHost(
             },
             onNavigateBack = onNavigateBackToSettings
         )
+
+        Screen.SETTINGS_HIDDEN_TEXT -> {
+            val hiddenTextAppsViewModel: HiddenTextAppsViewModel = viewModel()
+            val apps by hiddenTextAppsViewModel.apps.collectAsStateWithLifecycle()
+            HiddenTextSettingsScreen(
+                rules = settings.hiddenTextRules,
+                apps = apps,
+                callbacks = object : HiddenTextSettingsScreenCallbacks {
+                    override fun onSaveRule(rule: HiddenTextRule) {
+                        settingsViewModel.saveHiddenTextRule(rule)
+                        WidgetUpdater.updateAllWidgets(context)
+                    }
+                    override fun onDeleteRule(id: String) {
+                        settingsViewModel.deleteHiddenTextRule(id)
+                        WidgetUpdater.updateAllWidgets(context)
+                    }
+                },
+                onNavigateBack = onNavigateBackToSettings
+            )
+        }
 
         Screen.SETTINGS_DATA -> DataRetentionSettingsScreen(
             settings = settings,

@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.conduit.app.data.ConduitSettings
 import com.conduit.app.data.ConversationViewMode
+import com.conduit.app.data.HiddenTextRule
 import com.conduit.app.data.SettingsRepository
+import com.conduit.app.data.updateHiddenTextRules
 import com.conduit.app.data.updateHideTopBar
 import com.conduit.app.data.updateShowCustomViewStrip
 import com.conduit.app.data.updateShowDateMarkAllRead
@@ -79,6 +81,14 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateTopBarActionsInDock(enabled: Boolean) = viewModelScope.launch { repository.updateTopBarActionsInDock(enabled) }
     fun updateShowCustomViewStrip(enabled: Boolean) = viewModelScope.launch { repository.updateShowCustomViewStrip(enabled) }
     fun updateShowDateMarkAllRead(enabled: Boolean) = viewModelScope.launch { repository.updateShowDateMarkAllRead(enabled) }
+    fun saveHiddenTextRule(rule: HiddenTextRule) = viewModelScope.launch {
+        val rules = repository.settings.value.hiddenTextRules
+        val updated = if (rules.any { it.id == rule.id }) rules.map { if (it.id == rule.id) rule else it } else rules + rule
+        repository.updateHiddenTextRules(updated)
+    }
+    fun deleteHiddenTextRule(id: String) = viewModelScope.launch {
+        repository.updateHiddenTextRules(repository.settings.value.hiddenTextRules.filter { it.id != id })
+    }
     fun cycleConversationViewMode(): ConversationViewMode = repository.cycleConversationViewMode()
 
     class Factory(private val repository: SettingsRepository) : ViewModelProvider.Factory {

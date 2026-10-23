@@ -66,7 +66,8 @@ data class ConduitSettings(
     val hideTopBar: Boolean = false,
     val topBarActionsInDock: Boolean = false,
     val showCustomViewStrip: Boolean = true,
-    val showDateMarkAllRead: Boolean = true
+    val showDateMarkAllRead: Boolean = true,
+    val hiddenTextRules: List<HiddenTextRule> = emptyList()
 ) {
     // Hidden overrides the scroll setting; the two are presented as one "Top Bar" choice.
     val topBarScrollsWithFeed: Boolean

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ interface SettingsScreenCallbacks {
     fun onNavigateToAppearance()
     fun onNavigateToDock()
     fun onNavigateToNotifications()
+    fun onNavigateToHiddenText()
     fun onNavigateToData()
     fun onNavigateToBracket()
     fun onNavigateToAbout()
@@ -123,6 +125,14 @@ fun SettingsScreen(
         val syncText = if (settings.syncDismissal) "System sync on" else "Local only"
         val chipsText = if (settings.showActionChips) "Action chips" else "No action chips"
         "$syncText • $chipsText"
+    }
+
+    val hiddenTextSummary = remember(settings.hiddenTextRules) {
+        when (val count = settings.hiddenTextRules.size) {
+            0 -> "Hide repeated phrases like \"EXTERNAL:\""
+            1 -> "1 phrase hidden"
+            else -> "$count phrases hidden"
+        }
     }
 
     val dataSummary = remember(settings.retentionDays) {
@@ -283,6 +293,17 @@ fun SettingsScreen(
                         onClick = {
                             performHapticClick(context)
                             callbacks.onNavigateToNotifications()
+                        }
+                    )
+                    HorizontalDivider(thickness = 1.dp, color = dividerColor)
+
+                    SettingsMenuItemRow(
+                        title = "Hidden Text",
+                        subtitle = hiddenTextSummary,
+                        icon = Icons.Default.VisibilityOff,
+                        onClick = {
+                            performHapticClick(context)
+                            callbacks.onNavigateToHiddenText()
                         }
                     )
                     HorizontalDivider(thickness = 1.dp, color = dividerColor)

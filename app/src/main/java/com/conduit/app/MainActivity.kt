@@ -22,10 +22,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.conduit.app.data.AppDatabase
+import com.conduit.app.data.HiddenTextFilter
 import com.conduit.app.ui.*
 import com.conduit.app.ui.settings.SettingsNavHost
 import com.conduit.app.ui.theme.ConduitTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,7 +48,8 @@ enum class Screen {
     SETTINGS_NOTIFICATIONS,
     SETTINGS_DATA,
     SETTINGS_BRACKET,
-    SETTINGS_ABOUT
+    SETTINGS_ABOUT,
+    SETTINGS_HIDDEN_TEXT
 }
 
 class MainActivity : ComponentActivity() {
@@ -241,7 +245,8 @@ class MainActivity : ComponentActivity() {
                         Screen.SETTINGS_NOTIFICATIONS,
                         Screen.SETTINGS_DATA,
                         Screen.SETTINGS_BRACKET,
-                        Screen.SETTINGS_ABOUT -> Screen.SETTINGS
+                        Screen.SETTINGS_ABOUT,
+                        Screen.SETTINGS_HIDDEN_TEXT -> Screen.SETTINGS
                         else -> Screen.HOME
                     }
                 }
@@ -249,7 +254,11 @@ class MainActivity : ComponentActivity() {
 
             // Observe notifications from Room
             val database = remember { AppDatabase.getDatabase(context) }
-            val archivedNotifications by database.notificationDao().getArchivedNotifications(settings.demoModeEnabled).collectAsStateWithLifecycle(initialValue = emptyList())
+            val archivedNotifications by remember(settings.demoModeEnabled, settings.hiddenTextRules) {
+                database.notificationDao().getArchivedNotifications(settings.demoModeEnabled)
+                    .map { HiddenTextFilter.apply(it, settings.hiddenTextRules) }
+                    .flowOn(Dispatchers.Default)
+            }.collectAsStateWithLifecycle(initialValue = emptyList())
             val coroutineScope = rememberCoroutineScope()
 
             ConduitTheme(

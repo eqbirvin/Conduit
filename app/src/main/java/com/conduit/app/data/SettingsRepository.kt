@@ -113,7 +113,8 @@ class SettingsRepository(internal val prefs: SharedPreferences) {
             hideTopBar = prefs.getBoolean(KEY_HIDE_TOP_BAR, false),
             topBarActionsInDock = prefs.getBoolean(KEY_TOP_BAR_ACTIONS_IN_DOCK, false),
             showCustomViewStrip = prefs.getBoolean(KEY_SHOW_CUSTOM_VIEW_STRIP, true),
-            showDateMarkAllRead = prefs.getBoolean(KEY_SHOW_DATE_MARK_ALL_READ, true)
+            showDateMarkAllRead = prefs.getBoolean(KEY_SHOW_DATE_MARK_ALL_READ, true),
+            hiddenTextRules = loadHiddenTextRules(prefs)
         )
     }
 

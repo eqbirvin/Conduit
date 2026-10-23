@@ -338,7 +338,13 @@ import kotlinx.coroutines.sync.withLock
                                 // Post native Bubble notification
                                 val bubblePrefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
                                 if (bubblePrefs.getBoolean("enable_bubbles", false)) {
-                                    postBubbleNotification(applicationContext, packageName, bubbleTarget.title, bubbleTarget.text)
+                                    val hiddenTextRules = com.conduit.app.data.HiddenTextRulesCache.get(applicationContext)
+                                    postBubbleNotification(
+                                        applicationContext,
+                                        packageName,
+                                        com.conduit.app.data.HiddenTextFilter.cleanTitle(packageName, bubbleTarget.title, hiddenTextRules).orEmpty(),
+                                        com.conduit.app.data.HiddenTextFilter.cleanBody(packageName, bubbleTarget.text, hiddenTextRules).orEmpty()
+                                    )
                                 }
 
                                 // Trigger Bracket popup if enabled

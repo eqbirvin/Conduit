@@ -37,7 +37,10 @@ class ConduitWidgetFactory(
 
     override fun onDataSetChanged() {
         val isCustomView = intent.getBooleanExtra(com.conduit.app.widget.CustomViewWidgetProvider.EXTRA_IS_CUSTOM_VIEW, false)
-        val activeNotifs = database.notificationDao().getActiveNotificationsWidgetSync()
+        val activeNotifs = com.conduit.app.data.HiddenTextFilter.apply(
+            database.notificationDao().getActiveNotificationsWidgetSync(),
+            com.conduit.app.data.HiddenTextRulesCache.get(context)
+        )
         
         if (isCustomView) {
             val prefs = context.getSharedPreferences("conduit_custom_widget_prefs", Context.MODE_PRIVATE)
