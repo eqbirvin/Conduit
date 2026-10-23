@@ -19,62 +19,78 @@ class RecurringTextScannerTest {
         "Did you see the game last night", "Pick up milk please", "On my way"
     )
 
+    // Distinct message text whose first and last words vary, so only the planted block recurs.
+    private val openers = listOf("Quick", "Reminder", "Heads-up", "Please", "Notes", "Agenda", "Draft", "Final", "Hello", "Status")
+    private val closers = listOf("today", "tomorrow", "soon", "attached", "below", "thanks", "asap")
+    private fun message(i: Int) = "${openers[i % openers.size]} item $i ${closers[i % closers.size]}"
+
     @Test
     fun findsLeadingTagWithAppCounts() {
-        val subjects = listOf(
-            "Q3 budget review", "Server maintenance tonight", "Your invoice is ready", "Team offsite agenda",
-            "Password expiring soon", "New policy update", "Lunch and learn Friday", "Contract signed",
-            "Weekly metrics", "Holiday schedule", "Parking garage closure", "Benefits enrollment"
-        )
-        val bodies = subjects.map { Body(outlook, "EXTERNAL: $it") } +
-            (1..3).map { Body(gmail, "EXTERNAL: Invoice $it attached") } +
+        val tag = "[External sender] Use caution:"
+        val bodies = (1..30).map { Body(outlook, "$tag ${message(it)}") } +
+            (31..35).map { Body(gmail, "$tag ${message(it)}") } +
             chatter.map { Body(sms, it) }
-        val results = RecurringTextScanner.scan(bodies)
-        val tag = results.first { it.phrase.startsWith("EXTERNAL:") }
-        assertEquals(15, tag.occurrences)
-        assertEquals(listOf(outlook to 12, gmail to 3), tag.appCounts)
-        assertEquals(Position.START, tag.position)
-        assertTrue(tag.example.contains("EXTERNAL:"))
+        val result = RecurringTextScanner.scan(bodies).single()
+        assertEquals(tag, result.phrase)
+        assertEquals(35, result.occurrences)
+        assertEquals(listOf(outlook to 30, gmail to 5), result.appCounts)
+        assertEquals(Position.START, result.position)
+        assertTrue(result.example.contains(tag))
     }
 
     @Test
     fun findsWholeWarningBannerAsOneBlock() {
         val banner = "CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender."
-        val bodies = (1..8).map { Body(outlook, "$banner\nHi team, notes from meeting $it are attached.") } +
-            chatter.map { Body(sms, it) }
+        val bodies = (1..30).map { Body(outlook, "$banner\n${message(it)}") } + chatter.map { Body(sms, it) }
         val results = RecurringTextScanner.scan(bodies)
         assertEquals(banner, results.first().phrase)
-        assertEquals(8, results.first().occurrences)
+        assertEquals(30, results.first().occurrences)
         // Fragments of the same banner are not listed separately.
         assertFalse(results.any { it.phrase != banner && banner.contains(it.phrase) })
     }
 
     @Test
     fun findsTrailingSignature() {
-        val bodies = chatter.map { Body(sms, "$it\n\nSent from my iPhone") }
-        val signature = RecurringTextScanner.scan(bodies).first()
+        val bodies = (1..30).map { Body(sms, "${message(it)}\n\nSent from my iPhone") }
+        val signature = RecurringTextScanner.scan(bodies).single()
         assertEquals("Sent from my iPhone", signature.phrase)
         assertEquals(Position.END, signature.position)
-        assertEquals(10, signature.occurrences)
+        assertEquals(30, signature.occurrences)
+    }
+
+    @Test
+    fun skipsPhrasesShorterThanFourWords() {
+        val bodies = (1..40).map { Body(sms, "Thanks so much! ${message(it)}") } +
+            (1..40).map { Body(sms, "${message(it)} EXTERNAL:") }
+        assertTrue(RecurringTextScanner.scan(bodies).isEmpty())
+    }
+
+    @Test
+    fun skipsTextSeenInFewerThan25Notifications() {
+        val bodies = (1..24).map { Body(outlook, "[External sender] Use caution: ${message(it)}") } + chatter.map { Body(sms, it) }
+        assertTrue(RecurringTextScanner.scan(bodies).isEmpty())
     }
 
     @Test
     fun skipsTextThatIsUsuallyTheWholeMessage() {
-        val bodies = (1..10).map { Body(sms, "Sent a photo") } + chatter.map { Body(sms, it) }
-        assertTrue(RecurringTextScanner.scan(bodies).none { it.phrase == "Sent a photo" })
+        val bodies = (1..30).map { Body(sms, "You sent a photo message") } + chatter.map { Body(sms, it) }
+        assertTrue(RecurringTextScanner.scan(bodies).isEmpty())
     }
 
     @Test
-    fun ignoresTextBelowTheMinimumOccurrences() {
-        val bodies = (1..4).map { Body(outlook, "EXTERNAL: Report $it") } + chatter.map { Body(sms, it) }
-        assertTrue(RecurringTextScanner.scan(bodies, minOccurrences = 5).isEmpty())
+    fun ordersByOccurrencesDescending() {
+        val longBanner = "CAUTION: This email originated from outside of the organization. Do not click links."
+        val bodies = (1..30).map { Body(outlook, "$longBanner\n${message(it)}") } +
+            (1..60).map { Body(sms, "${message(it + 100)}\nSent from my iPhone") }
+        val results = RecurringTextScanner.scan(bodies)
+        assertEquals(listOf("Sent from my iPhone", longBanner), results.map { it.phrase })
     }
 
     @Test
     fun alreadyHiddenPhrasesAreNotSuggestedAfterStripping() {
-        val rules = listOf(HiddenTextRule(id = "1", phrase = "EXTERNAL:"))
-        val bodies = (1..10).map { Body(outlook, "EXTERNAL: Weekly digest $it") }
+        val rules = listOf(HiddenTextRule(id = "1", phrase = "[External sender] Use caution:"))
+        val bodies = (1..30).map { Body(outlook, "[External sender] Use caution: ${message(it)}") }
             .map { it.copy(text = HiddenTextFilter.stripBody(it.packageName, it.text, rules)) }
-        assertTrue(RecurringTextScanner.scan(bodies).none { it.phrase.contains("EXTERNAL:") })
+        assertTrue(RecurringTextScanner.scan(bodies).none { it.phrase.contains("Use caution") })
     }
 }

@@ -144,7 +144,7 @@ private fun SuggestionCard(suggestion: HiddenTextSuggestion, onHide: () -> Unit)
                 modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }
             ) {
                 Text(
-                    text = suggestion.phrase,
+                    text = "“${suggestion.phrase}”",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = if (expanded) Int.MAX_VALUE else 4,
@@ -165,7 +165,7 @@ private fun SuggestionCard(suggestion: HiddenTextSuggestion, onHide: () -> Unit)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
-            Text("Example", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Example use of recurring text", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(
                 text = example,
                 style = MaterialTheme.typography.bodySmall,
@@ -192,7 +192,7 @@ private fun scanSummary(state: SuggestionScanState.Done): String {
     return when (state.suggestions.size) {
         0 -> "No recurring text found in $scanned. Text that is already hidden is skipped."
         1 -> "Scanned $scanned and found 1 recurring block of text. Tap a block to see all of it."
-        else -> "Scanned $scanned and found ${state.suggestions.size} recurring blocks of text, most space saved first. Tap a block to see all of it."
+        else -> "Scanned $scanned and found ${state.suggestions.size} recurring blocks of text, most frequent first. Tap a block to see all of it."
     }
 }
 

@@ -2,8 +2,6 @@ package com.conduit.app.ui.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -88,8 +86,9 @@ fun HiddenTextRuleDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
-                        LazyColumn(modifier = Modifier.heightIn(max = 240.dp)) {
-                            items(pickerApps, key = { it.packageName }) { app ->
+                        // Plain rows inside the dialog's own scroll, so there is only one scrolling area.
+                        Column {
+                            pickerApps.forEach { app ->
                                 val checked = app.packageName in selectedPackages
                                 Row(
                                     modifier = Modifier

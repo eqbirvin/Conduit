@@ -20,7 +20,9 @@ object RecurringTextScanner {
         val example: String
     )
 
-    const val DEFAULT_MIN_OCCURRENCES = 5
+    const val DEFAULT_MIN_OCCURRENCES = 25
+    // Shorter phrases are mostly everyday wording ("Thanks so much") rather than boilerplate.
+    const val MIN_PHRASE_WORDS = 4
     private const val MIN_PHRASE_CHARS = 6
     private const val MAX_PHRASE_CHARS = 1000
     private const val MAX_EDGE_TOKENS = 80
@@ -52,7 +54,7 @@ object RecurringTextScanner {
         collectEdgeBlocks(texts, tokens, fromStart = false, minOccurrences, ::offer)
         collectRecurringLines(texts, minOccurrences, ::offer)
 
-        // Measure the most promising candidates exactly; rank by how much text hiding each would remove.
+        // Measure the most promising candidates exactly (estimated by how much text hiding each would remove).
         val measured = candidates.entries
             .sortedByDescending { it.value.toLong() * it.key.length }
             .take(MAX_CANDIDATES_TO_MEASURE)
@@ -66,8 +68,9 @@ object RecurringTextScanner {
             }
             if (!partOfLonger) kept += candidate
         }
+        // Most frequent first; longer blocks first among equals.
         return kept
-            .sortedByDescending { it.occurrences.toLong() * it.phrase.length }
+            .sortedWith(compareByDescending<RecurringText> { it.occurrences }.thenByDescending { it.phrase.length })
             .take(maxResults)
     }
 
@@ -141,7 +144,9 @@ object RecurringTextScanner {
     }
 
     private fun isPlausible(phrase: String): Boolean =
-        phrase.length in MIN_PHRASE_CHARS..MAX_PHRASE_CHARS && phrase.any { it.isLetterOrDigit() }
+        phrase.length in MIN_PHRASE_CHARS..MAX_PHRASE_CHARS &&
+            phrase.any { it.isLetterOrDigit() } &&
+            tokenRegex.findAll(phrase).take(MIN_PHRASE_WORDS).count() >= MIN_PHRASE_WORDS
 
     private fun measure(phrase: String, docs: List<Body>, minOccurrences: Int): RecurringText? {
         var occurrences = 0
