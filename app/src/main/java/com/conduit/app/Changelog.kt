@@ -14,51 +14,23 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
-        versionName = "2.41.02",
-        date = "October 23, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "More Recurring Text Results",
-                description = "Find Recurring Text now suggests text of three or more words that appears in more than 15 notifications, so shorter signatures like \"Get Outlook mobile\" are found too.",
-                iconName = "Check"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.41.01",
-        date = "October 23, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Sharper Recurring Text Results",
-                description = "Find Recurring Text now only suggests text of four or more words that appears in at least 25 notifications, so everyday replies like \"Thanks\" no longer show up. Results are listed most frequent first, each block is shown in quotes, and the example is labeled \"Example use of recurring text\". A note under the scan button confirms the scan runs on your device only, with nothing sent to the cloud or saved.",
-                iconName = "Check"
-            ),
-            ChangelogItem(
-                title = "Smoother Hide a Phrase Dialog",
-                description = "The app list under \"Apply to\" no longer scrolls separately, so the whole dialog scrolls as one.",
-                iconName = "Check"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.41.00",
-        date = "October 23, 2026",
-        highlights = listOf(
-            ChangelogItem(
-                title = "Find Recurring Text",
-                description = "Settings > Hidden Text can now scan your notifications for text that keeps showing up, like email warning banners, \"EXTERNAL:\" tags, or signatures. Each result shows how many notifications it appears in, which apps send it, where it usually sits, and an example. Tap \"Hide this text\" to review and add it to your hidden phrases.",
-                iconName = "Build"
-            )
-        )
-    ),
-    ChangelogRelease(
-        versionName = "2.40.00",
+        versionName = "2.41.04",
         date = "October 23, 2026",
         highlights = listOf(
             ChangelogItem(
                 title = "Hidden Text",
-                description = "Hide exact phrases from notification titles and messages, like the \"EXTERNAL:\" tag some email apps add. Go to Settings > Hidden Text, add a phrase, and choose whether it matches case, applies to the title, the message, or both, and covers all apps or only the ones you pick. Conduit keeps the original text, so deleting a phrase brings it back. Applies to the feed, archive, search, widgets, and the Bracket.",
+                description = "Hide exact phrases from your notifications, like the \"EXTERNAL:\" tag some email apps add. Go to Settings > Hidden Text and add a phrase. You can choose title, message, or both, and all apps or just the ones you pick.",
                 iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Find Recurring Text",
+                description = "Not sure what to hide? Tap \"Scan notifications\" and Conduit will list text that keeps showing up, like email warning banners and signatures. Each result shows how often it appears and in which apps. Tap \"Hide this text\" to add it.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Private and Reversible",
+                description = "The scan runs entirely on your device, and nothing is sent to the cloud or saved. Hidden text is only hidden on screen, so deleting a phrase brings the original back everywhere.",
+                iconName = "Check"
             )
         )
     ),
