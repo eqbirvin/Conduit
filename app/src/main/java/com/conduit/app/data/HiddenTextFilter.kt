@@ -14,6 +14,11 @@ object HiddenTextFilter {
     fun cleanBody(packageName: String, text: String?, rules: List<HiddenTextRule>): String? =
         clean(packageName, text, rules, HiddenTextTarget.BODY)
 
+    // Removes body phrases without tidying whitespace, so text found afterwards is still a verbatim
+    // substring of what a newly added rule will see (rules run in order before tidying).
+    fun stripBody(packageName: String, text: String, rules: List<HiddenTextRule>): String =
+        removePhrases(packageName, text, rules, HiddenTextTarget.BODY) ?: text
+
     fun apply(notification: HubNotification, rules: List<HiddenTextRule>): HubNotification {
         if (rules.isEmpty()) return notification
         val title = cleanTitle(notification.packageName, notification.title, rules)
@@ -34,6 +39,22 @@ object HiddenTextFilter {
         field: HiddenTextTarget
     ): String? {
         if (value.isNullOrEmpty() || rules.isEmpty()) return value
+        val result = removePhrases(packageName, value, rules, field) ?: return value
+        // Tidy the whitespace a removed phrase leaves behind.
+        return result
+            .replace(repeatedSpaces, " ")
+            .replace(spaceAroundNewline, "\n")
+            .replace(extraBlankLines, "\n\n")
+            .trim()
+    }
+
+    // Returns null when no rule matched.
+    private fun removePhrases(
+        packageName: String,
+        value: String,
+        rules: List<HiddenTextRule>,
+        field: HiddenTextTarget
+    ): String? {
         var result: String = value
         var changed = false
         for (rule in rules) {
@@ -45,12 +66,6 @@ object HiddenTextFilter {
             result = result.replace(rule.phrase, "", ignoreCase)
             changed = true
         }
-        if (!changed) return value
-        // Tidy the whitespace a removed phrase leaves behind.
-        return result
-            .replace(repeatedSpaces, " ")
-            .replace(spaceAroundNewline, "\n")
-            .replace(extraBlankLines, "\n\n")
-            .trim()
+        return if (changed) result else null
     }
 }

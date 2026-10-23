@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.conduit.app.HiddenTextAppsViewModel
+import com.conduit.app.HiddenTextViewModel
 import com.conduit.app.Screen
 import com.conduit.app.SensitiveAccessViewModel
 import com.conduit.app.SettingsViewModel
@@ -142,8 +142,8 @@ fun SettingsNavHost(
         )
 
         Screen.SETTINGS_HIDDEN_TEXT -> {
-            val hiddenTextAppsViewModel: HiddenTextAppsViewModel = viewModel()
-            val apps by hiddenTextAppsViewModel.apps.collectAsStateWithLifecycle()
+            val hiddenTextViewModel: HiddenTextViewModel = viewModel()
+            val apps by hiddenTextViewModel.apps.collectAsStateWithLifecycle()
             HiddenTextSettingsScreen(
                 rules = settings.hiddenTextRules,
                 apps = apps,
@@ -156,8 +156,30 @@ fun SettingsNavHost(
                         settingsViewModel.deleteHiddenTextRule(id)
                         WidgetUpdater.updateAllWidgets(context)
                     }
+                    override fun onFindRecurringText() {
+                        // Each visit starts a fresh scan so it reflects the current rules and notifications.
+                        hiddenTextViewModel.scan(settings.demoModeEnabled, settings.hiddenTextRules)
+                        onNavigateToScreen(Screen.SETTINGS_HIDDEN_TEXT_SUGGESTIONS)
+                    }
                 },
                 onNavigateBack = onNavigateBackToSettings
+            )
+        }
+
+        Screen.SETTINGS_HIDDEN_TEXT_SUGGESTIONS -> {
+            val hiddenTextViewModel: HiddenTextViewModel = viewModel()
+            val apps by hiddenTextViewModel.apps.collectAsStateWithLifecycle()
+            val scanState by hiddenTextViewModel.scanState.collectAsStateWithLifecycle()
+            HiddenTextSuggestionsScreen(
+                scanState = scanState,
+                apps = apps,
+                onRescan = { hiddenTextViewModel.scan(settings.demoModeEnabled, settings.hiddenTextRules) },
+                onSaveRule = { rule ->
+                    settingsViewModel.saveHiddenTextRule(rule)
+                    hiddenTextViewModel.removeSuggestion(rule.phrase)
+                    WidgetUpdater.updateAllWidgets(context)
+                },
+                onNavigateBack = { onNavigateToScreen(Screen.SETTINGS_HIDDEN_TEXT) }
             )
         }
 

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -25,6 +26,7 @@ import com.conduit.app.performHapticClick
 interface HiddenTextSettingsScreenCallbacks {
     fun onSaveRule(rule: HiddenTextRule)
     fun onDeleteRule(id: String)
+    fun onFindRecurringText()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,7 +38,7 @@ fun HiddenTextSettingsScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    // null = editor closed; a rule with a blank phrase = adding a new one.
+    // null = editor closed.
     var editingRule by remember { mutableStateOf<HiddenTextRule?>(null) }
     val appLabels = remember(apps) { apps.associate { it.packageName to it.label } }
 
@@ -70,6 +72,29 @@ fun HiddenTextSettingsScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Find recurring text", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Scan your notifications for text that shows up again and again, like email warning banners or signatures, and choose which to hide.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    FilledTonalButton(onClick = {
+                        performHapticClick(context)
+                        callbacks.onFindRecurringText()
+                    }) {
+                        Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Scan notifications")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             SettingsSectionHeader(title = "Hidden Phrases")
             Text(
                 text = "Remove exact phrases from notification titles and messages, such as the \"EXTERNAL:\" tag some email apps add. " +
@@ -131,6 +156,7 @@ fun HiddenTextSettingsScreen(
     editingRule?.let { rule ->
         HiddenTextRuleDialog(
             initialRule = rule,
+            isNew = rules.none { it.id == rule.id },
             apps = apps,
             onSave = {
                 callbacks.onSaveRule(it)

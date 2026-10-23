@@ -49,7 +49,8 @@ enum class Screen {
     SETTINGS_DATA,
     SETTINGS_BRACKET,
     SETTINGS_ABOUT,
-    SETTINGS_HIDDEN_TEXT
+    SETTINGS_HIDDEN_TEXT,
+    SETTINGS_HIDDEN_TEXT_SUGGESTIONS
 }
 
 class MainActivity : ComponentActivity() {
@@ -247,6 +248,7 @@ class MainActivity : ComponentActivity() {
                         Screen.SETTINGS_BRACKET,
                         Screen.SETTINGS_ABOUT,
                         Screen.SETTINGS_HIDDEN_TEXT -> Screen.SETTINGS
+                        Screen.SETTINGS_HIDDEN_TEXT_SUGGESTIONS -> Screen.SETTINGS_HIDDEN_TEXT
                         else -> Screen.HOME
                     }
                 }

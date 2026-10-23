@@ -74,11 +74,57 @@ fun SettingsRepository.updateHiddenTextRules(rules: List<HiddenTextRule>) {
 
 data class HiddenTextApp(val packageName: String, val label: String)
 
-class HiddenTextAppsRepository(private val context: Context) {
+data class SuggestionApp(val packageName: String, val label: String, val count: Int)
+
+data class HiddenTextSuggestion(
+    val phrase: String,
+    val occurrences: Int,
+    // Most frequent first.
+    val apps: List<SuggestionApp>,
+    val position: RecurringTextScanner.Position,
+    val example: String
+)
+
+data class HiddenTextScanResult(val scannedCount: Int, val suggestions: List<HiddenTextSuggestion>)
+
+// Bounds the suggestion scan to the most recent notifications (the table can hold many thousands).
+const val HIDDEN_TEXT_SCAN_LIMIT = 5000
+
+class HiddenTextRepository(private val context: Context) {
+    private val dao = AppDatabase.getDatabase(context).notificationDao()
+
     // Apps Conduit has captured notifications from, labelled for the rule editor's app picker.
     suspend fun loadApps(): List<HiddenTextApp> = withContext(Dispatchers.IO) {
-        AppDatabase.getDatabase(context).notificationDao().getDistinctPackagesWithChannel()
+        dao.getDistinctPackagesWithChannel()
             .map { HiddenTextApp(it.packageName, getAppLabel(context, it.packageName, fallback = it.channel)) }
             .sortedBy { it.label.lowercase() }
+    }
+
+    // Scans recent message bodies for recurring text. Phrases already hidden are removed first,
+    // so they are not suggested again and new suggestions match what a new rule will see.
+    suspend fun scanForSuggestions(isDemo: Boolean, rules: List<HiddenTextRule>): HiddenTextScanResult {
+        val rows = withContext(Dispatchers.IO) { dao.getRecentBodies(isDemo, HIDDEN_TEXT_SCAN_LIMIT) }
+        val found = withContext(Dispatchers.Default) {
+            val bodies = rows.mapNotNull { row ->
+                val text = row.text?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                RecurringTextScanner.Body(row.packageName, HiddenTextFilter.stripBody(row.packageName, text, rules))
+            }
+            RecurringTextScanner.scan(bodies)
+        }
+        val channels = rows.associate { it.packageName to it.channel }
+        val suggestions = withContext(Dispatchers.IO) {
+            found.map { result ->
+                HiddenTextSuggestion(
+                    phrase = result.phrase,
+                    occurrences = result.occurrences,
+                    apps = result.appCounts.map { (pkg, count) ->
+                        SuggestionApp(pkg, getAppLabel(context, pkg, fallback = channels[pkg] ?: pkg), count)
+                    },
+                    position = result.position,
+                    example = result.example
+                )
+            }
+        }
+        return HiddenTextScanResult(rows.size, suggestions)
     }
 }

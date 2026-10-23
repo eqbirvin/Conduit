@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.41.00",
+        date = "October 23, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Find Recurring Text",
+                description = "Settings > Hidden Text can now scan your notifications for text that keeps showing up, like email warning banners, \"EXTERNAL:\" tags, or signatures. Each result shows how many notifications it appears in, which apps send it, where it usually sits, and an example. Tap \"Hide this text\" to review and add it to your hidden phrases.",
+                iconName = "Build"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.40.00",
         date = "October 23, 2026",
         highlights = listOf(

@@ -21,11 +21,11 @@ fun newHiddenTextRule(): HiddenTextRule = HiddenTextRule(id = UUID.randomUUID().
 @Composable
 fun HiddenTextRuleDialog(
     initialRule: HiddenTextRule,
+    isNew: Boolean,
     apps: List<HiddenTextApp>,
     onSave: (HiddenTextRule) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val isNew = initialRule.phrase.isEmpty()
     var phrase by remember { mutableStateOf(initialRule.phrase) }
     var matchCase by remember { mutableStateOf(initialRule.matchCase) }
     var target by remember { mutableStateOf(initialRule.target) }
