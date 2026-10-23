@@ -211,8 +211,13 @@ import android.graphics.Color
     internal fun HubNotificationListenerService.createNotificationCard(sbn: android.service.notification.StatusBarNotification, density: Float, isIndented: Boolean): View {
         val notif = sbn.notification
         val packageName = sbn.packageName
-        val title = notif.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
-        val text = notif.extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+        val hiddenTextRules = com.conduit.app.data.HiddenTextRulesCache.get(applicationContext)
+        val title = com.conduit.app.data.HiddenTextFilter.cleanTitle(
+            packageName, notif.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString(), hiddenTextRules
+        ) ?: ""
+        val text = com.conduit.app.data.HiddenTextFilter.cleanBody(
+            packageName, notif.extras.getCharSequence(Notification.EXTRA_TEXT)?.toString(), hiddenTextRules
+        ) ?: ""
 
         val card = FrameLayout(this)
         val bg = GradientDrawable()

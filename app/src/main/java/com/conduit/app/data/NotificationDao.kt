@@ -37,6 +37,10 @@ interface NotificationDao {
     @Query("SELECT title, text, packageName FROM notifications WHERE isDemo = :isDemo ORDER BY timestamp DESC LIMIT 300")
     suspend fun getRecentNotificationTexts(isDemo: Boolean): List<NotificationSearchSnippet>
 
+    // Most recent message bodies for the hidden text suggestion scan; bounded by :limit.
+    @Query("SELECT packageName, channel, text FROM notifications WHERE isDemo = :isDemo ORDER BY timestamp DESC LIMIT :limit")
+    suspend fun getRecentBodies(isDemo: Boolean, limit: Int): List<NotificationBodySnippet>
+
     @Insert
     suspend fun insert(notification: HubNotification)
 
@@ -95,6 +99,9 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE packageName = :pkg AND title = :title AND text = :text ORDER BY timestamp DESC LIMIT 1")
     suspend fun getMostRecentExactMatch(pkg: String, title: String, text: String): HubNotification?
 
+    @Query("SELECT * FROM notifications WHERE id = :id")
+    suspend fun getById(id: Int): HubNotification?
+
     @Query("SELECT * FROM notifications WHERE notificationKey = :key AND isArchived = 0 ORDER BY timestamp DESC LIMIT 1")
     suspend fun getActiveNotificationByKey(key: String): HubNotification?
 
@@ -148,6 +155,12 @@ interface NotificationDao {
 data class PackageChannel(
     val packageName: String,
     val channel: String
+)
+
+data class NotificationBodySnippet(
+    val packageName: String,
+    val channel: String,
+    val text: String?
 )
 
 data class NotificationSearchSnippet(

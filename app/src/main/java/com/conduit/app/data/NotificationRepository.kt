@@ -10,10 +10,13 @@ import kotlinx.coroutines.withContext
 
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.map
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 
@@ -26,15 +29,18 @@ class NotificationRepository(
     private var cachedVocabulary: Set<String>? = null
     private var lastVocabFetchTime: Long = 0L
 
+    // Hidden text rules are applied here, off the main thread, so every screen gets display-ready text.
     @OptIn(ExperimentalCoroutinesApi::class)
     val activeNotifications: Flow<List<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
         notificationDao.getAllNotifications(settings.demoModeEnabled)
-    }
+            .map { HiddenTextFilter.apply(it, settings.hiddenTextRules) }
+    }.flowOn(Dispatchers.Default)
     
     @OptIn(ExperimentalCoroutinesApi::class)
     val archivedNotifications: Flow<List<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
         notificationDao.getArchivedNotifications(settings.demoModeEnabled)
-    }
+            .map { HiddenTextFilter.apply(it, settings.hiddenTextRules) }
+    }.flowOn(Dispatchers.Default)
 
     private fun buildSearchQuery(tokens: List<String>, isDemo: Boolean, countOnly: Boolean): SupportSQLiteQuery {
         val selectClause = if (countOnly) "SELECT COUNT(*) FROM notifications" else "SELECT * FROM notifications"
@@ -76,7 +82,9 @@ class NotificationRepository(
                     notificationDao.searchNotificationsRaw(sqliteQuery)
                 }
             }
-        ).flow
+        ).flow.map { pagingData ->
+            pagingData.map { HiddenTextFilter.apply(it, settings.hiddenTextRules) }
+        }
     }
 
     suspend fun countSearchResults(query: String): Int = withContext(Dispatchers.IO) {
@@ -141,11 +149,15 @@ class NotificationRepository(
     }
 
     suspend fun appendReplyAndArchive(id: Int, currentText: String, replyText: String, currentTitle: String, timestamp: Long) = withContext(Dispatchers.IO) {
+        // The caller's text may have hidden phrases removed; build on the stored original so it is never overwritten.
+        val stored = notificationDao.getById(id)
+        val baseText = stored?.text ?: currentText
+        val baseTitle = stored?.title ?: currentTitle
         val suffix = "\n\u21aa You: $replyText"
-        val textUpdated = !currentText.endsWith(suffix)
-        val titleUpdated = !currentTitle.endsWith(" - Replied")
-        val newText = if (textUpdated) currentText + suffix else currentText
-        val newTitle = if (titleUpdated) "$currentTitle - Replied" else currentTitle
+        val textUpdated = !baseText.endsWith(suffix)
+        val titleUpdated = !baseTitle.endsWith(" - Replied")
+        val newText = if (textUpdated) baseText + suffix else baseText
+        val newTitle = if (titleUpdated) "$baseTitle - Replied" else baseTitle
         
         notificationDao.updateAndArchive(id, newTitle, newText, timestamp)
         triggerWidgetUpdate()
