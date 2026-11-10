@@ -14,12 +14,12 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
-        versionName = "2.43.00",
+        versionName = "2.43.01",
         date = "November 9, 2026",
         highlights = listOf(
             ChangelogItem(
-                title = "Call Diagnostics",
-                description = "A new troubleshooting tool in Settings > Testing & Developer Settings. Turn on Call Diagnostics and Conduit records what your phone app posts for each call, and what Conduit did with it. If a call doesn't show up, tap Export Log to share a readable text file. It's off by default, keeps only the last 24 hours, and stays on your device until you share it.",
+                title = "Call Diagnostics (Testers Only)",
+                description = "Adds a debug feature that is off by default. When turned on manually, it collects call notifications into one log file stored locally on your device. It is only meant for testers of the app, and stays off unless you turn it on.",
                 iconName = "Build"
             )
         )
