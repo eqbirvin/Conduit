@@ -4,4 +4,6 @@
     <external-files-path name="external_files_dir" path="." />
     <!-- Android's DownloadManager usually downloads to external public storage (Environment.DIRECTORY_DOWNLOADS) -->
     <external-path name="downloads" path="Download/" />
+    <!-- Call diagnostics exports shared from Developer settings -->
+    <cache-path name="diagnostics" path="diagnostics/" />
 </paths>

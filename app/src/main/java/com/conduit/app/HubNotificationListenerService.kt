@@ -49,6 +49,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     internal val notificationMutex = Mutex()
     internal lateinit var database: AppDatabase
     internal lateinit var callTracker: CallNotificationTracker
+    internal lateinit var callDiagnostics: CallDiagnosticsRecorder
     internal val actionCache = java.util.concurrent.ConcurrentHashMap<String, List<Notification.Action>>()
     internal val contentIntentCache = java.util.concurrent.ConcurrentHashMap<String, PendingIntent>()
     internal val DISMISS_ORIGINAL_NOTIFICATIONS = false
@@ -198,6 +199,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@HubNotificationListenerService)
             scheduleUpdatePersistentNotification()
         }
+        callDiagnostics = CallDiagnosticsRecorder(applicationContext, scope)
         val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
         prefs.registerOnSharedPreferenceChangeListener(this)
         
@@ -260,6 +262,10 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             val readReasons = setOf(
                 REASON_CANCEL, REASON_CANCEL_ALL, REASON_CLICK,
                 REASON_APP_CANCEL, REASON_APP_CANCEL_ALL
+            )
+            callDiagnostics.recordRemoved(
+                it, reason,
+                if (reason in readReasons) (if (syncDismissal) "archive-by-key" else "ignored-sync-off") else "detach-if-active"
             )
             
             scope.launch {

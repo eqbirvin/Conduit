@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 
     internal fun HubNotificationListenerService.logIngestionDiagnostic(sbn: StatusBarNotification, decision: String) {
+        callDiagnostics.recordPosted(sbn, decision)
         val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
         if (!prefs.getBoolean("ingestion_diagnostics", false)) return
         

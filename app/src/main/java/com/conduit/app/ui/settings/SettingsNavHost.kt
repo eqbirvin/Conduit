@@ -7,12 +7,15 @@ import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.conduit.app.CallDiagnosticsExportResult
+import com.conduit.app.CallDiagnosticsViewModel
 import com.conduit.app.HiddenTextViewModel
 import com.conduit.app.Screen
 import com.conduit.app.SensitiveAccessViewModel
@@ -248,17 +251,54 @@ fun SettingsNavHost(
             onNavigateBack = onNavigateBackToSettings
         )
 
-        Screen.DEV_SETTINGS -> DevSettingsScreen(
-            settings = settings,
-            callbacks = object : DevSettingsScreenCallbacks {
-                override fun onPersistentTrayEnabledChanged(enabled: Boolean) { settingsViewModel.updatePersistentTrayEnabled(enabled) }
-                override fun onEnableBubblesChanged(enabled: Boolean) { settingsViewModel.updateEnableBubbles(enabled) }
-                override fun onDemoModeEnabledChanged(enabled: Boolean) { settingsViewModel.updateDemoModeEnabled(enabled) }
-                override fun onIngestionDiagnosticsEnabledChanged(enabled: Boolean) { settingsViewModel.updateIngestionDiagnosticsEnabled(enabled) }
-            },
-            onNavigateBack = onNavigateBackToSettings
-        )
+        Screen.DEV_SETTINGS -> {
+            val callDiagnosticsViewModel: CallDiagnosticsViewModel = viewModel()
+            val callDiagnostics by callDiagnosticsViewModel.uiState.collectAsStateWithLifecycle()
+            LifecycleResumeEffect(Unit) {
+                callDiagnosticsViewModel.refresh()
+                onPauseOrDispose { }
+            }
+            LaunchedEffect(callDiagnosticsViewModel) {
+                callDiagnosticsViewModel.exportResults.collect { result ->
+                    when (result) {
+                        is CallDiagnosticsExportResult.Ready -> shareCallDiagnostics(context, result.uri)
+                        CallDiagnosticsExportResult.Empty -> Toast.makeText(context, "No call events recorded yet.", Toast.LENGTH_SHORT).show()
+                        CallDiagnosticsExportResult.Failed -> Toast.makeText(context, "Could not export the call log.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            DevSettingsScreen(
+                settings = settings,
+                callDiagnostics = callDiagnostics,
+                callbacks = object : DevSettingsScreenCallbacks {
+                    override fun onPersistentTrayEnabledChanged(enabled: Boolean) { settingsViewModel.updatePersistentTrayEnabled(enabled) }
+                    override fun onEnableBubblesChanged(enabled: Boolean) { settingsViewModel.updateEnableBubbles(enabled) }
+                    override fun onDemoModeEnabledChanged(enabled: Boolean) { settingsViewModel.updateDemoModeEnabled(enabled) }
+                    override fun onIngestionDiagnosticsEnabledChanged(enabled: Boolean) { settingsViewModel.updateIngestionDiagnosticsEnabled(enabled) }
+                    override fun onCallDiagnosticsEnabledChanged(enabled: Boolean) { callDiagnosticsViewModel.setEnabled(enabled) }
+                    override fun onExportCallDiagnostics() { callDiagnosticsViewModel.export() }
+                    override fun onClearCallDiagnostics() { callDiagnosticsViewModel.clear() }
+                },
+                onNavigateBack = onNavigateBackToSettings
+            )
+        }
 
         else -> {}
+    }
+}
+
+private fun shareCallDiagnostics(context: Context, uri: Uri) {
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        putExtra(Intent.EXTRA_SUBJECT, "Conduit call diagnostics")
+        clipData = android.content.ClipData.newRawUri("Conduit call diagnostics", uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    try {
+        context.startActivity(Intent.createChooser(send, "Share call diagnostics").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
+    } catch (e: android.content.ActivityNotFoundException) {
+        android.util.Log.e("CallDiagnostics", "No app can receive the call diagnostics export", e)
+        Toast.makeText(context, "No app available to share the log.", Toast.LENGTH_SHORT).show()
     }
 }

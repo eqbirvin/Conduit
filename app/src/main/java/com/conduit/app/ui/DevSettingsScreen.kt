@@ -79,12 +79,16 @@ interface DevSettingsScreenCallbacks {
     fun onEnableBubblesChanged(enabled: Boolean)
     fun onDemoModeEnabledChanged(enabled: Boolean)
     fun onIngestionDiagnosticsEnabledChanged(enabled: Boolean)
+    fun onCallDiagnosticsEnabledChanged(enabled: Boolean)
+    fun onExportCallDiagnostics()
+    fun onClearCallDiagnostics()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DevSettingsScreen(
     settings: com.conduit.app.data.ConduitSettings,
+    callDiagnostics: CallDiagnosticsUiState,
     callbacks: DevSettingsScreenCallbacks,
     onNavigateBack: () -> Unit
 ) {
@@ -278,6 +282,13 @@ fun DevSettingsScreen(
                     }
                 }
             }
+
+            com.conduit.app.ui.settings.CallDiagnosticsCard(
+                state = callDiagnostics,
+                onEnabledChanged = callbacks::onCallDiagnosticsEnabledChanged,
+                onExport = callbacks::onExportCallDiagnostics,
+                onClear = callbacks::onClearCallDiagnostics
+            )
         }
     }
 }
