@@ -471,24 +471,23 @@ class SettingsRepository(internal val prefs: SharedPreferences) {
         _settings.update { it.copy(topBarScrollBehavior = behavior) }
     }
 
-    fun cycleConversationViewMode(): ConversationViewMode {
-        val currentSingle = _settings.value.singleConversationView
-        val currentCombine = _settings.value.combineConversations
-        val (nextCombine, nextSingle, nextMode) = when {
-            !currentSingle && !currentCombine -> Triple(true, false, ConversationViewMode.COMBINE_CONVERSATIONS)
-            currentCombine && !currentSingle -> Triple(false, true, ConversationViewMode.SINGLE_CONVERSATION)
-            else -> Triple(false, false, ConversationViewMode.STOCK)
-        }
+    fun setConversationViewMode(mode: ConversationViewMode) {
+        val combine = mode == ConversationViewMode.COMBINE_CONVERSATIONS
+        val single = mode == ConversationViewMode.SINGLE_CONVERSATION
         prefs.edit()
-            .putBoolean("combine_conversations", nextCombine)
-            .putBoolean("single_conversation_view", nextSingle)
+            .putBoolean("combine_conversations", combine)
+            .putBoolean("single_conversation_view", single)
             .apply()
-        _settings.update {
-            it.copy(
-                combineConversations = nextCombine,
-                singleConversationView = nextSingle
-            )
+        _settings.update { it.copy(combineConversations = combine, singleConversationView = single) }
+    }
+
+    fun cycleConversationViewMode(): ConversationViewMode {
+        val nextMode = when (_settings.value.conversationViewMode) {
+            ConversationViewMode.STOCK -> ConversationViewMode.COMBINE_CONVERSATIONS
+            ConversationViewMode.COMBINE_CONVERSATIONS -> ConversationViewMode.SINGLE_CONVERSATION
+            ConversationViewMode.SINGLE_CONVERSATION -> ConversationViewMode.STOCK
         }
+        setConversationViewMode(nextMode)
         return nextMode
     }
 }

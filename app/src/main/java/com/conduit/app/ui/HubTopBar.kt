@@ -49,6 +49,7 @@ interface HubTopBarCallbacks {
     fun onNavigateToManageViews()
     fun onToggleCustomViewStrip()
     fun onCycleConversationView()
+    fun onSelectConversationView(mode: ConversationViewMode)
     fun onToggleMasterExpand()
     fun onNavigateToArchive()
     fun onToggleUnifiedView()
@@ -195,21 +196,11 @@ fun HubTopBar(
                         ) {
                             Icon(Icons.Filled.FilterList, contentDescription = "Manage Views", tint = MaterialTheme.colorScheme.onSurface)
                         }
-                        IconButton(onClick = {
-                            performHapticTick(context)
-                            callbacks.onCycleConversationView()
-                        }) {
-                            val (icon, description) = when (state.conversationViewMode) {
-                                ConversationViewMode.STOCK -> Icons.Filled.ViewStream to "Stock View"
-                                ConversationViewMode.COMBINE_CONVERSATIONS -> Icons.Filled.Forum to "Combine Conversations"
-                                ConversationViewMode.SINGLE_CONVERSATION -> Icons.AutoMirrored.Filled.Chat to "Single Conversation View"
-                            }
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = "Conversation View: $description (tap to cycle)",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
+                        ConversationViewButton(
+                            mode = state.conversationViewMode,
+                            onSelect = callbacks::onSelectConversationView,
+                            onCycle = callbacks::onCycleConversationView
+                        )
                     }
                 },
                 actions = {

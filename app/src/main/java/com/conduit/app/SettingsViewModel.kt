@@ -90,6 +90,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         repository.updateHiddenTextRules(repository.settings.value.hiddenTextRules.filter { it.id != id })
     }
     fun cycleConversationViewMode(): ConversationViewMode = repository.cycleConversationViewMode()
+    fun setConversationViewMode(mode: ConversationViewMode) = repository.setConversationViewMode(mode)
 
     class Factory(private val repository: SettingsRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

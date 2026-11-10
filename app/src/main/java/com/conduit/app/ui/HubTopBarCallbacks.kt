@@ -115,6 +115,12 @@ fun rememberHubTopBarCallbacks(
                 }
                 android.widget.Toast.makeText(context, toastText, android.widget.Toast.LENGTH_SHORT).show()
             }
+            override fun onSelectConversationView(mode: com.conduit.app.data.ConversationViewMode) {
+                if (mode == settingsViewModel.settings.value.conversationViewMode) return
+                activeSingleConversationKey = null
+                conversationRollupStates.clear()
+                settingsViewModel.setConversationViewMode(mode)
+            }
             override fun onToggleMasterExpand() {
                 val newState = !masterExpandedState
                 settingsViewModel.updateMasterExpandedState(newState)
