@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.44.01",
+        date = "November 9, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Rounder Conversation View Menu",
+                description = "The conversation view menu now has rounded corners that match the highlighted view inside it.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.44.00",
         date = "November 9, 2026",
         highlights = listOf(

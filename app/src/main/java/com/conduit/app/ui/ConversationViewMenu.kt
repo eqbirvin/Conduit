@@ -108,7 +108,12 @@ internal fun ConversationViewButton(
             )
         }
 
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        // Same corner radius as the tinted selected row so the menu's rounding matches it.
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            shape = MaterialTheme.shapes.medium
+        ) {
             conversationViewOptions.forEach { option ->
                 ConversationViewMenuItem(
                     option = option,
