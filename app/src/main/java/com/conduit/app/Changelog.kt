@@ -14,6 +14,27 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.42.00",
+        date = "November 9, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Swipe in Single Conversation View",
+                description = "Your swipe actions now work in Single Conversation View. Mark Read marks every unread message in the conversation, and Snooze, Block, and Pin use its most recent message. Unpin unpins the whole conversation.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "Swipe Pinned Items",
+                description = "Pinned notifications at the top of the feed can now be swiped too, using the same actions as the rest of the feed.",
+                iconName = "Build"
+            ),
+            ChangelogItem(
+                title = "No Accidental Swipes While Selecting",
+                description = "Swiping is paused while you are selecting items, so a sideways drag no longer archives or snoozes something mid-selection.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.41.04",
         date = "October 23, 2026",
         highlights = listOf(

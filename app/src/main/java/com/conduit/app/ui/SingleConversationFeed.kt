@@ -61,7 +61,13 @@ private fun SingleConversationFeedRow(
     individualToggles: Map<Int, Boolean>,
     onToggleIndividual: (HubNotification) -> Unit,
     onTriggerAction: (HubNotification, List<HubNotification>, Notification.Action) -> Unit,
-    onReply: (HubNotification, String, Notification.Action) -> Unit
+    onReply: (HubNotification, String, Notification.Action) -> Unit,
+    swipeLeftAction: String,
+    swipeRightAction: String,
+    screenWidthPx: Float,
+    onMarkRead: (List<HubNotification>) -> Unit,
+    onSnoozeNotification: (HubNotification) -> Unit,
+    onBlockNotification: (HubNotification) -> Unit
 ) {
     when (item) {
         is SingleConversationFeedItem.Conversation -> {
@@ -75,6 +81,42 @@ private fun SingleConversationFeedRow(
             }
             var itemTopYPx by remember { mutableFloatStateOf(0f) }
 
+            SwipeableFeedRow(
+                context = context,
+                notification = notification,
+                swipeLeftAction = swipeLeftAction,
+                swipeRightAction = swipeRightAction,
+                unifiedView = unifiedView,
+                isSelectionMode = isSelectionMode,
+                screenWidthPx = screenWidthPx,
+                isPinned = rollup.isPinned,
+                onSwipeAction = { action ->
+                    // The row carries the conversation's history and stays in the feed, so it always settles back.
+                    when (action) {
+                        "ARCHIVE" -> {
+                            if (rollup.activeMessages.isNotEmpty()) onMarkRead(rollup.activeMessages)
+                            false
+                        }
+                        "SNOOZE" -> {
+                            onSnoozeNotification(notification)
+                            false
+                        }
+                        "PIN" -> {
+                            if (rollup.isPinned) {
+                                rollup.allHistoryMessages.filter { it.isPinned }.forEach { onPinNotification(it) }
+                            } else {
+                                onPinNotification(notification)
+                            }
+                            false
+                        }
+                        "BLOCK" -> {
+                            onBlockNotification(notification)
+                            false
+                        }
+                        else -> false
+                    }
+                }
+            ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -123,9 +165,41 @@ private fun SingleConversationFeedRow(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                 }
             }
+            }
         }
         is SingleConversationFeedItem.Standalone -> {
             val notification = item.notification
+            SwipeableFeedRow(
+                context = context,
+                notification = notification,
+                swipeLeftAction = swipeLeftAction,
+                swipeRightAction = swipeRightAction,
+                unifiedView = unifiedView,
+                isSelectionMode = isSelectionMode,
+                screenWidthPx = screenWidthPx,
+                onSwipeAction = { action ->
+                    when (action) {
+                        "ARCHIVE" -> {
+                            onMarkRead(listOf(notification))
+                            !unifiedView
+                        }
+                        "SNOOZE" -> {
+                            onSnoozeNotification(notification)
+                            false
+                        }
+                        "PIN" -> {
+                            onPinNotification(notification)
+                            false
+                        }
+                        "BLOCK" -> {
+                            onBlockNotification(notification)
+                            false
+                        }
+                        else -> false
+                    }
+                }
+            ) {
+            Column {
             NotificationItem(
                 notification = notification,
                 isArchivedView = false,
@@ -148,6 +222,8 @@ private fun SingleConversationFeedRow(
                 conversationRollupState = null
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+            }
+            }
         }
     }
 }
@@ -171,7 +247,12 @@ fun LazyListScope.singleConversationFeed(
     onTriggerAction: (HubNotification, List<HubNotification>, Notification.Action) -> Unit,
     onReply: (HubNotification, String, Notification.Action) -> Unit,
     activeNotificationIds: Set<Int>,
-    onMarkDateRead: (List<HubNotification>) -> Unit
+    onMarkDateRead: (List<HubNotification>) -> Unit,
+    swipeLeftAction: String,
+    swipeRightAction: String,
+    screenWidthPx: Float,
+    onSnoozeNotification: (HubNotification) -> Unit,
+    onBlockNotification: (HubNotification) -> Unit
 ) {
     if (pinnedItems.isNotEmpty()) {
         stickyHeader(key = "single_convo_pinned_header") {
@@ -229,7 +310,13 @@ fun LazyListScope.singleConversationFeed(
                 individualToggles = individualToggles,
                 onToggleIndividual = onToggleIndividual,
                 onTriggerAction = onTriggerAction,
-                onReply = onReply
+                onReply = onReply,
+                swipeLeftAction = swipeLeftAction,
+                swipeRightAction = swipeRightAction,
+                screenWidthPx = screenWidthPx,
+                onMarkRead = onMarkDateRead,
+                onSnoozeNotification = onSnoozeNotification,
+                onBlockNotification = onBlockNotification
             )
         }
     }
@@ -348,7 +435,13 @@ fun LazyListScope.singleConversationFeed(
                 individualToggles = individualToggles,
                 onToggleIndividual = onToggleIndividual,
                 onTriggerAction = onTriggerAction,
-                onReply = onReply
+                onReply = onReply,
+                swipeLeftAction = swipeLeftAction,
+                swipeRightAction = swipeRightAction,
+                screenWidthPx = screenWidthPx,
+                onMarkRead = onMarkDateRead,
+                onSnoozeNotification = onSnoozeNotification,
+                onBlockNotification = onBlockNotification
             )
         }
     }

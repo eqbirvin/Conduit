@@ -172,7 +172,12 @@ fun HubFeedList(
                 activeNotificationIds = activeNotificationIds,
                 onMarkDateRead = { notifs ->
                     viewModel.markNotificationsAsRead(notifs)
-                }
+                },
+                swipeLeftAction = swipeLeftAction,
+                swipeRightAction = swipeRightAction,
+                screenWidthPx = screenWidthPx,
+                onSnoozeNotification = { notif -> notificationToSnoozeState.value = notif },
+                onBlockNotification = { notif -> notificationToBlockState.value = notif }
             )
         } else {
         // Pinned section
@@ -189,10 +194,15 @@ fun HubFeedList(
             individualToggles = individualToggles,
             getRollupState = getRollupState,
             cycleRollupState = cycleRollupState,
+            swipeLeftAction = swipeLeftAction,
+            swipeRightAction = swipeRightAction,
+            notificationToSnoozeState = notificationToSnoozeState,
+            notificationToBlockState = notificationToBlockState,
             selectedIdsState = selectedIdsState,
             isSelectionMode = isSelectionMode,
             pinnedNotifications = pinnedNotifications,
-            visiblePinned = visiblePinned
+            visiblePinned = visiblePinned,
+            screenWidthPx = screenWidthPx
         )
 
         // Unpinned date-grouped section
@@ -237,11 +247,18 @@ fun LazyListScope.hubPinnedSection(
     individualToggles: SnapshotStateMap<Int, Boolean>,
     getRollupState: (Int) -> ConversationRollupState,
     cycleRollupState: (Int) -> Unit,
+    swipeLeftAction: String,
+    swipeRightAction: String,
+    notificationToSnoozeState: MutableState<HubNotification?>,
+    notificationToBlockState: MutableState<HubNotification?>,
     selectedIdsState: MutableState<Set<Int>>,
     isSelectionMode: Boolean,
     pinnedNotifications: List<HubNotification>,
-    visiblePinned: List<GroupedConversationItem>
+    visiblePinned: List<GroupedConversationItem>,
+    screenWidthPx: Float
 ) {
+    var notificationToSnooze by notificationToSnoozeState
+    var notificationToBlock by notificationToBlockState
     var selectedIds by selectedIdsState
     if (pinnedNotifications.isNotEmpty()) {
         stickyHeader {
@@ -272,9 +289,40 @@ fun LazyListScope.hubPinnedSection(
         items(visiblePinned, key = { "pinned_${it.primaryNotification.id}" }) { item ->
             val notification = item.primaryNotification
             val rollupState = getRollupState(item.conversationClusterId)
-            Box(modifier = Modifier.animateItem(
-                placementSpec = tween(durationMillis = 300)
-            )) {
+            SwipeableFeedRow(
+                context = context,
+                notification = notification,
+                swipeLeftAction = swipeLeftAction,
+                swipeRightAction = swipeRightAction,
+                unifiedView = unifiedView,
+                isSelectionMode = isSelectionMode,
+                screenWidthPx = screenWidthPx,
+                onSwipeAction = { action ->
+                    when (action) {
+                        "ARCHIVE" -> {
+                            viewModel.markNotificationsAsRead(item.allNotifications)
+                            !unifiedView
+                        }
+                        "SNOOZE" -> {
+                            notificationToSnooze = notification
+                            false
+                        }
+                        "PIN" -> {
+                            item.allNotifications.forEach { onPinNotification(it) }
+                            false
+                        }
+                        "BLOCK" -> {
+                            notificationToBlock = notification
+                            false
+                        }
+                        else -> false
+                    }
+                },
+                modifier = Modifier.animateItem(
+                    placementSpec = tween(durationMillis = 300)
+                )
+            ) {
+            Box {
                 if (item.isChildInConversation) {
                     CombinedNotificationItem(
                         notification = notification,
@@ -353,6 +401,7 @@ fun LazyListScope.hubPinnedSection(
                 } else {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                 }
+            }
             }
         }
     }
