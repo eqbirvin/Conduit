@@ -322,21 +322,7 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             val active = activeNotifications
             for (sbn in active) {
                 if (sbn.key == key) {
-                    val list = mutableListOf<Notification.Action>()
-                    sbn.notification.actions?.let { list.addAll(it) }
-                    
-                    // Add contextual actions if available (Android 10+)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        val extras = sbn.notification.extras
-                        try {
-                            val contextual = extras.getParcelableArrayList<Notification.Action>("android.contextualActions")
-                            contextual?.let { list.addAll(it) }
-                        } catch (e: Exception) {
-                            // Sometimes parceling fails for custom actions
-                        }
-                    }
-                    
-                    val result = if (list.isEmpty()) emptyList() else list
+                    val result = extractActions(sbn)
                     actionCache[key] = result
                     return if (result.isEmpty()) null else result
                 }
@@ -346,6 +332,53 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
         }
         actionCache[key] = emptyList()
         return null
+    }
+
+    /**
+     * Bulk form of [getNotificationActions]: returns the non-empty action lists for [keys], reading the
+     * tray (a binder call) at most once for all cache misses and caching misses as empty lists.
+     */
+    fun getNotificationActionsForKeys(keys: List<String>): Map<String, List<Notification.Action>> {
+        val missing = keys.filterTo(HashSet()) { !actionCache.containsKey(it) }
+        if (missing.isNotEmpty()) {
+            val filled = HashSet<String>()
+            try {
+                for (sbn in activeNotifications) {
+                    if (sbn.key in missing && filled.add(sbn.key)) {
+                        actionCache[sbn.key] = extractActions(sbn)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("Conduit", "Exception caught", e)
+            }
+            for (key in missing) {
+                if (key !in filled) actionCache[key] = emptyList()
+            }
+        }
+        val result = LinkedHashMap<String, List<Notification.Action>>()
+        for (key in keys) {
+            val cached = actionCache[key]
+            if (!cached.isNullOrEmpty()) result[key] = cached
+        }
+        return result
+    }
+
+    private fun extractActions(sbn: StatusBarNotification): List<Notification.Action> {
+        val list = mutableListOf<Notification.Action>()
+        sbn.notification.actions?.let { list.addAll(it) }
+
+        // Add contextual actions if available (Android 10+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val extras = sbn.notification.extras
+            try {
+                val contextual = extras.getParcelableArrayList<Notification.Action>("android.contextualActions")
+                contextual?.let { list.addAll(it) }
+            } catch (e: Exception) {
+                // Sometimes parceling fails for custom actions
+            }
+        }
+
+        return if (list.isEmpty()) emptyList() else list
     }
 
     fun getCachedContentIntent(key: String): PendingIntent? {

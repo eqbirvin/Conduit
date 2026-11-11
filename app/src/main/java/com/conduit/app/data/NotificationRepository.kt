@@ -28,6 +28,7 @@ class NotificationRepository(
     private val notificationDao = database.notificationDao()
     private var cachedVocabulary: Set<String>? = null
     private var lastVocabFetchTime: Long = 0L
+    private val whitespaceRegex = Regex("\\s+")
 
     // Hidden text rules are applied here, off the main thread, so every screen gets display-ready text.
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -68,7 +69,7 @@ class NotificationRepository(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun searchNotificationsPaged(query: String): Flow<PagingData<HubNotification>> = settingsRepository.settings.flatMapLatest { settings ->
-        val tokens = query.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        val tokens = query.trim().split(whitespaceRegex).filter { it.isNotEmpty() }
         Pager(
             config = PagingConfig(
                 pageSize = 30,
@@ -89,7 +90,7 @@ class NotificationRepository(
 
     suspend fun countSearchResults(query: String): Int = withContext(Dispatchers.IO) {
         val settings = settingsRepository.settings.first()
-        val tokens = query.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        val tokens = query.trim().split(whitespaceRegex).filter { it.isNotEmpty() }
         if (tokens.isEmpty()) return@withContext 0
         val countQuery = buildSearchQuery(tokens, settings.demoModeEnabled, countOnly = true)
         try {
@@ -138,10 +139,10 @@ class NotificationRepository(
         val prefs = context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
         val syncDismissal = prefs.getBoolean("sync_dismissal", true)
         if (syncDismissal) {
-            val allNotifs = notificationDao.getAllNotificationsSync()
+            val keysById = notificationDao.getKeysByIds(ids).associate { it.id to it.notificationKey }
             ids.forEach { id ->
-                allNotifs.find { it.id == id }?.let {
-                    HubNotificationListenerService.instance?.cancel(it.notificationKey)
+                keysById[id]?.let { key ->
+                    HubNotificationListenerService.instance?.cancel(key)
                 }
             }
         }
@@ -165,8 +166,7 @@ class NotificationRepository(
 
     suspend fun snoozeNotification(id: Int, timestamp: Long, durationMs: Long) = withContext(Dispatchers.IO) {
         notificationDao.snoozeNotification(id, timestamp)
-        val allNotifs = notificationDao.getAllNotificationsSync()
-        allNotifs.find { it.id == id }?.let {
+        notificationDao.getById(id)?.let {
             HubNotificationListenerService.instance?.snooze(it.notificationKey, durationMs)
         }
         triggerWidgetUpdate()
@@ -234,6 +234,10 @@ class NotificationRepository(
 
     fun getNotificationActions(key: String): List<Notification.Action>? {
         return HubNotificationListenerService.instance?.getNotificationActions(key)
+    }
+
+    fun getNotificationActionsForKeys(keys: List<String>): Map<String, List<Notification.Action>> {
+        return HubNotificationListenerService.instance?.getNotificationActionsForKeys(keys) ?: emptyMap()
     }
 
     fun getReplyAction(key: String): Notification.Action? {

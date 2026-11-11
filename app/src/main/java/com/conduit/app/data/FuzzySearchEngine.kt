@@ -4,6 +4,9 @@ import kotlin.math.min
 
 object FuzzySearchEngine {
 
+    private val nonAlphanumericRegex = Regex("[^a-zA-Z0-9]+")
+    private val whitespaceRegex = Regex("\\s+")
+
     /**
      * Calculates the Damerau-Levenshtein distance between two strings,
      * supporting insertions, deletions, substitutions, and adjacent transpositions.
@@ -45,10 +48,9 @@ object FuzzySearchEngine {
      */
     fun extractWords(vararg texts: String?): Set<String> {
         val words = mutableSetOf<String>()
-        val regex = Regex("[^a-zA-Z0-9]+")
         for (text in texts) {
             if (text.isNullOrBlank()) continue
-            val tokens = text.split(regex)
+            val tokens = text.split(nonAlphanumericRegex)
             for (token in tokens) {
                 val clean = token.trim().lowercase()
                 if (clean.length >= 3) {
@@ -67,7 +69,7 @@ object FuzzySearchEngine {
         val trimmed = query.trim()
         if (trimmed.isEmpty() || vocabulary.isEmpty()) return null
 
-        val words = trimmed.split(Regex("\\s+"))
+        val words = trimmed.split(whitespaceRegex)
         var anyCorrected = false
         val correctedWords = mutableListOf<String>()
 

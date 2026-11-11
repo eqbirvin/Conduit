@@ -11,7 +11,6 @@ import com.conduit.app.R
 import com.conduit.app.getAppIcon
 import com.conduit.app.data.AppDatabase
 import com.conduit.app.data.HubNotification
-import kotlinx.coroutines.flow.first
 
 class ConduitWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
@@ -52,12 +51,9 @@ class ConduitWidgetFactory(
             
             val viewsRepository = com.conduit.app.data.ViewsRepository(context)
             var allowedPackages: List<String> = emptyList()
-            kotlinx.coroutines.runBlocking {
-                val views = viewsRepository.views.first()
-                val customView = views.find { it.id == customViewId }
-                if (customView != null) {
-                    allowedPackages = customView.packageNames
-                }
+            val customView = viewsRepository.views.value.find { it.id == customViewId }
+            if (customView != null) {
+                allowedPackages = customView.packageNames
             }
             
             val filteredNotifs = activeNotifs.filter { allowedPackages.contains(it.packageName) }

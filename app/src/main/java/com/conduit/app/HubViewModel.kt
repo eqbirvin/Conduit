@@ -11,7 +11,9 @@ import com.conduit.app.data.CustomView
 import com.conduit.app.data.HubNotification
 import com.conduit.app.data.NotificationRepository
 import com.conduit.app.data.ViewsRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +22,9 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.FlowPreview
@@ -90,11 +94,16 @@ class HubViewModel(
         }
     }.cachedIn(viewModelScope)
 
-    private val rawNotifications: StateFlow<List<HubNotification>> = repository.activeNotifications
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    // One Room subscription feeds both rawNotifications and actionsByKey. Unlike the StateFlow it keeps
+    // every Room emission (no equality dedup), so actionsByKey recomputes exactly as often as before.
+    private val sharedActiveNotifications: SharedFlow<List<HubNotification>> = repository.activeNotifications
+        .shareIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
+
+    private val rawNotifications: StateFlow<List<HubNotification>> = sharedActiveNotifications
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val rawArchivedNotifications: StateFlow<List<HubNotification>> = repository.archivedNotifications
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _activeViewId = MutableStateFlow<String?>(null)
     val activeViewId: StateFlow<String?> = _activeViewId
@@ -138,24 +147,16 @@ class HubViewModel(
 
     val notifications: StateFlow<List<HubNotification>> = combine(rawNotifications, _activeViewId, viewsRepository.views) { notifs, activeId, views ->
         filterByView(notifs, activeId, views)
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val archivedNotifications: StateFlow<List<HubNotification>> = combine(rawArchivedNotifications, _activeViewId, viewsRepository.views) { notifs, activeId, views ->
         filterByView(notifs, activeId, views)
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val actionsByKey: StateFlow<Map<String, List<Notification.Action>>> = repository.activeNotifications
-        .map { list ->
-            val map = mutableMapOf<String, List<Notification.Action>>()
-            list.forEach { notif ->
-                val actions = repository.getNotificationActions(notif.notificationKey)
-                if (actions != null) {
-                    map[notif.notificationKey] = actions
-                }
-            }
-            map
-        }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+    val actionsByKey: StateFlow<Map<String, List<Notification.Action>>> = sharedActiveNotifications
+        .map { list -> repository.getNotificationActionsForKeys(list.map { it.notificationKey }) }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     fun archiveNotification(id: Int, timestamp: Long) {
         viewModelScope.launch {

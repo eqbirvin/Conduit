@@ -53,7 +53,7 @@ fun HubDock(
     var isBundleFlyoutExpanded by isBundleFlyoutExpandedState
     var editingBundleTitle by editingBundleTitleState
     val pm = context.packageManager
-    val enabledApps = remember(unifiedView, channelStates.toMap()) {
+    val enabledApps = remember(unifiedView, channelStates) {
         if (!unifiedView) emptyList<String>()
         else {
             HubNotificationListenerService.supportedApps.keys

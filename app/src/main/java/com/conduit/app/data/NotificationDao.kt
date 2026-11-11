@@ -102,6 +102,10 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE id = :id")
     suspend fun getById(id: Int): HubNotification?
 
+    // Narrow lookup for dismissal sync: only the tray keys of the given rows (id is the primary key).
+    @Query("SELECT id, notificationKey FROM notifications WHERE id IN (:ids)")
+    suspend fun getKeysByIds(ids: List<Int>): List<NotificationKeyRef>
+
     @Query("SELECT * FROM notifications WHERE notificationKey = :key AND isArchived = 0 ORDER BY timestamp DESC LIMIT 1")
     suspend fun getActiveNotificationByKey(key: String): HubNotification?
 
@@ -161,6 +165,11 @@ data class NotificationBodySnippet(
     val packageName: String,
     val channel: String,
     val text: String?
+)
+
+data class NotificationKeyRef(
+    val id: Int,
+    val notificationKey: String
 )
 
 data class NotificationSearchSnippet(
