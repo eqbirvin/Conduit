@@ -106,7 +106,15 @@ fun HubScreenContent(
             performHapticTick(context)
             // Re-reveal the scroll-away top bar; programmatic scrolls bypass the nested-scroll connection.
             headerOffsetPxState.floatValue = 0f
-            scrollScope.launch { mainListState.animateScrollToItem(0) }
+            scrollScope.launch {
+                // animateScrollToItem stutters in steps once it reaches unmeasured items near the
+                // top, so only animate when the first item is already on screen; otherwise snap.
+                if (mainListState.firstVisibleItemIndex == 0) {
+                    mainListState.animateScrollToItem(0)
+                } else {
+                    mainListState.scrollToItem(0)
+                }
+            }
         }
     }
 
