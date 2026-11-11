@@ -41,6 +41,7 @@ fun HubScreen(
     val notifications by notificationsState
     val archivedNotifications by viewModel.archivedNotifications.collectAsStateWithLifecycle()
     val actionsByKey by viewModel.actionsByKey.collectAsStateWithLifecycle()
+    val installedApps by viewModel.installedApps.collectAsStateWithLifecycle()
 
     val channelStates = settings.channelStates
     val aiBundle = settings.aiBundle
@@ -142,9 +143,9 @@ fun HubScreen(
     }
     LaunchedEffect(notifications, unifiedView) {
         if (!unifiedView && selectedDockPackage != null) {
-            val hasActive = notifications.any { getRepresentativePackage(context, it.packageName) == selectedDockPackage }
+            val hasActive = notifications.any { installedApps.representativeOf(it.packageName) == selectedDockPackage }
             if (!hasActive) {
-                selectedDockPackage = notifications.map { getRepresentativePackage(context, it.packageName) }.distinct().firstOrNull()
+                selectedDockPackage = notifications.map { installedApps.representativeOf(it.packageName) }.distinct().firstOrNull()
             }
         }
     }
@@ -196,10 +197,10 @@ fun HubScreen(
     val allNotificationsCombined = remember(notifications, archivedNotifications) {
         (notifications + archivedNotifications).sortedByDescending { it.timestamp }
     }
-    val displayNotifications = remember(notifications, allNotificationsCombined, selectedDockPackage, unifiedView) {
+    val displayNotifications = remember(notifications, allNotificationsCombined, selectedDockPackage, unifiedView, installedApps) {
         val list = if (unifiedView) allNotificationsCombined else notifications
         if (selectedDockPackage != null) {
-            list.filter { getRepresentativePackage(context, it.packageName) == selectedDockPackage }
+            list.filter { installedApps.representativeOf(it.packageName) == selectedDockPackage }
         } else {
             list
         }
@@ -341,7 +342,8 @@ fun HubScreen(
                     activeView = activeView,
                     activeViewDockFilter = activeViewDockFilter,
                     topBarState = topBarState,
-                    topBarCallbacks = topBarCallbacks
+                    topBarCallbacks = topBarCallbacks,
+                    installedApps = installedApps
                 )
             }
         },

@@ -25,6 +25,7 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import android.content.SharedPreferences
 import com.conduit.app.data.ConduitSettings
 import com.conduit.app.data.CustomView
+import com.conduit.app.data.InstalledAppsSnapshot
 
 @Composable
 fun HubDock(
@@ -48,29 +49,33 @@ fun HubDock(
     activeView: CustomView?,
     activeViewDockFilter: Boolean,
     topBarState: HubTopBarState,
-    topBarCallbacks: HubTopBarCallbacks
+    topBarCallbacks: HubTopBarCallbacks,
+    installedApps: InstalledAppsSnapshot
 ) {
     var isBundleFlyoutExpanded by isBundleFlyoutExpandedState
     var editingBundleTitle by editingBundleTitleState
     val pm = context.packageManager
-    val enabledApps = remember(unifiedView, channelStates) {
+    // In-memory lookups only: installedApps is resolved on Dispatchers.IO by HubViewModel.
+    val enabledApps = remember(unifiedView, channelStates, installedApps) {
         if (!unifiedView) emptyList<String>()
         else {
             HubNotificationListenerService.supportedApps.keys
                 .filter { pkg ->
                     val prefKey = HubNotificationListenerService.supportedApps[pkg]?.first
                     if (prefKey != null && channelStates[prefKey] == true) {
-                        isPackageInstalled(context, pkg) || settings.demoModeEnabled
+                        installedApps.isInstalled(pkg) || settings.demoModeEnabled
                     } else false
                 }
-                .map { getRepresentativePackage(context, it) }
+                .map { installedApps.representativeOf(it) }
                 .distinct()
         }
     }
     val hasDockApps = notifications.isNotEmpty() || (unifiedView && enabledApps.isNotEmpty()) || (activeViewDockFilter && activeView != null && activeView.packageNames.isNotEmpty())
-    if (hasDockApps || settings.dockExpandButtonVisible) {
-        val grouped = remember(notifications) {
-            notifications.groupBy { getRepresentativePackage(context, it.packageName) }
+    // Until the first off-main resolution lands, installed state is unknown: draw no dock rather than a
+    // dock with apps wrongly missing. It appears with the correct apps as soon as the cache is ready.
+    if (installedApps.ready && (hasDockApps || settings.dockExpandButtonVisible)) {
+        val grouped = remember(notifications, installedApps) {
+            notifications.groupBy { installedApps.representativeOf(it.packageName) }
         }
         val dockPackagesList = remember(grouped, enabledApps, unifiedView, activeView, activeViewDockFilter, hasDockApps) {
             if (!hasDockApps) {

@@ -15,32 +15,9 @@ val appLabelCache = ConcurrentHashMap<String, String>()
 val appIconCache = android.util.LruCache<String, ImageBitmap>(50)
 val representativePackageCache = ConcurrentHashMap<String, String>()
 
-fun isPackageInstalled(context: Context, packageName: String): Boolean {
-    val pm = context.packageManager
-    try {
-        val appInfo = pm.getApplicationInfo(packageName, 0)
-        if (appInfo.enabled) {
-            return true
-        }
-    } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
-        // Ignored
-    } catch (e: Exception) {
-        // Ignored
-    }
-
-    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
-    val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-    for (user in userManager.userProfiles) {
-        try {
-            if (launcherApps.isPackageEnabled(packageName, user)) {
-                return true
-            }
-        } catch (e: Exception) {
-            // Ignore
-        }
-    }
-    return false
-}
+/** Cached (positive and negative) via InstalledAppsRepository; on a miss this does IPC, so call off the main thread. */
+fun isPackageInstalled(context: Context, packageName: String): Boolean =
+    com.conduit.app.data.InstalledAppsRepository.isInstalled(context, packageName)
 
 fun launchApp(context: Context, packageName: String): Boolean {
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager

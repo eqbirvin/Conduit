@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.conduit.app.data.CustomView
 import com.conduit.app.data.HubNotification
+import com.conduit.app.data.InstalledAppsRepository
+import com.conduit.app.data.InstalledAppsSnapshot
 import com.conduit.app.data.NotificationRepository
 import com.conduit.app.data.ViewsRepository
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +44,9 @@ class HubViewModel(
     private val repository: NotificationRepository,
     val viewsRepository: ViewsRepository
 ) : AndroidViewModel(application) {
+
+    /** Installed state + representative package per supported app, resolved off the main thread. */
+    val installedApps: StateFlow<InstalledAppsSnapshot> = InstalledAppsRepository.snapshot
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
@@ -109,6 +114,11 @@ class HubViewModel(
     val activeViewId: StateFlow<String?> = _activeViewId
 
     init {
+        // Warm the installed-app cache on Dispatchers.IO and keep it fresh on package/profile changes;
+        // the receivers are unregistered when viewModelScope is cancelled.
+        viewModelScope.launch {
+            InstalledAppsRepository.keepFresh(application)
+        }
         // Initialize activeViewId with defaultViewId if it exists in the views list
         viewModelScope.launch {
             viewsRepository.views.combine(viewsRepository.defaultViewId) { views, defaultId ->
@@ -132,25 +142,26 @@ class HubViewModel(
         _activeViewId.value = id
     }
 
-    private fun filterByView(notifications: List<HubNotification>, activeId: String?, views: List<CustomView>): List<HubNotification> {
+    private fun filterByView(notifications: List<HubNotification>, activeId: String?, views: List<CustomView>, installed: InstalledAppsSnapshot): List<HubNotification> {
         val activeView = views.find { it.id == activeId } ?: return notifications
-        val context = getApplication<Application>()
         return notifications.filter { notif ->
             if (notif.isDemo) {
                 true
             } else {
-                val repPkg = getRepresentativePackage(context, notif.packageName)
+                val repPkg = installed.representativeOf(notif.packageName)
                 activeView.packageNames.contains(repPkg)
             }
         }
     }
 
-    val notifications: StateFlow<List<HubNotification>> = combine(rawNotifications, _activeViewId, viewsRepository.views) { notifs, activeId, views ->
-        filterByView(notifs, activeId, views)
+    // Lists stay empty until the installed-app cache is ready, so every package the feed composes
+    // already has its representative package in memory (no IPC during composition).
+    val notifications: StateFlow<List<HubNotification>> = combine(rawNotifications, _activeViewId, viewsRepository.views, installedApps) { notifs, activeId, views, installed ->
+        if (!installed.ready) emptyList() else filterByView(notifs, activeId, views, installed)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val archivedNotifications: StateFlow<List<HubNotification>> = combine(rawArchivedNotifications, _activeViewId, viewsRepository.views) { notifs, activeId, views ->
-        filterByView(notifs, activeId, views)
+    val archivedNotifications: StateFlow<List<HubNotification>> = combine(rawArchivedNotifications, _activeViewId, viewsRepository.views, installedApps) { notifs, activeId, views, installed ->
+        if (!installed.ready) emptyList() else filterByView(notifs, activeId, views, installed)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val actionsByKey: StateFlow<Map<String, List<Notification.Action>>> = sharedActiveNotifications

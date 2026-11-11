@@ -682,14 +682,25 @@ fun formatTimestampWithDate(timestamp: Long): String {
 @Composable
 fun AppIcon(packageName: String, size: androidx.compose.ui.unit.Dp = 50.dp) {
     val context = LocalContext.current
-    val repPkg = remember(packageName) { getRepresentativePackage(context, packageName) }
+    // In-memory lookup only; if the representative is not cached yet it is resolved on IO below.
+    var resolvedRepPkg by remember(packageName) {
+        mutableStateOf(com.conduit.app.data.InstalledAppsRepository.cachedRepresentative(packageName))
+    }
+    val repPkg = resolvedRepPkg ?: packageName
     val density = androidx.compose.ui.platform.LocalDensity.current
     val sizePx = remember(size, density) { with(density) { size.roundToPx() } }
 
-    val cacheKey = "${repPkg}_${sizePx}"
-    var iconBitmap by remember(cacheKey) { mutableStateOf(appIconCache.get(cacheKey)) }
+    val cacheKey = resolvedRepPkg?.let { "${it}_${sizePx}" }
+    var iconBitmap by remember(cacheKey) { mutableStateOf(cacheKey?.let { appIconCache.get(it) }) }
 
-    LaunchedEffect(cacheKey) {
+    LaunchedEffect(packageName, cacheKey) {
+        if (cacheKey == null) {
+            // Changing resolvedRepPkg changes cacheKey, which restarts this effect to load the icon.
+            resolvedRepPkg = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                getRepresentativePackage(context, packageName)
+            }
+            return@LaunchedEffect
+        }
         if (iconBitmap == null) {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 try {
