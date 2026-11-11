@@ -28,12 +28,14 @@ fun HubDateHeader(
     activeNotificationIds: Set<Int>,
     dateHeader: String,
     itemsList: List<GroupedConversationItem>,
-    showMarkAllRead: Boolean
+    showMarkAllRead: Boolean,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Row(

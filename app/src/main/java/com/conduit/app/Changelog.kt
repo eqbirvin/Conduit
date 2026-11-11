@@ -14,6 +14,27 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.44.02",
+        date = "November 11, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Expand/Collapse All Toast",
+                description = "The expand/collapse all button in the top bar now shows a short message saying which one you picked.",
+                iconName = "Check"
+            ),
+            ChangelogItem(
+                title = "Tap a Date to Jump to the Top",
+                description = "Tap any date header in your feed to scroll straight back to the top.",
+                iconName = "Speed"
+            ),
+            ChangelogItem(
+                title = "Bundle Blur Covers the Top Bar",
+                description = "When a bundle menu is open, the blur and shading now cover the top bar too, fading out softly at the top of the screen.",
+                iconName = "Check"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.44.01",
         date = "November 9, 2026",
         highlights = listOf(

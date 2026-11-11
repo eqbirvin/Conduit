@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.animation.core.*
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.animation.*
@@ -31,6 +30,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.layout.onSizeChanged
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 import android.content.SharedPreferences
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.foundation.lazy.LazyListState
@@ -99,10 +99,15 @@ fun HubScreenContent(
         showUpdateDialogState = showUpdateDialogState
     )
     val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme() || settings.themePreference == 2
-    val blurModifier = if (isBundleFlyoutExpanded && settings.dockExpandButtonVisible && settings.bundleMenuBlur && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-        Modifier.blur(20.dp)
-    } else {
-        Modifier
+    val blurModifier = bundleFlyoutBlurModifier(settings, isBundleFlyoutExpanded)
+    val scrollScope = rememberCoroutineScope()
+    val onScrollToTop: () -> Unit = remember(mainListState, headerOffsetPxState) {
+        {
+            performHapticTick(context)
+            // Re-reveal the scroll-away top bar; programmatic scrolls bypass the nested-scroll connection.
+            headerOffsetPxState.floatValue = 0f
+            scrollScope.launch { mainListState.animateScrollToItem(0) }
+        }
     }
 
     val singleConvoFeedItems = remember(displayNotifications, allNotificationsCombined, settings.singleConversationView) {
@@ -158,6 +163,7 @@ fun HubScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .windowInsetsTopHeight(WindowInsets.statusBars)
+                    .then(blurModifier)
                     .background(MaterialTheme.colorScheme.background)
                     .zIndex(1f)
             )
@@ -169,6 +175,7 @@ fun HubScreenContent(
                     .fillMaxWidth()
                     .offset { IntOffset(0, headerOffsetPx.roundToInt()) }
                     .onSizeChanged { headerHeightPx = it.height.toFloat() }
+                    .then(blurModifier)
                     .background(MaterialTheme.colorScheme.background)
                     .statusBarsPadding()
                     .zIndex(2f)
@@ -288,7 +295,8 @@ fun HubScreenContent(
                 displayNotifications = displayNotifications,
                 mainListState = mainListState,
                 padding = padding,
-                singleConvoFeedItems = singleConvoFeedItems
+                singleConvoFeedItems = singleConvoFeedItems,
+                onScrollToTop = onScrollToTop
             )
         }
 
@@ -339,23 +347,13 @@ fun HubScreenContent(
         selectedIdsState = selectedIdsState
     )
 
-        androidx.compose.animation.AnimatedVisibility(
+        // zIndex above the scrolling top bar (2f) so the shade covers the toolbar too.
+        BundleFlyoutScrim(
             visible = isBundleFlyoutExpanded && settings.dockExpandButtonVisible,
-            enter = androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(200)),
-            exit = androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(150))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        if (isDarkTheme) Color.Black.copy(alpha = 0.40f)
-                        else MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).copy(alpha = 0.65f)
-                    )
-                    .pointerInput(Unit) {
-                        detectTapGestures { isBundleFlyoutExpanded = false }
-                    }
-            )
-        }
+            isDarkTheme = isDarkTheme,
+            onDismiss = { isBundleFlyoutExpanded = false },
+            modifier = Modifier.zIndex(3f)
+        )
     }
 
     HubBundleSheets(

@@ -252,7 +252,8 @@ fun LazyListScope.singleConversationFeed(
     swipeRightAction: String,
     screenWidthPx: Float,
     onSnoozeNotification: (HubNotification) -> Unit,
-    onBlockNotification: (HubNotification) -> Unit
+    onBlockNotification: (HubNotification) -> Unit,
+    onDateHeaderClick: () -> Unit
 ) {
     if (pinnedItems.isNotEmpty()) {
         stickyHeader(key = "single_convo_pinned_header") {
@@ -327,6 +328,7 @@ fun LazyListScope.singleConversationFeed(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background)
+                    .clickable(onClick = onDateHeaderClick)
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Row(

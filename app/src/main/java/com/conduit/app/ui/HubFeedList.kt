@@ -56,7 +56,8 @@ fun HubFeedList(
     displayNotifications: List<HubNotification>,
     mainListState: LazyListState,
     padding: PaddingValues,
-    singleConvoFeedItems: List<SingleConversationFeedItem>
+    singleConvoFeedItems: List<SingleConversationFeedItem>,
+    onScrollToTop: () -> Unit
 ) {
     var selectedIds by selectedIdsState
     var activeSingleConversationKey by activeSingleConversationKeyState
@@ -177,7 +178,8 @@ fun HubFeedList(
                 swipeRightAction = swipeRightAction,
                 screenWidthPx = screenWidthPx,
                 onSnoozeNotification = { notif -> notificationToSnoozeState.value = notif },
-                onBlockNotification = { notif -> notificationToBlockState.value = notif }
+                onBlockNotification = { notif -> notificationToBlockState.value = notif },
+                onDateHeaderClick = onScrollToTop
             )
         } else {
         // Pinned section
@@ -227,7 +229,8 @@ fun HubFeedList(
             isSelectionMode = isSelectionMode,
             activeNotificationIds = activeNotificationIds,
             visibleGroupedNotifications = visibleGroupedNotifications,
-            screenWidthPx = screenWidthPx
+            screenWidthPx = screenWidthPx,
+            onDateHeaderClick = onScrollToTop
         )
         }
         }

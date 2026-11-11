@@ -43,7 +43,8 @@ fun LazyListScope.hubDateGroupedSection(
     isSelectionMode: Boolean,
     activeNotificationIds: Set<Int>,
     visibleGroupedNotifications: Map<String, List<GroupedConversationItem>>,
-    screenWidthPx: Float
+    screenWidthPx: Float,
+    onDateHeaderClick: () -> Unit
 ) {
     var notificationToSnooze by notificationToSnoozeState
     var notificationToBlock by notificationToBlockState
@@ -57,7 +58,8 @@ fun LazyListScope.hubDateGroupedSection(
                 activeNotificationIds = activeNotificationIds,
                 dateHeader = dateHeader,
                 itemsList = itemsList,
-                showMarkAllRead = settings.showDateMarkAllRead
+                showMarkAllRead = settings.showDateMarkAllRead,
+                onClick = onDateHeaderClick
             )
         }
         items(itemsList, key = { it.primaryNotification.id }) { item ->

@@ -126,6 +126,8 @@ fun rememberHubTopBarCallbacks(
                 settingsViewModel.updateMasterExpandedState(newState)
                 individualToggles.clear()
                 conversationRollupStates.clear()
+                val toastText = if (newState) "Expand all notifications" else "Collapse all notifications"
+                android.widget.Toast.makeText(context, toastText, android.widget.Toast.LENGTH_SHORT).show()
             }
             override fun onNavigateToArchive() {
                 onNavigateToArchive()

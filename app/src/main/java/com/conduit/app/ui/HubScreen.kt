@@ -301,7 +301,21 @@ fun HubScreen(
     Scaffold(
         topBar = {
             if ((isSelectionMode || isSearchMode || (!settings.topBarScrollsWithFeed && !settings.hideTopBar)) && activeSingleConversationKey == null) {
-                HubTopBar(state = topBarState, callbacks = topBarCallbacks)
+                // The fixed top bar draws above the feed, so it carries its own blur + shade
+                // while the bundle flyout is open; the feed's shade covers everything below it.
+                Box {
+                    Box(
+                        modifier = bundleFlyoutBlurModifier(settings, isBundleFlyoutExpanded)
+                    ) {
+                        HubTopBar(state = topBarState, callbacks = topBarCallbacks)
+                    }
+                    BundleFlyoutScrim(
+                        visible = isBundleFlyoutExpanded && settings.dockExpandButtonVisible,
+                        isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme() || settings.themePreference == 2,
+                        onDismiss = { isBundleFlyoutExpanded = false },
+                        modifier = androidx.compose.ui.Modifier.matchParentSize()
+                    )
+                }
             }
         },
         bottomBar = {
