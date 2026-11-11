@@ -8,6 +8,7 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import androidx.room.withTransaction
 import com.conduit.app.data.HubNotification
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
@@ -165,33 +166,9 @@ import kotlinx.coroutines.sync.withLock
                     replyText = extractedMessages.last().text
                 }
 
-                if (isSelfReply && replyText.isNotEmpty()) {
-                    var hasExisting = false
-                    kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
-                        val existingByKey = database.notificationDao().getMostRecentByKey(notificationKey)
-                        val existing = existingByKey ?: database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
-                        if (existing != null) {
-                            hasExisting = true
-                            val suffix = "\n\u21aa You: $replyText"
-                            val currentText = existing.text ?: ""
-                            val currentTitle = existing.title ?: ""
-                            
-                            val textUpdated = !currentText.endsWith(suffix)
-                            val titleUpdated = !currentTitle.endsWith(" - Replied")
-                            
-                            if (textUpdated || titleUpdated) {
-                                val newText = if (textUpdated) currentText + suffix else currentText
-                                val newTitle = if (titleUpdated) "$currentTitle - Replied" else currentTitle
-                                database.notificationDao().updateAndArchive(existing.id, newTitle, newText, timestamp)
-                                com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@ingestPostedNotification)
-                            }
-                        }
-                    }
-                    if (hasExisting) {
-                        logIngestionDiagnostic(it, "discarded-self-reply")
-                        return@let // Discard this duplicate system tray post since it's just our own reply!
-                    }
-                }
+                // The self-reply row lookup needs the database, so it runs inside the ingestion coroutine below
+                // (never on the main thread). Its result still gates everything after it, exactly as before.
+                val checkSelfReply = isSelfReply && replyText.isNotEmpty()
 
                 val incomingFromStyle = extractedMessages.filter { !it.isSelfReply }
                 val messagesToIngest: List<ExtractedMessage> = if (extractedMessages.isNotEmpty()) {
@@ -202,20 +179,23 @@ import kotlinx.coroutines.sync.withLock
                     emptyList()
                 }
 
-                if (messagesToIngest.isEmpty()) {
-                    logIngestionDiagnostic(it, "discarded-blank")
-                    return@let
-                }
-
                 val prefKey = appInfo?.first ?: if (isSystemPhoneFallback) "channel_phone" else null
                 val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
                 val enabled = if (prefKey != null) prefs.getBoolean(prefKey, true) else true
-                if (!enabled) {
-                    logIngestionDiagnostic(it, "disabled-channel")
-                    return@let
+                // Checked in this order: blank first, then disabled channel.
+                val gateDiscard: String? = when {
+                    messagesToIngest.isEmpty() -> "discarded-blank"
+                    !enabled -> "disabled-channel"
+                    else -> null
                 }
 
-                Log.d("HubService", "Intercepted MSG [$channel]: $title - $text (count=${messagesToIngest.size})")
+                if (!checkSelfReply) {
+                    if (gateDiscard != null) {
+                        logIngestionDiagnostic(it, gateDiscard)
+                        return@let
+                    }
+                    Log.d("HubService", "Intercepted MSG [$channel]: $title - $text (count=${messagesToIngest.size})")
+                }
 
                 val overrideMap = emptyMap<String, String>()
                 var kind = overrideMap[packageName]
@@ -229,12 +209,60 @@ import kotlinx.coroutines.sync.withLock
                 }
 
                 val contentIntent = it.notification.contentIntent
-                if (contentIntent != null) {
+                // A self-reply post fills the cache here like any admitted post. If the coroutine finds an
+                // existing row it removes the entry again (see below), giving the same end state as before.
+                if (gateDiscard == null && contentIntent != null) {
                     contentIntentCache[notificationKey] = contentIntent
                 }
 
-                scope.launch {
+                // A self-reply post starts UNDISPATCHED. The coroutine then takes the mutex (or joins its FIFO queue)
+                // inside this callback, so later posts see this post's DB work first, as they did when it ran
+                // synchronously. Nothing runs on the main thread before the first suspension except the lock
+                // fast path and the call into Room's suspend DAO, which moves the query to Room's executor.
+                val start = if (checkSelfReply) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
+                scope.launch(start = start) {
                     notificationMutex.withLock {
+                        if (checkSelfReply) {
+                            var hasExisting = false
+                            val existingByKey = database.notificationDao().getMostRecentByKey(notificationKey)
+                            val existing = existingByKey ?: database.notificationDao().getMostRecentByTitleAndPackage(packageName, title)
+                            if (existing != null) {
+                                hasExisting = true
+                                val suffix = "\n↪ You: $replyText"
+                                val currentText = existing.text ?: ""
+                                val currentTitle = existing.title ?: ""
+
+                                val textUpdated = !currentText.endsWith(suffix)
+                                val titleUpdated = !currentTitle.endsWith(" - Replied")
+
+                                if (textUpdated || titleUpdated) {
+                                    val newText = if (textUpdated) currentText + suffix else currentText
+                                    val newTitle = if (titleUpdated) "$currentTitle - Replied" else currentTitle
+                                    database.notificationDao().updateAndArchive(existing.id, newTitle, newText, timestamp)
+                                    com.conduit.app.widget.WidgetUpdater.updateAllWidgets(this@ingestPostedNotification)
+                                }
+                            }
+                            if (hasExisting) {
+                                logIngestionDiagnostic(it, "discarded-self-reply")
+                                if (gateDiscard == null && contentIntent != null) {
+                                    // Remove the entry only if it is still this post's own instance. All cache writers
+                                    // run on the main thread, so if a later post for this key replaced or removed it,
+                                    // that later post's state is kept.
+                                    handler.post {
+                                        if (contentIntentCache[notificationKey] === contentIntent) {
+                                            contentIntentCache.remove(notificationKey)
+                                        }
+                                    }
+                                }
+                                return@withLock // Discard this duplicate system tray post since it's just our own reply!
+                            }
+                            if (gateDiscard != null) {
+                                logIngestionDiagnostic(it, gateDiscard)
+                                return@withLock
+                            }
+                            Log.d("HubService", "Intercepted MSG [$channel]: $title - $text (count=${messagesToIngest.size})")
+                        }
+
                         val existingForConversation = database.notificationDao().getNotificationsByKey(notificationKey)
                         var insertedAny = false
                         var latestNewMessage: ExtractedMessage? = null
