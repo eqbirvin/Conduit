@@ -194,9 +194,7 @@ fun HubScreen(
             viewModel.setSearchQuery("")
         }
     }
-    val allNotificationsCombined = remember(notifications, archivedNotifications) {
-        (notifications + archivedNotifications).sortedByDescending { it.timestamp }
-    }
+    val allNotificationsCombined by viewModel.allNotificationsCombined.collectAsStateWithLifecycle()
     val displayNotifications = remember(notifications, allNotificationsCombined, selectedDockPackage, unifiedView, installedApps) {
         val list = if (unifiedView) allNotificationsCombined else notifications
         if (selectedDockPackage != null) {

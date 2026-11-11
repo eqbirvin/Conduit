@@ -164,6 +164,13 @@ class HubViewModel(
         if (!installed.ready) emptyList() else filterByView(notifs, activeId, views, installed)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    // Active + archived merged newest-first for the unified feed and single-conversation lookups.
+    // Sorted off the main thread; sortedByDescending is stable, so timestamp ties keep active-before-archived order.
+    val allNotificationsCombined: StateFlow<List<HubNotification>> = combine(notifications, archivedNotifications) { active, archived ->
+        (active + archived).sortedByDescending { it.timestamp }
+    }.flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     val actionsByKey: StateFlow<Map<String, List<Notification.Action>>> = sharedActiveNotifications
         .map { list -> repository.getNotificationActionsForKeys(list.map { it.notificationKey }) }
         .flowOn(Dispatchers.Default)
