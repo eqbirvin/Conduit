@@ -20,9 +20,10 @@ import android.app.PendingIntent
         activePackageName = packageName
 
         try {
-            val drawable = getAppIcon(this, packageName)
-            if (drawable != null) {
-                imageView.setImageDrawable(drawable)
+            // popupImageView is 24dp (BracketOverlay).
+            val icon = AppIconBitmapCache.get(this, packageName, (24 * resources.displayMetrics.density).toInt())
+            if (icon != null) {
+                imageView.setImageBitmap(icon)
             } else {
                 imageView.setImageResource(R.mipmap.ic_launcher)
             }

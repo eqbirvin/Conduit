@@ -7,10 +7,11 @@ import android.graphics.BitmapFactory
 import android.text.format.DateUtils
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import com.conduit.app.AppIconBitmapCache
 import com.conduit.app.R
-import com.conduit.app.getAppIcon
 import com.conduit.app.data.AppDatabase
 import com.conduit.app.data.HubNotification
+import kotlin.math.roundToInt
 
 class ConduitWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
@@ -30,11 +31,22 @@ class ConduitWidgetFactory(
     private var notifications: List<HubNotification> = emptyList()
     private val database = AppDatabase.getDatabase(context)
 
+    // Read once per data set in onDataSetChanged, not per row in getViewAt.
+    @Volatile private var smartMarkRead = true
+    @Volatile private var iconSizePx = 1
+
     override fun onCreate() {
         // Initialization if needed
     }
 
     override fun onDataSetChanged() {
+        smartMarkRead = context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
+            .getBoolean("smart_mark_read", true)
+        iconSizePx = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            WidgetIconSizes.listItemAdaptiveIconPx(context)
+        } else {
+            (36 * context.resources.displayMetrics.density).roundToInt() // plain bitmap at the 36dp view size
+        }
         val isCustomView = intent.getBooleanExtra(com.conduit.app.widget.CustomViewWidgetProvider.EXTRA_IS_CUSTOM_VIEW, false)
         val activeNotifs = com.conduit.app.data.HiddenTextFilter.apply(
             database.notificationDao().getActiveNotificationsWidgetSync(),
@@ -103,15 +115,15 @@ class ConduitWidgetFactory(
 
         // Set Icon
         val repPkg = com.conduit.app.getRepresentativePackage(context, notification.packageName)
-        val iconDrawable = getAppIcon(context, repPkg)
-        if (iconDrawable != null) {
+        val iconBitmap = AppIconBitmapCache.get(context, repPkg, iconSizePx)
+        if (iconBitmap != null) {
             try {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                     views.setImageViewIcon(R.id.widget_item_icon, android.graphics.drawable.Icon.createWithAdaptiveBitmap(
-                        getBitmapFromDrawable(iconDrawable)
+                        iconBitmap
                     ))
                 } else {
-                    views.setImageViewBitmap(R.id.widget_item_icon, getBitmapFromDrawable(iconDrawable))
+                    views.setImageViewBitmap(R.id.widget_item_icon, iconBitmap)
                 }
             } catch (e: IllegalArgumentException) {
                 views.setImageViewResource(R.id.widget_item_icon, R.mipmap.ic_launcher)
@@ -134,9 +146,6 @@ class ConduitWidgetFactory(
         // Hide all first
         actionViews.forEach { views.setViewVisibility(it, android.view.View.GONE) }
         views.setViewVisibility(R.id.widget_item_action_smart_check, android.view.View.GONE)
-
-        val generalPrefs = context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
-        val smartMarkRead = generalPrefs.getBoolean("smart_mark_read", true)
 
         val hasNativeMarkRead = actions?.any { action ->
             val title = action.title?.toString()?.lowercase() ?: ""
@@ -192,21 +201,6 @@ class ConduitWidgetFactory(
         }
 
         return views
-    }
-
-    private fun getBitmapFromDrawable(drawable: android.graphics.drawable.Drawable): android.graphics.Bitmap {
-        if (drawable is android.graphics.drawable.BitmapDrawable) {
-            return drawable.bitmap
-        }
-        val bitmap = android.graphics.Bitmap.createBitmap(
-            if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 100,
-            if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 100,
-            android.graphics.Bitmap.Config.ARGB_8888
-        )
-        val canvas = android.graphics.Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        return bitmap
     }
 
     override fun getLoadingView(): RemoteViews? = null

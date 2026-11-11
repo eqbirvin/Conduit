@@ -420,6 +420,8 @@ class SettingsRepository(internal val prefs: SharedPreferences) {
 
     fun updateDemoModeEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("demo_mode_enabled", enabled).apply()
+        // getAppIcon's demo-icon fallback depends on this pref, so cached icons (and misses) may now be wrong.
+        com.conduit.app.AppIconBitmapCache.clear()
         _settings.update { it.copy(demoModeEnabled = enabled) }
     }
 

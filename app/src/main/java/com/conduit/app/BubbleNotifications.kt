@@ -12,7 +12,6 @@ import androidx.core.app.Person
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.content.LocusIdCompat
 
     internal fun HubNotificationListenerService.createBubbleNotificationChannel(context: Context) {
@@ -60,9 +59,11 @@ import androidx.core.content.LocusIdCompat
 
         var appIcon: IconCompat? = null
         try {
-            val drawable = getAppIcon(context, packageName)
-            if (drawable != null) {
-                val bitmap = drawable.toBitmap(width = 192, height = 192)
+            val cached = AppIconBitmapCache.get(context, packageName, 192)
+            if (cached != null) {
+                // Same 192x192 bitmap as before; only a non-square icon needs the old stretch-to-square.
+                val bitmap = if (cached.width == 192 && cached.height == 192) cached
+                    else android.graphics.Bitmap.createScaledBitmap(cached, 192, 192, true)
                 appIcon = IconCompat.createWithBitmap(bitmap)
             }
         } catch (e: Exception) {

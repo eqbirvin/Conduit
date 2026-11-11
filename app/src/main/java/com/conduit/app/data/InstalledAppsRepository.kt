@@ -12,6 +12,7 @@ import android.os.UserManager
 import android.util.Log
 import androidx.compose.runtime.Immutable
 import androidx.core.content.ContextCompat
+import com.conduit.app.AppIconBitmapCache
 import com.conduit.app.HubNotificationListenerService
 import com.conduit.app.representativePackageCache
 import kotlinx.coroutines.Dispatchers
@@ -147,6 +148,7 @@ object InstalledAppsRepository {
             if (watchers > 1) return
             installedCache.clear()
             trusted = true
+            AppIconBitmapCache.setEnabled(true)
 
             val pkgReceiver = object : BroadcastReceiver() {
                 override fun onReceive(context: Context, intent: Intent) {
@@ -206,6 +208,7 @@ object InstalledAppsRepository {
 
             trusted = false
             installedCache.clear()
+            AppIconBitmapCache.setEnabled(false)
             _snapshot.value = InstalledAppsSnapshot()
 
             listOfNotNull(packageReceiver, profileReceiver).forEach { receiver ->
@@ -229,10 +232,12 @@ object InstalledAppsRepository {
     private fun onPackageEvent(packageName: String?) {
         if (packageName == null) {
             installedCache.clear()
+            AppIconBitmapCache.clear()
             refreshRequests.update { it + 1 }
             return
         }
         installedCache.remove(packageName)
+        AppIconBitmapCache.invalidate(packageName)
         if (HubNotificationListenerService.supportedApps.containsKey(packageName)) {
             refreshRequests.update { it + 1 }
         }

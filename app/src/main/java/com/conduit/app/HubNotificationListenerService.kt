@@ -102,7 +102,17 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     }
     internal val handler = android.os.Handler(android.os.Looper.getMainLooper())
     internal val collapseRunnable = Runnable { animateCollapse() }
-    private val updatePersistentRunnable = Runnable { updatePersistentNotification() }
+    // The 500 ms debounce stays on the main handler; the update itself runs on the IO scope, serialised so an
+    // older refresh can never post after a newer one.
+    private val persistentTrayMutex = Mutex()
+    internal var persistentTrayChannelCreated = false // only touched under persistentTrayMutex
+    private val updatePersistentRunnable = Runnable {
+        scope.launch { persistentTrayMutex.withLock { updatePersistentNotification() } }
+    }
+
+    // Keeps InstalledAppsRepository's package/profile watching alive while the listener runs, so the installed-state
+    // cache and AppIconBitmapCache are invalidated on package updates/removals even when no app UI is open.
+    private var installedAppsWatch: kotlinx.coroutines.Job? = null
 
     internal fun scheduleUpdatePersistentNotification() {
         handler.removeCallbacks(updatePersistentRunnable)
@@ -200,6 +210,9 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
             scheduleUpdatePersistentNotification()
         }
         callDiagnostics = CallDiagnosticsRecorder(applicationContext, scope)
+        installedAppsWatch = scope.launch {
+            com.conduit.app.data.InstalledAppsRepository.keepFresh(applicationContext)
+        }
         val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
         prefs.registerOnSharedPreferenceChangeListener(this)
         
@@ -227,6 +240,8 @@ class HubNotificationListenerService : NotificationListenerService(), SharedPref
     override fun onDestroy() {
         super.onDestroy()
         instance = null
+        installedAppsWatch?.cancel()
+        installedAppsWatch = null
         val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
         prefs.unregisterOnSharedPreferenceChangeListener(this)
         try {

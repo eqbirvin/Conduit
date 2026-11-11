@@ -12,6 +12,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import androidx.core.app.NotificationCompat
 
+    /** Blocking (binder calls, icon loads, bitmap drawing): runs on the service's IO scope via scheduleUpdatePersistentNotification. */
     fun HubNotificationListenerService.updatePersistentNotification() {
         val prefs = applicationContext.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
         if (!prefs.getBoolean("persistent_tray_enabled", false)) {
@@ -54,18 +55,19 @@ import androidx.core.app.NotificationCompat
         remoteViews.removeAllViews(R.id.persistent_icon_container)
 
         val density = resources.displayMetrics.density
+        // Same icon bounds as before: 40dp wide, drawn 8dp down inside the 48dp badge bitmap.
+        val iconBounds = android.graphics.Rect(0, (8 * density).toInt(), (40 * density).toInt(), (48 * density).toInt())
+        val iconPaint = android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG)
 
         for ((pkg, notifs) in groupedNotifs) {
             val count = notifs.size
-            val pm = packageManager
-            val appIcon = getAppIcon(this, pkg) ?: continue
-            
+            val appIcon = AppIconBitmapCache.get(this, pkg, iconBounds.width()) ?: continue
+
             val size = (48 * density).toInt()
             val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bitmap)
-            appIcon.setBounds(0, (8 * density).toInt(), (40 * density).toInt(), (48 * density).toInt())
-            appIcon.draw(canvas)
-            
+            canvas.drawBitmap(appIcon, null, iconBounds, iconPaint)
+
             val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
             paint.color = android.graphics.Color.RED
             val cx = size - (12 * density)
@@ -94,10 +96,11 @@ import androidx.core.app.NotificationCompat
         }
 
         val channelId = "persistent_tray_default"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (!persistentTrayChannelCreated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelId, "Persistent Tray", NotificationManager.IMPORTANCE_DEFAULT)
             channel.setShowBadge(false)
             nm.createNotificationChannel(channel)
+            persistentTrayChannelCreated = true
         }
 
         val builder = NotificationCompat.Builder(this, channelId)

@@ -261,9 +261,9 @@ import android.graphics.Color
         appIconParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
         appIconView.layoutParams = appIconParams
         try {
-            val appIcon = getAppIcon(this, packageName)
+            val appIcon = AppIconBitmapCache.get(this, packageName, (20 * density).toInt())
             if (appIcon != null) {
-                appIconView.setImageDrawable(appIcon)
+                appIconView.setImageBitmap(appIcon)
             }
         } catch (e: Exception) {}
         iconContainer.addView(appIconView)
@@ -344,9 +344,9 @@ import android.graphics.Color
             rightMargin = (16 * density).toInt()
         }
         try {
-            val icon = getAppIcon(this, packageName)
+            val icon = AppIconBitmapCache.get(this, packageName, (32 * density).toInt())
             if (icon != null) {
-                appIconView.setImageDrawable(icon)
+                appIconView.setImageBitmap(icon)
             }
         } catch (e: Exception) {}
         innerLayout.addView(appIconView)

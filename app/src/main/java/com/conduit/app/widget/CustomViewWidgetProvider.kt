@@ -6,16 +6,12 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.View
 import android.widget.RemoteViews
+import com.conduit.app.AppIconBitmapCache
 import com.conduit.app.MainActivity
 import com.conduit.app.R
-import com.conduit.app.getAppIcon
 import com.conduit.app.data.AppDatabase
 import com.conduit.app.data.ViewsRepository
 import kotlinx.coroutines.CoroutineScope
@@ -123,6 +119,7 @@ class CustomViewWidgetProvider : AppWidgetProvider() {
                 views.setViewVisibility(id, View.GONE)
             }
             
+            val slotIconPx = WidgetIconSizes.slotIconPx(context)
             sortedApps.take(7).forEachIndexed { index, pkg ->
                 val layoutId = slotLayoutIds[index]
                 val iconId = slotIconIds[index]
@@ -130,10 +127,9 @@ class CustomViewWidgetProvider : AppWidgetProvider() {
                 
                 views.setViewVisibility(layoutId, View.VISIBLE)
                 
-                val iconDrawable = getAppIcon(context, pkg)
-                if (iconDrawable != null) {
+                val iconBitmap = AppIconBitmapCache.get(context, pkg, slotIconPx)
+                if (iconBitmap != null) {
                     try {
-                        val iconBitmap = getBitmapFromDrawable(iconDrawable)
                         views.setImageViewBitmap(iconId, iconBitmap)
                     } catch (e: IllegalArgumentException) {
                         views.setImageViewResource(iconId, R.mipmap.ic_launcher)
@@ -186,21 +182,6 @@ class CustomViewWidgetProvider : AppWidgetProvider() {
             views.setPendingIntentTemplate(R.id.widget_list_view, clickPendingIntentTemplate)
             
             appWidgetManager.updateAppWidget(appWidgetId, views)
-        }
-        
-        private fun getBitmapFromDrawable(drawable: Drawable): Bitmap {
-            if (drawable is BitmapDrawable) {
-                return drawable.bitmap
-            }
-            val bitmap = Bitmap.createBitmap(
-                if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 100,
-                if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 100,
-                Bitmap.Config.ARGB_8888
-            )
-            val canvas = Canvas(bitmap)
-            drawable.setBounds(0, 0, canvas.width, canvas.height)
-            drawable.draw(canvas)
-            return bitmap
         }
     }
 
