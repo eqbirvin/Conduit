@@ -10,7 +10,9 @@ import androidx.room.PrimaryKey
         Index("notificationKey"),
         Index(value = ["isArchived", "timestamp"]),
         Index("packageName"),
-        Index(value = ["isDemo", "timestamp"])
+        Index(value = ["isDemo", "timestamp"]),
+        Index(value = ["packageName", "title", "timestamp"]),
+        Index(value = ["isArchived", "archivedTimestamp"])
     ]
 )
 data class HubNotification(

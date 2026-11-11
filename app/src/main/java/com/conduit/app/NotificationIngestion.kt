@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import androidx.room.withTransaction
 import com.conduit.app.data.HubNotification
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -238,97 +239,100 @@ import kotlinx.coroutines.sync.withLock
                         var insertedAny = false
                         var latestNewMessage: ExtractedMessage? = null
 
-                        for (msgItem in messagesToIngest) {
-                            val itemTitle = msgItem.title
-                            val itemText = msgItem.text
-                            val itemTimestamp = msgItem.timestamp
+                        // One commit and one Room invalidation for the whole batch; side effects below stay outside.
+                        database.withTransaction {
+                            for (msgItem in messagesToIngest) {
+                                val itemTitle = msgItem.title
+                                val itemText = msgItem.text
+                                val itemTimestamp = msgItem.timestamp
 
-                            // Check custom block rules
-                            if (shouldBlockNotification(applicationContext, packageName, itemTitle, itemText)) {
-                                logIngestionDiagnostic(it, "blocked")
-                                continue
-                            }
+                                // Check custom block rules
+                                if (shouldBlockNotification(applicationContext, packageName, itemTitle, itemText)) {
+                                    logIngestionDiagnostic(it, "blocked")
+                                    continue
+                                }
 
-                            // Ignore background work notifications
-                            if (itemText.contains("doing work in the background", ignoreCase = true) ||
-                                itemText.contains("updating messages", ignoreCase = true)) {
-                                logIngestionDiagnostic(it, "blocked")
-                                continue
-                            }
+                                // Ignore background work notifications
+                                if (itemText.contains("doing work in the background", ignoreCase = true) ||
+                                    itemText.contains("updating messages", ignoreCase = true)) {
+                                    logIngestionDiagnostic(it, "blocked")
+                                    continue
+                                }
 
-                            // Reboot-repost dedup:
-                            val unarchivedMatch = database.notificationDao().getUnarchivedExactMatch(packageName, itemTitle, itemText)
-                            if (unarchivedMatch != null) {
-                                database.notificationDao().adoptRow(unarchivedMatch.id, notificationKey, itemTimestamp, kind)
-                                logIngestionDiagnostic(it, "duplicate")
-                                continue
-                            }
-
-                            // Check if this message was already ingested for this conversation key
-                            val alreadyInConversation = existingForConversation.any { existing ->
-                                existing.text == itemText
-                            }
-                            if (alreadyInConversation) {
-                                logIngestionDiagnostic(it, "duplicate")
-                                continue
-                            }
-
-                            // Prevent aggressive duplicates when Google Messages changes the notification key
-                            val exactMatch = database.notificationDao().getMostRecentExactMatch(packageName, itemTitle, itemText)
-                            if (exactMatch != null && Math.abs(itemTimestamp - exactMatch.timestamp) < 60000) {
-                                logIngestionDiagnostic(it, "duplicate")
-                                continue // Exact same message received within 60 seconds, ignore
-                            }
-
-                            // Prevent native apps from resurrecting a notification we just locally archived with a smart reply
-                            val recentReplyMatch = database.notificationDao().getMostRecentByTitleAndPackage(packageName, itemTitle)
-                            if (recentReplyMatch != null && recentReplyMatch.text != null && recentReplyMatch.text.contains("\n\u21aa You:")) {
-                                val originalText = recentReplyMatch.text.substringBefore("\n\u21aa You:")
-                                if (originalText == itemText) {
+                                // Reboot-repost dedup:
+                                val unarchivedMatch = database.notificationDao().getUnarchivedExactMatch(packageName, itemTitle, itemText)
+                                if (unarchivedMatch != null) {
+                                    database.notificationDao().adoptRow(unarchivedMatch.id, notificationKey, itemTimestamp, kind)
                                     logIngestionDiagnostic(it, "duplicate")
                                     continue
                                 }
-                            }
 
-                            // Handle edited messages for MessagingStyle: same conversation key & timestamp, but updated text
-                            val editedMatch = existingForConversation.find { existing ->
-                                !existing.isArchived && Math.abs(existing.timestamp - itemTimestamp) < 1000
-                            }
-                            if (editedMatch != null) {
-                                database.notificationDao().updateNotificationContentDetailed(editedMatch.id, itemTitle, itemText, itemTimestamp, kind)
-                                logIngestionDiagnostic(it, "ingested-update")
-                                continue
-                            }
-
-                            // In-place update for non-messaging status notifications (downloads, media players, etc.)
-                            if (kind != "MESSAGE" && incomingFromStyle.isEmpty()) {
-                                val existingActive = database.notificationDao().getActiveNotificationByKey(notificationKey)
-                                if (existingActive != null) {
-                                    if (existingActive.title == itemTitle && existingActive.text == itemText) {
-                                        database.notificationDao().updateNotificationContentDetailed(existingActive.id, itemTitle, itemText, itemTimestamp, kind)
-                                        logIngestionDiagnostic(it, "duplicate")
-                                    } else {
-                                        database.notificationDao().updateNotificationContentDetailed(existingActive.id, itemTitle, itemText, itemTimestamp, kind)
-                                        logIngestionDiagnostic(it, "ingested-update")
-                                    }
+                                // Check if this message was already ingested for this conversation key
+                                val alreadyInConversation = existingForConversation.any { existing ->
+                                    existing.text == itemText
+                                }
+                                if (alreadyInConversation) {
+                                    logIngestionDiagnostic(it, "duplicate")
                                     continue
                                 }
-                            }
 
-                            // Insert new message
-                            val hubNotification = HubNotification(
-                                packageName = packageName,
-                                notificationKey = notificationKey,
-                                title = itemTitle,
-                                text = itemText,
-                                channel = channel,
-                                timestamp = itemTimestamp,
-                                kind = kind
-                            )
-                            database.notificationDao().insert(hubNotification)
-                            logIngestionDiagnostic(it, "ingested")
-                            insertedAny = true
-                            latestNewMessage = msgItem
+                                // Prevent aggressive duplicates when Google Messages changes the notification key
+                                val exactMatch = database.notificationDao().getMostRecentExactMatch(packageName, itemTitle, itemText)
+                                if (exactMatch != null && Math.abs(itemTimestamp - exactMatch.timestamp) < 60000) {
+                                    logIngestionDiagnostic(it, "duplicate")
+                                    continue // Exact same message received within 60 seconds, ignore
+                                }
+
+                                // Prevent native apps from resurrecting a notification we just locally archived with a smart reply
+                                val recentReplyMatch = database.notificationDao().getMostRecentByTitleAndPackage(packageName, itemTitle)
+                                if (recentReplyMatch != null && recentReplyMatch.text != null && recentReplyMatch.text.contains("\n\u21aa You:")) {
+                                    val originalText = recentReplyMatch.text.substringBefore("\n\u21aa You:")
+                                    if (originalText == itemText) {
+                                        logIngestionDiagnostic(it, "duplicate")
+                                        continue
+                                    }
+                                }
+
+                                // Handle edited messages for MessagingStyle: same conversation key & timestamp, but updated text
+                                val editedMatch = existingForConversation.find { existing ->
+                                    !existing.isArchived && Math.abs(existing.timestamp - itemTimestamp) < 1000
+                                }
+                                if (editedMatch != null) {
+                                    database.notificationDao().updateNotificationContentDetailed(editedMatch.id, itemTitle, itemText, itemTimestamp, kind)
+                                    logIngestionDiagnostic(it, "ingested-update")
+                                    continue
+                                }
+
+                                // In-place update for non-messaging status notifications (downloads, media players, etc.)
+                                if (kind != "MESSAGE" && incomingFromStyle.isEmpty()) {
+                                    val existingActive = database.notificationDao().getActiveNotificationByKey(notificationKey)
+                                    if (existingActive != null) {
+                                        if (existingActive.title == itemTitle && existingActive.text == itemText) {
+                                            database.notificationDao().updateNotificationContentDetailed(existingActive.id, itemTitle, itemText, itemTimestamp, kind)
+                                            logIngestionDiagnostic(it, "duplicate")
+                                        } else {
+                                            database.notificationDao().updateNotificationContentDetailed(existingActive.id, itemTitle, itemText, itemTimestamp, kind)
+                                            logIngestionDiagnostic(it, "ingested-update")
+                                        }
+                                        continue
+                                    }
+                                }
+
+                                // Insert new message
+                                val hubNotification = HubNotification(
+                                    packageName = packageName,
+                                    notificationKey = notificationKey,
+                                    title = itemTitle,
+                                    text = itemText,
+                                    channel = channel,
+                                    timestamp = itemTimestamp,
+                                    kind = kind
+                                )
+                                database.notificationDao().insert(hubNotification)
+                                logIngestionDiagnostic(it, "ingested")
+                                insertedAny = true
+                                latestNewMessage = msgItem
+                            }
                         }
 
                         if (insertedAny) {

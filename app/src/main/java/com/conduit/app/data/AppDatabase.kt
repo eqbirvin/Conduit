@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [HubNotification::class], version = 10, exportSchema = false)
+@Database(entities = [HubNotification::class], version = 11, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun notificationDao(): NotificationDao
 
@@ -50,6 +50,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Index names match what Room generates for the HubNotification @Index declarations.
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_notifications_packageName_title_timestamp` ON `notifications` (`packageName`, `title`, `timestamp`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_notifications_isArchived_archivedTimestamp` ON `notifications` (`isArchived`, `archivedTimestamp`)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -57,7 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "conduit_database"
                 )
-                .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                 .build()
                 INSTANCE = instance
                 instance

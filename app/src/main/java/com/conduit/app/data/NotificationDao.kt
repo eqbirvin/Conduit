@@ -93,8 +93,10 @@ interface NotificationDao {
     suspend fun getNotificationsByKey(key: String): List<HubNotification>
 
     // Call entries use "<tray key>#call@<start>" keys; finds the newest one still in progress.
-    @Query("SELECT * FROM notifications WHERE substr(notificationKey, 1, length(:keyPrefix)) = :keyPrefix AND kind = 'CALL' AND text IN (:inProgressTexts) AND timestamp > :since ORDER BY timestamp DESC LIMIT 1")
-    suspend fun getInProgressCallEntry(keyPrefix: String, inProgressTexts: List<String>, since: Long): HubNotification?
+    // Prefix match written as a key range [keyPrefix, keyUpperBound) so the notificationKey index is used;
+    // keyUpperBound is keyPrefix with its last character incremented (see CallNotificationTracker).
+    @Query("SELECT * FROM notifications WHERE notificationKey >= :keyPrefix AND notificationKey < :keyUpperBound AND kind = 'CALL' AND text IN (:inProgressTexts) AND timestamp > :since ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getInProgressCallEntry(keyPrefix: String, keyUpperBound: String, inProgressTexts: List<String>, since: Long): HubNotification?
 
     @Query("SELECT * FROM notifications WHERE packageName = :pkg AND title = :title AND text = :text ORDER BY timestamp DESC LIMIT 1")
     suspend fun getMostRecentExactMatch(pkg: String, title: String, text: String): HubNotification?

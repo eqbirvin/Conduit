@@ -167,6 +167,9 @@ class CallNotificationTracker(
     private suspend fun findInProgressEntry(trayKey: String): HubNotification? =
         dao.getInProgressCallEntry(
             keyPrefix = "$trayKey$ENTRY_KEY_MARKER",
+            // Every key starting with the prefix sorts below this bound and nothing else between them does.
+            // ENTRY_KEY_MARKER ends in '@', so incrementing it gives 'A' (plain ASCII, same order in UTF-8).
+            keyUpperBound = "$trayKey${ENTRY_KEY_MARKER.dropLast(1)}${ENTRY_KEY_MARKER.last() + 1}",
             inProgressTexts = listOf(TEXT_ANSWERED, TEXT_OUTGOING),
             since = System.currentTimeMillis() - IN_PROGRESS_WINDOW_MS
         )
