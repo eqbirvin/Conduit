@@ -63,7 +63,13 @@ class ConduitWidgetFactory(
         val drawable = AdaptiveIconDrawable(null, BitmapDrawable(context.resources, source))
         drawable.setBounds(0, 0, size, size)
         drawable.draw(Canvas(masked))
-        return masked
+        // Must be immutable: RemoteViews copies a mutable bitmap separately for every row that uses it,
+        // which defeats the per-package sharing and sends the icon once per row.
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            masked.asShared()
+        } else {
+            masked.copy(Bitmap.Config.ARGB_8888, false) ?: masked
+        }
     }
 
     override fun onCreate() {
