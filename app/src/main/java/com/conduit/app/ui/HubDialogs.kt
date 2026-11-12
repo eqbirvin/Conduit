@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
 import com.conduit.app.data.AppDatabase
 import com.conduit.app.data.HubNotification
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +41,8 @@ fun HubUpdateDialog(
             confirmButton = {
                 Button(onClick = {
                     showUpdateDialog = false
-                    kotlinx.coroutines.GlobalScope.launch {
+                    // Must outlive this dialog (it closes on tap), so it runs on the process lifecycle scope.
+                    androidx.lifecycle.ProcessLifecycleOwner.get().lifecycleScope.launch(Dispatchers.Default) {
                         val updateInfo = com.conduit.app.updater.UpdateManager.checkForUpdates()
                         if (updateInfo != null) {
                             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
@@ -135,7 +137,8 @@ fun HubBlockDialog(
                             val updatedSet = currentSet + newRule
                             prefs.edit().putStringSet("blocked_rules", updatedSet).apply()
 
-                            kotlinx.coroutines.GlobalScope.launch {
+                            // Must outlive this dialog (it closes on tap), so it runs on the process lifecycle scope.
+                            androidx.lifecycle.ProcessLifecycleOwner.get().lifecycleScope.launch(Dispatchers.Default) {
                                 val database = AppDatabase.getDatabase(context)
                                 val allNotifs = database.notificationDao().getAllNotificationsSync()
                                 val idsToDelete = mutableListOf<Int>()
@@ -285,7 +288,13 @@ fun HubBundleSheets(
 
                                 if (launchIntent != null) {
                                     launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    try { context.startActivity(launchIntent) } catch (e: Exception) { e.printStackTrace() }
+                                    try {
+                                        context.startActivity(launchIntent)
+                                    } catch (e: android.content.ActivityNotFoundException) {
+                                        android.util.Log.e("HubDialogs", "No activity found for compose intent to $pkg", e)
+                                    } catch (e: SecurityException) {
+                                        android.util.Log.e("HubDialogs", "Not allowed to start compose intent to $pkg", e)
+                                    }
                                 } else {
                                     launchApp(context, pkg)
                                 }

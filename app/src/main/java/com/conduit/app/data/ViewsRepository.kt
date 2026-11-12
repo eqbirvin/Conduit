@@ -46,8 +46,9 @@ class ViewsRepository(private val context: Context) {
                 _defaultViewId.value = null
                 prefs.edit().remove("default_view_id").apply()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (e: IllegalArgumentException) {
+            // Malformed stored JSON (SerializationException is an IllegalArgumentException): start with no views.
+            android.util.Log.e("ViewsRepository", "Failed to decode stored custom views", e)
             _views.value = emptyList()
             _defaultViewId.value = null
         }
@@ -60,8 +61,9 @@ class ViewsRepository(private val context: Context) {
             prefs.edit().putString("custom_views", json).apply()
             _views.value = sortedViews
             com.conduit.app.widget.WidgetUpdater.updateAllWidgets(context)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (e: kotlinx.serialization.SerializationException) {
+            // Nothing was written; the in-memory and stored views stay as they were.
+            android.util.Log.e("ViewsRepository", "Failed to encode custom views", e)
         }
     }
 
