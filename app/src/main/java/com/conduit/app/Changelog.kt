@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.44.18",
+        date = "November 12, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Widgets Show the 100 Newest",
+                description = "Home screen widgets now list your 100 most recent notifications, or the 100 most recent for the app you tap in the icon row. Badge counts still show the full totals, and widgets refresh faster with large inboxes.",
+                iconName = "Widgets"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.44.15",
         date = "November 12, 2026",
         highlights = listOf(

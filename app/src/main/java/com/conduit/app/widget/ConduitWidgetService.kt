@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_TITLE_CHARS = 200
 private const val MAX_TEXT_CHARS = 600
+private const val MAX_WIDGET_ROWS = 100
 
 class ConduitWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
@@ -123,6 +124,9 @@ class ConduitWidgetFactory(
                 activeNotifs
             }
         }
+        // Newest first. Android sends the whole list to the launcher on every refresh and silently
+        // cuts it off at about 800 KB, so an unbounded list costs a near-limit transaction per widget.
+        notifications = notifications.take(MAX_WIDGET_ROWS)
     }
 
     override fun onDestroy() {
