@@ -20,6 +20,10 @@ internal object WidgetIconSizes {
      * AdaptiveIconDrawable draws that bitmap 1.5x the view size (25% extra inset per side) and masks it, so the
      * bitmap is displayed at 54dp.
      */
+    /** widget_item_icon in conduit_widget_list_item.xml: the 36dp view box the masked row icon is drawn into. */
+    fun listItemViewPx(context: Context): Int =
+        (36 * context.resources.displayMetrics.density).roundToInt()
+
     fun listItemAdaptiveIconPx(context: Context): Int {
         val density = context.resources.displayMetrics.density
         return (36 * density).roundToInt() * 3 / 2

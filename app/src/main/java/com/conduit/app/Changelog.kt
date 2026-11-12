@@ -14,6 +14,17 @@ data class ChangelogRelease(
 
 val CHANGELOG: List<ChangelogRelease> = listOf(
     ChangelogRelease(
+        versionName = "2.44.15",
+        date = "November 12, 2026",
+        highlights = listOf(
+            ChangelogItem(
+                title = "Widgets Refresh Reliably",
+                description = "Fixed home screen widgets sometimes showing an out-of-date list, most often with several Conduit widgets placed or many active notifications.",
+                iconName = "Widgets"
+            )
+        )
+    ),
+    ChangelogRelease(
         versionName = "2.44.14",
         date = "November 11, 2026",
         highlights = listOf(

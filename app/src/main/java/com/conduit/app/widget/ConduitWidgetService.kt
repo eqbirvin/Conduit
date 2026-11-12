@@ -3,7 +3,11 @@ package com.conduit.app.widget
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.BitmapDrawable
 import android.text.format.DateUtils
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
@@ -11,7 +15,10 @@ import com.conduit.app.AppIconBitmapCache
 import com.conduit.app.R
 import com.conduit.app.data.AppDatabase
 import com.conduit.app.data.HubNotification
-import kotlin.math.roundToInt
+import java.util.concurrent.ConcurrentHashMap
+
+private const val MAX_TITLE_CHARS = 200
+private const val MAX_TEXT_CHARS = 600
 
 class ConduitWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
@@ -34,6 +41,30 @@ class ConduitWidgetFactory(
     // Read once per data set in onDataSetChanged, not per row in getViewAt.
     @Volatile private var smartMarkRead = true
     @Volatile private var iconSizePx = 1
+    @Volatile private var iconViewPx = 1
+
+    // Masked row icons for the current data set, one shared Bitmap per package. Rows that hand
+    // RemoteViews the same Bitmap instance are sent to the launcher once, not once per row, which
+    // keeps a whole list well inside the binder transaction limit.
+    private class RowIcon(val bitmap: Bitmap?)
+    @Volatile private var rowIcons = ConcurrentHashMap<String, RowIcon>()
+
+    private fun rowIconFor(packageName: String): Bitmap? =
+        rowIcons.getOrPut(packageName) { RowIcon(renderRowIcon(packageName)) }.bitmap
+
+    /**
+     * Draws the icon exactly as Icon.createWithAdaptiveBitmap would be drawn by the launcher (system
+     * adaptive mask, source bitmap as the foreground layer), at the size of the row's 36dp view.
+     */
+    private fun renderRowIcon(packageName: String): Bitmap? {
+        val source = AppIconBitmapCache.get(context, packageName, iconSizePx) ?: return null
+        val size = iconViewPx.coerceAtLeast(1)
+        val masked = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val drawable = AdaptiveIconDrawable(null, BitmapDrawable(context.resources, source))
+        drawable.setBounds(0, 0, size, size)
+        drawable.draw(Canvas(masked))
+        return masked
+    }
 
     override fun onCreate() {
         // Initialization if needed
@@ -42,11 +73,9 @@ class ConduitWidgetFactory(
     override fun onDataSetChanged() {
         smartMarkRead = context.getSharedPreferences("conduit_prefs", Context.MODE_PRIVATE)
             .getBoolean("smart_mark_read", true)
-        iconSizePx = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            WidgetIconSizes.listItemAdaptiveIconPx(context)
-        } else {
-            (36 * context.resources.displayMetrics.density).roundToInt() // plain bitmap at the 36dp view size
-        }
+        iconSizePx = WidgetIconSizes.listItemAdaptiveIconPx(context)
+        iconViewPx = WidgetIconSizes.listItemViewPx(context)
+        rowIcons = ConcurrentHashMap()
         val isCustomView = intent.getBooleanExtra(com.conduit.app.widget.CustomViewWidgetProvider.EXTRA_IS_CUSTOM_VIEW, false)
         val activeNotifs = com.conduit.app.data.HiddenTextFilter.apply(
             database.notificationDao().getActiveNotificationsWidgetSync(),
@@ -102,8 +131,9 @@ class ConduitWidgetFactory(
         val notification = notifications[position]
         val views = RemoteViews(context.packageName, R.layout.conduit_widget_list_item)
 
-        views.setTextViewText(R.id.widget_item_title, notification.title ?: "Unknown")
-        views.setTextViewText(R.id.widget_item_text, notification.text ?: "")
+        // The row shows one title line and three text lines; sending more only inflates the refresh.
+        views.setTextViewText(R.id.widget_item_title, notification.title?.take(MAX_TITLE_CHARS) ?: "Unknown")
+        views.setTextViewText(R.id.widget_item_text, notification.text?.take(MAX_TEXT_CHARS) ?: "")
         
         val timeString = DateUtils.getRelativeTimeSpanString(
             notification.timestamp,
@@ -115,16 +145,10 @@ class ConduitWidgetFactory(
 
         // Set Icon
         val repPkg = com.conduit.app.getRepresentativePackage(context, notification.packageName)
-        val iconBitmap = AppIconBitmapCache.get(context, repPkg, iconSizePx)
+        val iconBitmap = rowIconFor(repPkg)
         if (iconBitmap != null) {
             try {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                    views.setImageViewIcon(R.id.widget_item_icon, android.graphics.drawable.Icon.createWithAdaptiveBitmap(
-                        iconBitmap
-                    ))
-                } else {
-                    views.setImageViewBitmap(R.id.widget_item_icon, iconBitmap)
-                }
+                views.setImageViewBitmap(R.id.widget_item_icon, iconBitmap)
             } catch (e: IllegalArgumentException) {
                 views.setImageViewResource(R.id.widget_item_icon, R.mipmap.ic_launcher)
             }

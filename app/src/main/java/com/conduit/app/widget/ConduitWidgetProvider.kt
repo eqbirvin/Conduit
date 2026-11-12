@@ -24,17 +24,23 @@ class ConduitWidgetProvider : AppWidgetProvider() {
         const val EXTRA_ITEM_KEY = "com.conduit.app.widget.EXTRA_ITEM_KEY"
         const val EXTRA_ITEM_PKG = "com.conduit.app.widget.EXTRA_ITEM_PKG"
         
-        fun updateAllWidgets(context: Context) {
+        /**
+         * Refreshes every placed widget, header and list, strictly one widget at a time (see
+         * [WidgetUpdater]). Blocking binder calls: call off the main thread. A widget whose refresh
+         * the system refuses is logged and skipped so the remaining widgets still refresh.
+         */
+        suspend fun refreshAllWidgets(context: Context) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
             val componentName = ComponentName(context, ConduitWidgetProvider::class.java)
-            val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
-            if (appWidgetIds.isNotEmpty()) {
-                val intent = Intent(context, ConduitWidgetProvider::class.java).apply {
-                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
+            for (appWidgetId in appWidgetManager.getAppWidgetIds(componentName)) {
+                try {
+                    updateAppWidgetSync(context, appWidgetManager, appWidgetId)
+                    appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_list_view)
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: RuntimeException) {
+                    android.util.Log.e("ConduitWidget", "Failed to refresh widget $appWidgetId", e)
                 }
-                context.sendBroadcast(intent)
-                appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list_view)
             }
         }
 
