@@ -196,7 +196,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
             var isPermissionGranted by remember { mutableStateOf(isNotificationServiceEnabled()) }
-            var isRestricted by remember { mutableStateOf(isRestrictedSettingsGuarded(context)) }
+            // Resolved off the main thread on resume (below), and only while access is not granted:
+            // the permission screen is the only reader.
+            var isRestricted by remember { mutableStateOf(false) }
+            val restrictedCheckScope = rememberCoroutineScope()
             var showSuccessState by remember { mutableStateOf(false) }
 
             val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -204,7 +207,11 @@ class MainActivity : ComponentActivity() {
                 val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
                     if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
                         val currentlyEnabled = isNotificationServiceEnabled()
-                        isRestricted = isRestrictedSettingsGuarded(context)
+                        if (!currentlyEnabled) {
+                            restrictedCheckScope.launch {
+                                isRestricted = withContext(Dispatchers.IO) { isRestrictedSettingsGuarded(context) }
+                            }
+                        }
                         if (!isPermissionGranted && currentlyEnabled) {
                             showSuccessState = true
                         } else if (!currentlyEnabled) {
@@ -435,8 +442,15 @@ class MainActivity : ComponentActivity() {
         return flat != null && flat.contains(cn.flattenToString())
     }
 
+    // Set once the system refuses the AppOps query for this app (newer Android versions do): the answer
+    // cannot change within the process, so the binder call and its exception are not repeated.
+    @Volatile
+    private var restrictedOpUncheckable = false
+
+    /** Blocking AppOps binder call: call off the main thread. */
     private fun isRestrictedSettingsGuarded(context: Context = this): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false
+        if (restrictedOpUncheckable) return false
         return try {
             val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? android.app.AppOpsManager
                 ?: return false
@@ -448,6 +462,7 @@ class MainActivity : ComponentActivity() {
             mode != android.app.AppOpsManager.MODE_ALLOWED
         } catch (e: SecurityException) {
             android.util.Log.w("MainActivity", "SecurityException checking restricted settings op", e)
+            restrictedOpUncheckable = true
             false
         } catch (e: IllegalArgumentException) {
             android.util.Log.w("MainActivity", "Op not recognized on device", e)
