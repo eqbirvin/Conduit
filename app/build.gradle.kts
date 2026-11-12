@@ -13,8 +13,8 @@ android {
         applicationId = "com.conduit.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 389
-        versionName = "2.44.09"
+        versionCode = 390
+        versionName = "2.44.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -68,6 +68,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    // Already resolved transitively at this version; declared because WidgetUpdater uses ProcessLifecycleOwner.
+    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
     
     // Kotlin Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")

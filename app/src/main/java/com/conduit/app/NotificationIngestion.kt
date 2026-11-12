@@ -51,7 +51,7 @@ import kotlinx.coroutines.sync.withLock
                       "EXTRA_TITLE=[$eTitle] EXTRA_TEXT=[$eText] EXTRA_SELF_DISPLAY_NAME=[$selfDisplayName] " +
                       "EXTRA_CONVERSATION_TITLE=[$convoTitle] msgCount=$msgCount lastSenderPerson=[$lastSenderPerson] " +
                       "lastLegacySender=[$lastLegacySender] lastText=[$lastText] -> DECISION: $decision"
-        android.util.Log.d("ConduitIngest", logLine)
+        android.util.Log.i("ConduitIngest", logLine)
     }
 
     internal fun HubNotificationListenerService.ingestPostedNotification(sbn: StatusBarNotification?) {

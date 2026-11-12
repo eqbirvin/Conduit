@@ -20,3 +20,10 @@
 
 # Shizuku user service: instantiated by class name in the Shizuku-spawned process
 -keep class com.conduit.app.shizuku.** { *; }
+
+# Strip debug/verbose logging (and the string building feeding it) from release builds.
+# Log.e/w/i are kept. No call site uses the return value or has side effects in its arguments.
+-assumenosideeffects class android.util.Log {
+    public static int d(...);
+    public static int v(...);
+}
