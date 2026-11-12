@@ -3,7 +3,7 @@ package com.conduit.app.data
 import android.app.Notification
 import android.content.Context
 import com.conduit.app.HubNotificationListenerService
-import com.conduit.app.widget.ConduitWidgetProvider
+import com.conduit.app.widget.WidgetUpdater
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -314,7 +314,7 @@ class NotificationRepository(
     }
 
     private fun triggerWidgetUpdate() {
-        ConduitWidgetProvider.updateAllWidgets(context)
+        WidgetUpdater.updateAllWidgets(context)
     }
 }
 
